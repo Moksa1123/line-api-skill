@@ -7,7 +7,7 @@ user-invocable: true
 # LINE Platform 開發技能
 
 > 資料全部由 [`line/line-openapi`](https://github.com/line/line-openapi) 官方 OpenAPI 規格
-> 與 https://developers.line.biz 官方文件自動萃取，共 **2825 筆**。
+> 與 https://developers.line.biz 官方文件自動萃取，共 **2882 筆**。
 > 每一筆都附官方文件連結，且連結經 `tools/check_links.py` 實際驗證過。
 
 ## 何時使用
@@ -50,7 +50,7 @@ python scripts/lineapi.py validate-push --json m.json  # LINE 官方驗證端點
 
 ---
 
-## 18 個搜尋域
+## 19 個搜尋域
 
 | 域 | 內容 | 筆數 |
 |---|---|---|
@@ -65,6 +65,7 @@ python scripts/lineapi.py validate-push --json m.json  # LINE 官方驗證端點
 | `liff` | LIFF SDK v2 全部 API | 35 |
 | `error` | 狀態碼、錯誤訊息、每支端點的錯誤表 | 226 |
 | `limit` | OpenAPI 明訂的數值限制 | 114 |
+| `term` | 官方術語表（57 條，附中文定義） | 57 |
 | `product` | LINE 各產品比較與選型 | 8 |
 | `token` | 四種 channel access token + user access token | 5 |
 | `troubleshoot` | 常見問題的症狀 / 原因 / 解法 | 21 |

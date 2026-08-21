@@ -157,6 +157,32 @@ def t_webhook_events():
     return f"{len(events)} 種事件（含 message 子型別）"
 
 
+@check("dataset: 官方術語表 57 條全部收錄且錨點正確")
+def t_glossary_terms():
+    terms = rows("terms.csv")
+    assert len(terms) >= 50, f"術語只有 {len(terms)} 條"
+    for r in terms:
+        assert r["definition"], f"{r['term']} 沒有定義"
+        assert r["doc_url"].startswith("https://developers.line.biz/en/glossary/#"), r["term"]
+
+    # 常被 reference 連到的錨點必須查得到
+    anchors = {r["doc_url"].split("#")[-1] for r in terms}
+    for want in ("liff-browser", "line-iab", "external-browser", "provider",
+                 "channel-access-token", "user-id", "rich-menu-alias"):
+        assert want in anchors, f"術語表缺少 #{want}"
+
+    # 有 .docs-cache 時，逐條比對官方術語表有沒有新增詞條
+    cache = HERE.parent.parent / ".docs-cache" / "raw" / "en" / "glossary.md"
+    if cache.exists():
+        text = cache.read_text(encoding="utf-8")
+        official = set(re.findall(r"^#{2,3}\s*\[[^\]]+\]\(#([a-z0-9\-]+)\)\s*$",
+                                  text, re.M))
+        missing = official - anchors
+        assert not missing, f"官方新增了這些術語但資料集沒收：{sorted(missing)}"
+        return f"{len(terms)} 條，與官方 {len(official)} 條完全對上"
+    return f"{len(terms)} 條術語"
+
+
 @check("dataset: 每一份官方 reference 都真的被處理過")
 def t_every_reference_processed():
     """擋住最難察覺的疏漏：整份文件沒被列入處理清單。

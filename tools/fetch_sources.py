@@ -35,6 +35,15 @@ WORKERS = 8
 
 LINK_RE = re.compile(r"https://developers\.line\.biz/en/(?:docs|reference)/[A-Za-z0-9\-_/\.]*")
 
+# Pages the llms.txt index doesn't list. Discovered with tools/discover_pages.py,
+# which walks the site's HTML navigation instead of the Markdown cross-links —
+# llms.txt alone misses whole sections.
+EXTRA_MD = [
+    "en/docs/line-ads-api/about",
+    "en/docs/line-ads-api/development-guidelines",
+    "en/docs/line-conversion-api",
+]
+
 # Pages that exist only as HTML (no index.html.md). Kept explicit so a future
 # LINE change that adds .md for them is a no-op rather than a duplicate.
 HTML_ONLY = [
@@ -51,7 +60,25 @@ HTML_ONLY = [
     "en/docs/line-social-plugins/install-guide/using-line-share-buttons",
     "en/docs/line-social-plugins/install-guide/using-like-buttons",
     "en/docs/line-social-plugins/install-guide/using-add-friend-buttons",
+    # --- 以下由 discover_pages.py 找出，llms.txt 沒有列 ---
+    "en/glossary",                       # 術語表，reference 到處連它的錨點
+    "en/faq",                            # 官方 FAQ，reference 直接連過去
+    "en/docs/line-social-plugins/general/overview",
+    "en/docs/line-social-plugins/general/guidelines",
+    "en/docs/line-social-plugins/resources/design-guide",
+    "en/docs/line-social-plugins/resources/release-notes",
+    "en/docs/line-login-sdks",
 ]
+
+# 刻意不抓：這些不是 API 規格，收進來只會稀釋資料集。
+#   en/community/api-experts (42)  社群人物介紹
+#   en/tips/** (34)                部落格文章
+#   en/faq/tags (18)               標籤索引，內容重複於 en/faq
+#   en/about, en/trademark, en/terms-and-policies  公司與法務頁
+#   en/services/**                 產品行銷頁，沒有 markdown-content 容器
+#   en/docs/social-api/overview    轉址到公告（已記在 deprecations.csv）
+#   en/docs/partner-docs/quick-fill/overview
+#                                  轉址到 en/docs/line-mini-app/quick-fill/overview（已抓）
 
 
 # --------------------------------------------------------------------------
@@ -349,7 +376,8 @@ def main() -> int:
         sys.exit("could not fetch https://developers.line.biz/llms.txt")
     (CACHE / "llms.txt").write_text(llms, encoding="utf-8")
     seeds = sorted(set(re.findall(r"\((https://developers\.line\.biz/[^)]+\.md)\)", llms)))
-    print(f"     {len(seeds)} seed pages")
+    seeds += [BASE + "/" + rel + "/" for rel in EXTRA_MD]
+    print(f"     {len(seeds)} seed pages（llms.txt {len(seeds) - len(EXTRA_MD)} + 額外 {len(EXTRA_MD)}）")
 
     print("2/3  crawling Markdown docs")
     ok, bad = crawl_markdown(seeds)

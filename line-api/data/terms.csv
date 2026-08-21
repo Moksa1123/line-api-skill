@@ -1,0 +1,58 @@
+term,term_zh,category,definition,doc_url
+Access token,存取權杖,auth,呼叫 API 時放在 Authorization 標頭的憑證；分成代表 channel 的 channel access token 與代表使用者的 user access token,https://developers.line.biz/en/glossary/#access-token
+Channel access token,頻道存取權杖,auth,代表「應用程式有權使用這個 channel」的權杖；Messaging API 幾乎所有端點都用它。四種型別見 channel-tokens.csv,https://developers.line.biz/en/glossary/#channel-access-token
+Channel,頻道,console,使用 LINE Platform 某項功能的通道。分 Messaging API / LINE Login / LINE MINI App 三種,https://developers.line.biz/en/glossary/#channel
+Channel ID,頻道識別碼,console,channel 的數字識別碼，在 Console 的 Basic settings 可查；JWT 的 iss 與 sub 都放它,https://developers.line.biz/en/glossary/#channel-id
+Channel secret,頻道密鑰,auth,channel 的私密金鑰。webhook 簽章驗證的 HMAC key 就是它；外洩須立即重新發行,https://developers.line.biz/en/glossary/#channel-secret
+Provider,提供者,console,提供服務的個人或組織。同一個 provider 底下的 channel 共用同一組 userId；跨 provider 則不通用,https://developers.line.biz/en/glossary/#provider
+ID token,身分權杖,auth,LINE Login 回傳的 JWT，內含 userId(sub)、顯示名稱、頭像，申請後還可含 email。務必驗證後才採信,https://developers.line.biz/en/glossary/#id-token
+User ID,使用者識別碼,identifier,以 U 開頭的 33 字元字串，用來指定收訊者。與使用者在 LINE 上看得到的 LINE ID 是兩回事,https://developers.line.biz/en/glossary/#user-id
+Group ID,群組識別碼,identifier,以 C 開頭的識別碼，代表一個群組聊天室,https://developers.line.biz/en/glossary/#group-id
+Room ID,多人聊天室識別碼,identifier,以 R 開頭的識別碼，代表一個多人聊天室（非群組）,https://developers.line.biz/en/glossary/#room-id
+Company internal identifier,公司內部識別碼,identifier,LINE Platform 內部用來唯一識別對象的識別碼；userId 就是其中一種,https://developers.line.biz/en/glossary/#company-internal-identifier
+MID,MID,deprecated,LINE Login v1 時代用來指定帳號的舊識別碼。v2.0 之後一律改用 userId / groupId / roomId,https://developers.line.biz/en/glossary/#mid
+Group chat,群組聊天室,chat,多人聊天室的一種，有正式群組名稱與邀請機制；webhook 的 source.type 會是 group,https://developers.line.biz/en/glossary/#group
+Multi-person chat,多人聊天,chat,沒有群組名稱的多人對話；webhook 的 source.type 會是 room,https://developers.line.biz/en/glossary/#room
+Profile information,個人資料,profile,使用者的顯示名稱、大頭貼網址、狀態訊息等；取得與否取決於使用者是否加好友並同意,https://developers.line.biz/en/glossary/#profile-information
+Status message,狀態訊息,profile,使用者自行設定的一句話簡介，包含在 profile 回應中,https://developers.line.biz/en/glossary/#status-message
+Subprofile,子個人檔案,profile,使用者可另外建立的替代個人檔案，針對不同好友顯示不同樣貌,https://developers.line.biz/en/glossary/#subprofile
+LINE Profile+,LINE Profile+,partner,使用者在 LINE 登錄的姓名、性別、生日、電話、地址等延伸資料；取用需另外申請,https://developers.line.biz/en/glossary/#line-profile-plus
+Callback URL,回呼網址,auth,LINE Login 授權完成後導回的網址，必須與 Console 登錄的完全一致,https://developers.line.biz/en/glossary/#callback-url
+Webhook URL,Webhook 網址,messaging-api,LINE Platform 送出 webhook 事件的目的地，必須是公開 HTTPS 且憑證合規,https://developers.line.biz/en/glossary/#webhook-url
+LINE Platform,LINE 平台,platform,LY Corporation 對外提供各項 LINE 功能的整體平台,https://developers.line.biz/en/glossary/#line-platform
+LINE Developers Console,LINE Developers 主控台,console,建立與管理 provider、channel、憑證、LIFF app 的後台,https://developers.line.biz/en/glossary/#line-developers-console
+LINE Official Account,LINE 官方帳號,platform,企業或個人在 LINE 上的對外帳號；Messaging API 就是操作它收發訊息,https://developers.line.biz/en/glossary/#line-official-account
+LINE Official Account Manager,官方帳號管理後台,console,設定自動回應、問候語、群發訊息的後台；webhook 要在這裡開啟並關閉自動回應,https://developers.line.biz/en/glossary/#line-oa-manager
+Premium account,認證帳號,platform,通過 LINE 審查的官方帳號，名稱旁會顯示綠色徽章,https://developers.line.biz/en/glossary/#premium-account
+Premium ID,指定 ID,platform,付費訂閱方案，可自訂官方帳號的 LINE ID 字串；未訂閱則為系統配發的 Basic ID,https://developers.line.biz/en/glossary/#premium-id
+Target reach,可觸及人數,insight,依性別、年齡、地區等條件推播時，實際觸及得到的人數；只計入活躍且屬性判定可信的使用者,https://developers.line.biz/en/glossary/#target-reach
+LINE VOOM,LINE VOOM,platform,LINE 內的短影音與貼文動態服務,https://developers.line.biz/en/glossary/#line-voom
+LINE Messaging API SDK,官方 SDK,sdk,LY Corporation 提供的官方 Messaging API 用戶端函式庫，涵蓋 Python / Node.js / PHP / Java / Go / Ruby,https://developers.line.biz/en/glossary/#line-bot-sdk
+LIFF API,LINE API,platform,LY Corporation 開放給外部公司與開發者、用來介接自家服務的各項 API 總稱,https://developers.line.biz/en/glossary/#line-api
+LIFF browser,LIFF 瀏覽器,liff,LINE App 內用來執行 LIFF app 的專用瀏覽器；只有在這裡 sendMessages、scanCodeV2 等 API 才可用,https://developers.line.biz/en/glossary/#liff-browser
+LINE's in-app browser,LINE 內建瀏覽器,liff,在 LINE 裡開啟一般網頁用的瀏覽器（LINE IAB）。與 LIFF 瀏覽器不同，LIFF 專屬 API 在這裡不能用,https://developers.line.biz/en/glossary/#line-iab
+External browser,外部瀏覽器,liff,Chrome、Safari 等 LINE 以外的瀏覽器；LIFF app 在此執行時功能受限,https://developers.line.biz/en/glossary/#external-browser
+LIFF URL,LIFF 網址,liff,https://liff.line.me/{liffId} 形式的網址，點擊後會用 LIFF 瀏覽器開啟該 LIFF app,https://developers.line.biz/en/glossary/#liff-url
+Permanent link (LIFF),LIFF 永久連結,liff,可直接連到 LIFF app 內頁的固定網址，用 liff.permanentLink 產生,https://developers.line.biz/en/glossary/#permanent-link-liff
+Verified MINI App,已驗證 MINI App,mini-app,通過 LINE 審查的 LINE MINI App，可使用服務訊息等完整功能並出現在服務列表,https://developers.line.biz/en/glossary/#verified-mini-app
+Unverified MINI App,未驗證 MINI App,mini-app,尚未通過審查的 LINE MINI App，功能受限且 header 會顯示 endpoint 網域,https://developers.line.biz/en/glossary/#unverified-mini-app
+Template message,樣板訊息,message,版型固定的訊息型別，含 buttons / confirm / carousel / image_carousel 四種,https://developers.line.biz/en/glossary/#template-message
+Buttons template message,按鈕樣板訊息,message,圖片加標題、內文與最多 4 個按鈕的樣板訊息,https://developers.line.biz/en/glossary/#buttons-template-message
+Confirm template message,確認樣板訊息,message,一段文字加剛好 2 個按鈕的樣板訊息，用於是/否確認,https://developers.line.biz/en/glossary/#confirm-template-message
+Carousel template message,輪播樣板訊息,message,可橫向滑動的多欄樣板訊息，最多 10 欄、每欄最多 3 個動作,https://developers.line.biz/en/glossary/#carousel-template-message
+Image carousel template message,圖片輪播樣板訊息,message,純圖片的橫向輪播樣板訊息，最多 10 欄、每欄 1 個動作,https://developers.line.biz/en/glossary/#image-carousel-template-message
+Imagemap message,圖片地圖訊息,message,一張大圖切成多個可點擊區塊的訊息型別，最多 50 個區塊,https://developers.line.biz/en/glossary/#imagemap-message
+Message sticker,訊息貼圖,sticker,附帶文字的貼圖；webhook 的 sticker 訊息事件可取得該文字,https://developers.line.biz/en/glossary/#message-sticker
+Custom sticker,自訂貼圖,sticker,使用者可自行填入文字的貼圖；透過 webhook 取不到使用者填的文字,https://developers.line.biz/en/glossary/#custom-sticker
+Rich menu alias,圖文選單別名,richmenu,指向某個 richMenuId 的別名，供 richmenuswitch 動作即時切換選單分頁，每個帳號上限 1000 個,https://developers.line.biz/en/glossary/#rich-menu-alias
+LINE Beacon,LINE Beacon,beacon,使用者靠近訊標硬體時，官方帳號會收到 beacon webhook 事件的機制,https://developers.line.biz/en/glossary/#line-beacon
+LINE Simple Beacon,LINE Simple Beacon,beacon,提供給 bot 開發者的訊標硬體規格,https://developers.line.biz/en/glossary/#line-simple-beacon
+Beacon banner,訊標橫幅,beacon,使用者被訊標偵測到時，在 LINE 好友或聊天列表上方出現的橫幅,https://developers.line.biz/en/glossary/#beacon-banner
+LINE Login button,LINE Login 按鈕,login,LINE 提供的標準登入按鈕，外觀須遵守設計規範,https://developers.line.biz/en/glossary/#line-login-button
+LINE API Expert,LINE API Expert,community,LY Corporation 認證、對 LINE API 社群有貢獻的外部開發者,https://developers.line.biz/en/glossary/#line-api-expert
+E.164,E.164,format,國際電話號碼格式（含國碼、無分隔符號）；LINE 通知訊息指定收訊號碼時使用,https://developers.line.biz/en/glossary/#e164
+Life cycle,生命週期,lifecycle,服務版本的四個階段：Active、Maintaining、Deprecated、End-of-life,https://developers.line.biz/en/glossary/#life-cycle
+Active,Active,lifecycle,生命週期第一階段：對應目前的主要版本，會持續新增功能並修 bug 與安全問題,https://developers.line.biz/en/glossary/#active
+Maintaining,Maintaining,lifecycle,生命週期第二階段：不再新增功能，但仍會修 bug 與安全問題,https://developers.line.biz/en/glossary/#maintaining
+Deprecated,Deprecated,lifecycle,生命週期第三階段：不再新增功能，也不再修 bug 與安全問題，不建議繼續使用,https://developers.line.biz/en/glossary/#deprecated
+End-of-life,End-of-life,lifecycle,生命週期最後階段：該產品或版本已無法再使用,https://developers.line.biz/en/glossary/#end-of-life

@@ -24,6 +24,7 @@ line-api/            ← 要發佈的技能本體（複製到 ~/.claude/skills/l
 tools/               ← 只在這個 repo 用，不隨技能安裝
   fetch_sources.py     抓來源到 .docs-cache/
   build_dataset.py     由 .docs-cache/ 產生 line-api/data/*.csv
+  discover_pages.py    走站上 HTML 導覽，找出 llms.txt 漏列的頁面
   check_links.py       驗證所有 doc_url
   audit_coverage.py    逐條比對官方文件與資料集的覆蓋缺口
 
@@ -51,6 +52,7 @@ tools/               ← 只在這個 repo 用，不隨技能安裝
 | `reasoning.csv` | 人工撰寫 | ✅ |
 | `deprecations.csv` | 人工撰寫 | ✅ |
 | `glossary.csv` | 人工撰寫（中英術語對照） | ✅ |
+| `terms.csv` | 人工撰寫（官方術語的中文定義；錨點須與官方一致） | ✅ |
 
 改自動產生的資料要改產生器，然後重跑：
 
@@ -85,13 +87,13 @@ python line-api/scripts/test_line.py
 
 ```bash
 # 重建整條資料管線
-python tools/fetch_sources.py          # 需要網路，約 220 頁 + git clone
+python tools/fetch_sources.py          # 需要網路，約 231 頁 + git clone
 python tools/build_dataset.py
 python tools/check_links.py --md
 python tools/audit_coverage.py      # A/B/C/E 應為 0（Template 基底除外）
 
 # 測試
-python line-api/scripts/test_line.py            # 離線 36 項
+python line-api/scripts/test_line.py            # 離線 37 項
 python line-api/scripts/test_line.py --live     # 加 4 項實打 LINE API
 
 # 技能本身的工具

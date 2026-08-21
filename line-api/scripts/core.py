@@ -112,6 +112,12 @@ CSV_CONFIG: Dict[str, dict] = {
         "output_cols": ["schema", "field", "constraint", "value", "description"],
         "label": "數值限制",
     },
+    "term": {
+        "file": "terms.csv",
+        "search_cols": ["term", "term_zh", "definition", "category"],
+        "output_cols": ["term", "term_zh", "category", "definition", "doc_url"],
+        "label": "官方術語",
+    },
     "product": {
         "file": "products.csv",
         "search_cols": ["product", "product_zh", "what_it_is", "use_when", "key_apis", "channel_type"],
@@ -179,6 +185,8 @@ DOMAIN_KEYWORDS: Dict[str, List[str]] = {
     "error": ["error", "400", "401", "403", "404", "409", "429", "500", "錯誤", "失敗"],
     "limit": ["limit", "max", "maximum", "限制", "上限", "最多", "長度"],
     "product": ["product", "login", "mini app", "social plugin", "beacon", "產品", "選哪個"],
+    "term": ["glossary", "terminology", "what is", "術語", "名詞", "是什麼", "定義",
+             "provider", "channel secret", "mid", "subprofile", "target reach"],
     "token": ["token", "access token", "jwt", "channel secret", "權杖", "認證", "授權"],
     "troubleshoot": ["troubleshoot", "problem", "not working", "fail", "怎麼辦",
                      "問題", "排解", "為什麼", "收不到", "驗證失敗", "沒反應", "沒收到", "無法"],
