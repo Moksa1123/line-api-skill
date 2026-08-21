@@ -8,8 +8,8 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/endpoints-121-success?style=flat-square" alt="121 endpoints">
-  <img src="https://img.shields.io/badge/fields-1492-blue?style=flat-square" alt="1492 fields">
-  <img src="https://img.shields.io/badge/dataset-2726%20rows-orange?style=flat-square" alt="2726 rows">
+  <img src="https://img.shields.io/badge/fields-1584-blue?style=flat-square" alt="1584 fields">
+  <img src="https://img.shields.io/badge/dataset-2825%20rows-orange?style=flat-square" alt="2825 rows">
   <img src="https://img.shields.io/badge/python-3.9%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.9+">
   <img src="https://img.shields.io/badge/dependencies-0-brightgreen?style=flat-square" alt="zero dependencies">
 </p>
@@ -22,7 +22,7 @@
 
 它把 **https://developers.line.biz 的全部文件**與
 **[`line/line-openapi`](https://github.com/line/line-openapi) 官方 OpenAPI 規格**
-萃取成一份 2,726 筆的可搜尋資料庫，並附上能實際執行的驗證與 API 工具。
+萃取成一份 2,825 筆的可搜尋資料庫，並附上能實際執行的驗證與 API 工具。
 
 AI 助理因此不必憑記憶回答 LINE API 問題——欄位名稱、字數上限、
 enum 可用值、rate limit、錯誤碼全部查得到，而且每一筆都附官方文件連結。
@@ -33,9 +33,9 @@ enum 可用值、rate limit、錯誤碼全部查得到，而且每一筆都附�
 line-api/
 ├── SKILL.md                 技能說明（AI 讀這份）
 ├── EXAMPLES.md              程式碼範例集
-├── data/                    19 個 CSV，共 2,726 筆
+├── data/                    19 個 CSV，共 2,825 筆
 │   ├── endpoints.csv            121 個端點（method / host / path / rate limit / auth）
-│   ├── parameters.csv          1492 個請求與回應欄位（含字數上限）
+│   ├── parameters.csv          1584 個請求/回應欄位（8 份官方 reference，含 LIFF SDK）
 │   ├── message-objects.csv      142 訊息物件 / template / imagemap action
 │   ├── flex-components.csv      136 Flex 容器、元件、樣式
 │   ├── actions.csv               34 action 物件
@@ -108,7 +108,7 @@ python scripts/test_line.py --live
 | `validate.py` | 離線驗證訊息 / Flex / request body：型別、必填、typo、enum、上限、已淘汰元件 |
 | `signature.py` | webhook 簽章驗證；channel access token（含純 Python 實作的 RS256 JWT） |
 | `lineapi.py` | 零依賴 Messaging API client，自動切換 `api.line.me` / `api-data.line.me` |
-| `test_line.py` | 34 項離線測試 + 4 項線上測試 |
+| `test_line.py` | 36 項離線測試 + 4 項線上測試 |
 
 ## 資料怎麼來的
 

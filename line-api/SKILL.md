@@ -7,7 +7,7 @@ user-invocable: true
 # LINE Platform 開發技能
 
 > 資料全部由 [`line/line-openapi`](https://github.com/line/line-openapi) 官方 OpenAPI 規格
-> 與 https://developers.line.biz 官方文件自動萃取，共 **2726 筆**。
+> 與 https://developers.line.biz 官方文件自動萃取，共 **2825 筆**。
 > 每一筆都附官方文件連結，且連結經 `tools/check_links.py` 實際驗證過。
 
 ## 何時使用
@@ -55,7 +55,7 @@ python scripts/lineapi.py validate-push --json m.json  # LINE 官方驗證端點
 | 域 | 內容 | 筆數 |
 |---|---|---|
 | `endpoint` | 全部 API 端點（method / host / path / rate limit / auth） | 121 |
-| `parameter` | 每支端點的請求與回應欄位（含字數上限） | 1492 |
+| `parameter` | 每支端點與 LIFF SDK 的請求/回應欄位（含字數上限） | 1584 |
 | `message` | 11 種訊息物件 + template + imagemap action | 142 |
 | `flex` | Flex Message 容器、元件、樣式 | 136 |
 | `action` | 9 種 action 物件 | 34 |

@@ -157,6 +157,75 @@ def t_webhook_events():
     return f"{len(events)} 種事件（含 message 子型別）"
 
 
+@check("dataset: 每一份官方 reference 都真的被處理過")
+def t_every_reference_processed():
+    """擋住最難察覺的疏漏：整份文件沒被列入處理清單。
+
+    liff.md（LIFF 客戶端 SDK、92 個參數區塊）就曾經這樣被漏掉——所有測試
+    都是綠的，但整個 LIFF 的欄位資料根本不存在。
+    """
+    cache = HERE.parent.parent / ".docs-cache" / "raw" / "en" / "reference"
+    if not cache.exists():
+        raise _Skip("沒有 .docs-cache（只有維護者跑得到）")
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "bd", HERE.parent.parent / "tools" / "build_dataset.py")
+    bd = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(bd)
+
+    params = rows("parameters.csv")
+    got = {}
+    for r in params:
+        got[r["api"]] = got.get(r["api"], 0) + 1
+
+    problems = []
+    for path in sorted(cache.glob("*.md")):
+        blocks = path.read_text(encoding="utf-8").count("<!-- parameter start")
+        entry = bd.REF_FILES.get(path.name)
+        if entry is None:
+            problems.append(f"{path.name} 有 {blocks} 個參數區塊卻沒列入 REF_FILES")
+        elif blocks and not got.get(entry[0]):
+            problems.append(f"{path.name} 已列入卻萃取到 0 筆")
+    assert not problems, "; ".join(problems)
+    return f"{len(list(cache.glob('*.md')))} 份 reference 全部處理完畢"
+
+
+@check("dataset: 五大產品線都有實際資料（Flex / bot / LIFF / MINI App / Login）")
+def t_product_coverage():
+    params = rows("parameters.csv")
+    eps = rows("endpoints.csv")
+    per_api = {}
+    for r in params:
+        per_api[r["api"]] = per_api.get(r["api"], 0) + 1
+
+    # 每個產品線的參數數量下限。liff 曾經是 0——整份 liff.md 沒被列入
+    # REF_FILES，所有測試卻都是綠的，所以這裡直接把門檻釘死。
+    floors = {
+        "messaging-api": 1000,   # Flex / bot / 圖文選單 / 推播都在這裡
+        "liff": 80,              # LIFF 客戶端 SDK
+        "liff-server": 30,
+        "line-login": 50,
+        "line-login-v2": 25,
+        "line-mini-app": 60,
+        "line-notification-messages": 20,
+        "partner-docs": 50,
+    }
+    for api, floor in floors.items():
+        got = per_api.get(api, 0)
+        assert got >= floor, f"{api} 只有 {got} 個參數，預期至少 {floor}"
+
+    # LIFF 客戶端的關鍵欄位必須查得到
+    liff_params = {r["parameter"] for r in params if r["api"] == "liff"}
+    for want in ("config.liffId", "availability", "menuColorSetting"):
+        assert want in liff_params, f"LIFF 參數缺少 {want}"
+
+    # 端點若被多份文件記載，also_in 要保留另一邊的產品線
+    multi = [r for r in eps if r["also_in"]]
+    assert multi, "沒有任何端點標記 also_in，跨文件端點的來源資訊掉了"
+    return (f"{len(floors)} 個產品線都達標；LIFF {per_api.get('liff', 0)} 個參數；"
+            f"{len(multi)} 支跨文件端點有標記")
+
+
 @check("dataset: webhook 事件有逐欄位的型別與說明")
 def t_webhook_properties():
     rows_ = rows("webhook-properties.csv")

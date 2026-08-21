@@ -172,6 +172,13 @@ line-login,endpoint-error,Verify ID token,IdToken expired.,The ID token has expi
 line-login,endpoint-error,Verify ID token,Invalid IdToken Audience.,The ID token's Audience value is different from the client_id specified in the request.,https://developers.line.biz/en/reference/line-login/#verify-id-token
 line-login,endpoint-error,Verify ID token,Invalid IdToken Nonce.,The ID token's Nonce value is different from the nonce specified in the request.,https://developers.line.biz/en/reference/line-login/#verify-id-token
 line-login,endpoint-error,Verify ID token,Invalid IdToken Subject Identifier.,The ID token's SubjectIdentifier value is different from the user_id specified in the request.,https://developers.line.biz/en/reference/line-login/#verify-id-token
+liff,endpoint-error,liff.permission.requestAll(),FORBIDDEN,All permissions have already been approved.,https://developers.line.biz/en/reference/liff/#liffpermissionrequestall
+liff,endpoint-error,liff.permission.requestAll(),INVALID_ARGUMENT,"officialAccount.id must start with ""@"".",https://developers.line.biz/en/reference/liff/#liffpermissionrequestall
+liff,endpoint-error,liff.getFriendship(),400,Bot not found,https://developers.line.biz/en/reference/liff/#liffgetfriendship
+liff,endpoint-error,liff.getFriendship(),403,LOGIN_MULTI_LINKED_BOT_PROMPT feature license is required.,https://developers.line.biz/en/reference/liff/#liffgetfriendship
+liff,endpoint-error,liff.getFriendship(),INVALID_ARGUMENT,"officialAccountId must start with ""@"".",https://developers.line.biz/en/reference/liff/#liffgetfriendship
+liff,endpoint-error,liff.requestFriendship(),FORBIDDEN,No bot could be resolved for the request.,https://developers.line.biz/en/reference/liff/#liffrequestfriendship
+liff,endpoint-error,liff.requestFriendship(),INVALID_ARGUMENT,"officialAccount.id must start with ""@"".",https://developers.line.biz/en/reference/liff/#liffrequestfriendship
 liff-server,endpoint-error,Adding the LIFF app to a channel,400,This status code means one of the following:<ul><li>The request contains an invalid value.</li><li>The maximum number of LIFF apps that can be added to the channel has been reached.</li></ul>,https://developers.line.biz/en/reference/liff-server/#adding-the-liff-app-to-a-channel
 liff-server,endpoint-error,Adding the LIFF app to a channel,401,Authentication failed.,https://developers.line.biz/en/reference/liff-server/#adding-the-liff-app-to-a-channel
 liff-server,endpoint-error,Update LIFF app settings,400,The request contains an invalid value.,https://developers.line.biz/en/reference/liff-server/#update-liff-app-settings

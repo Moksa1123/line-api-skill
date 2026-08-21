@@ -42,6 +42,7 @@ tools/               ← 只在這個 repo 用，不隨技能安裝
 | `webhook-events.csv` | `webhook.yml` discriminator | ❌ |
 | `webhook-properties.csv` | `webhook.yml` 全部聯集與具名物件 | ❌ |
 | `liff-api.csv` | LIFF reference 的 `### liff.*` 區塊 | ❌ |
+| `parameters.csv` 的 liff 部分 | `liff.md` 的參數區塊 | ❌ |
 | `error-codes.csv` / `limits.csv` | reference 表格 + OpenAPI 約束 | ❌ |
 | `emoji.csv` / `stickers.csv` | emoji-list / sticker-list 頁面 | ❌ |
 | `products.csv` | 人工撰寫 | ✅ |
@@ -64,13 +65,20 @@ python line-api/scripts/test_line.py
    `.docs-cache/raw/` 或 `line-openapi/*.yml` 找到出處。找不到就不要寫。
 2. **腳本只用 Python 標準函式庫。** 技能會被複製到別人的環境，不能要求裝套件。
    （`tools/build_dataset.py` 例外，它需要 PyYAML，但只有維護者會跑。）
-3. **每筆資料都要有 `doc_url`**，且必須通過 `tools/check_links.py`。
+3. **新增 reference 檔一定要同時加進 `REF_FILES`。**
+   `liff.md` 曾經被抓下來卻沒列入處理清單，結果整個 LIFF 客戶端 SDK 的
+   92 個參數區塊都不存在，而所有測試依然是綠的。
+   `tools/audit_coverage.py` 的 [S] 區塊與 `test_line.py` 現在都會擋這種情況。
+4. **解析文件時要略過 ``` 程式碼區塊。**
+   官方 shell 範例裡有 `# Example of ...` 這種註解，長得跟 h1 標題一樣，
+   會讓解析器誤判章節結束。統一走 `fence_mask()`。
+5. **每筆資料都要有 `doc_url`**，且必須通過 `tools/check_links.py`。
    developers.line.biz 是 Nuxt SPA，不存在的路徑也會回 200，
    所以檢查器會看 `data-ssr` 與 redirect meta，不要簡化成只看狀態碼。
-4. **`.docs-cache/` 永遠不 commit。** 那是 LY Corporation 的內容。
-5. **改任何東西後跑測試**：`python line-api/scripts/test_line.py`。
+6. **`.docs-cache/` 永遠不 commit。** 那是 LY Corporation 的內容。
+7. **改任何東西後跑測試**：`python line-api/scripts/test_line.py`。
    有 channel access token 時再跑一次 `--live`。
-6. **憑證不進 repo**：`.env`、`*.key`、`*.jwk` 都已在 `.gitignore`。
+8. **憑證不進 repo**：`.env`、`*.key`、`*.jwk` 都已在 `.gitignore`。
    範例一律用 `os.environ[...]` 讀。
 
 ## 常用指令
@@ -83,7 +91,7 @@ python tools/check_links.py --md
 python tools/audit_coverage.py      # A/B/C/E 應為 0（Template 基底除外）
 
 # 測試
-python line-api/scripts/test_line.py            # 離線 34 項
+python line-api/scripts/test_line.py            # 離線 36 項
 python line-api/scripts/test_line.py --live     # 加 4 項實打 LINE API
 
 # 技能本身的工具

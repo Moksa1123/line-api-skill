@@ -61,6 +61,39 @@ SCHEMA_FILES = [
 ]
 
 
+def source_coverage() -> list[tuple[str, int, int, str]]:
+    """每個抓下來的 reference 檔，實際被萃取出多少參數。
+
+    這一項是為了擋住最嚴重也最難察覺的一種疏漏：整份文件根本沒被列進
+    REF_FILES。liff.md（LIFF 客戶端 SDK，92 個參數區塊）就這樣被漏掉過，
+    表面上每個測試都綠，實際上整個 LIFF 的欄位資料都不存在。
+    """
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("bd", REPO / "tools" / "build_dataset.py")
+    bd = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(bd)
+
+    ref_dir = REPO / ".docs-cache" / "raw" / "en" / "reference"
+    params = load("parameters.csv")
+    got = defaultdict(int)
+    for r in params:
+        got[r.get("api", "")] += 1
+
+    out = []
+    for path in sorted(ref_dir.glob("*.md")) if ref_dir.exists() else []:
+        blocks = path.read_text(encoding="utf-8").count("<!-- parameter start")
+        entry = bd.REF_FILES.get(path.name)
+        if entry is None:
+            out.append((path.name, blocks, 0, "未列入 REF_FILES"))
+            continue
+        api = entry[0]
+        extracted = got.get(api, 0)
+        note = "OK" if extracted else "已列入但萃取到 0 筆"
+        out.append((path.name, blocks, extracted, note))
+    return out
+
+
 def rate_limit_gaps(endpoints: list[dict]) -> tuple[list[dict], list[dict]]:
     """把缺 rate_limit 的端點分成兩類。
 
@@ -208,6 +241,23 @@ def main() -> int:
     print("=" * 90)
     print("LINE API skill — 官方文件覆蓋率稽核")
     print("=" * 90)
+
+    src = source_coverage()
+    unprocessed = [x for x in src if x[3] != "OK"]
+    print("\n[S] 來源檔處理狀況（參數區塊 → 實際萃取）")
+    for name, blocks, extracted, note in src:
+        flag = "  " if note == "OK" else "!!"
+        print(f"  {flag} {name:32} {blocks:5} 區塊 → {extracted:5} 筆   {note}")
+
+    print("\n[P] 各產品線資料量")
+    eps_all = load("endpoints.csv")
+    errs_all = load("error-codes.csv")
+    apis = sorted({r["api"] for r in eps_all} | {r["api"] for r in params})
+    print(f"  {'產品線':26} {'端點':>6} {'參數':>7} {'錯誤':>7}")
+    for a in apis:
+        print(f"  {a:26} {sum(1 for r in eps_all if r['api'] == a):6}"
+              f" {sum(1 for r in params if r['api'] == a):7}"
+              f" {sum(1 for r in errs_all if r['api'] == a):7}")
     print(f"文件參數區塊 {len(params)} 個｜schema {len(schema_rows)} 個｜"
           f"端點 {len(endpoints)} 個")
 
@@ -233,9 +283,10 @@ def main() -> int:
     print(f"\n[G] webhook：{len(webhook)} 種事件、{len(wprops)} 個欄位"
           f"（{described} 個有官方說明）")
 
-    blocking = len(unmapped) + len(doc_only) + len(missing_detail) + len(missed_rate)
+    blocking = (len(unmapped) + len(doc_only) + len(missing_detail)
+                + len(missed_rate) + len(unprocessed))
     print("\n" + "-" * 90)
-    print(f"A+B+C+E 共 {blocking} 個需要處理的缺口"
+    print(f"S+A+B+C+E 共 {blocking} 個需要處理的缺口"
           f"｜B' {len(elsewhere)}｜D {len(spec_only)}"
           f"｜E' {len(no_rate_in_docs)}（官方未公開）｜F {len(liff_no_syntax)}")
     return 1 if (args.strict and blocking) else 0

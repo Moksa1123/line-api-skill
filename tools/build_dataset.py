@@ -100,6 +100,7 @@ REF_FILES = {
     "messaging-api.md": ("messaging-api", "https://developers.line.biz/en/reference/messaging-api/"),
     "line-login.md": ("line-login", "https://developers.line.biz/en/reference/line-login/"),
     "line-login-v2.md": ("line-login-v2", "https://developers.line.biz/en/reference/line-login-v2/"),
+    "liff.md": ("liff", "https://developers.line.biz/en/reference/liff/"),
     "liff-server.md": ("liff-server", "https://developers.line.biz/en/reference/liff-server/"),
     "line-mini-app.md": ("line-mini-app", "https://developers.line.biz/en/reference/line-mini-app/"),
     "line-notification-messages.md": ("line-notification-messages", "https://developers.line.biz/en/reference/line-notification-messages/"),
@@ -212,12 +213,24 @@ def build_endpoints(specs) -> list[dict]:
             rows.extend(parse_reference(p, api, base))
 
     idx = spec_index(specs)
+
+    # 同一支 URL 可能被兩份 reference 記載（/v2/oauth/accessToken 同時出現在
+    # Messaging API 與 LINE Login v2.0），去重會只留第一份、把另一份的產品線
+    # 標籤蓋掉。用 also_in 保留「這支端點還出現在哪些文件」。
+    documented_in: dict[tuple, list[str]] = {}
+    for r in rows:
+        key = (r["method"], re.sub(r"\{[^}]+\}", "{}", (r["host"] + r["path"]).rstrip("/")))
+        documented_in.setdefault(key, [])
+        if r["api"] not in documented_in[key]:
+            documented_in[key].append(r["api"])
+
     seen, out = set(), []
     for r in rows:
         key = (r["method"], re.sub(r"\{[^}]+\}", "{}", (r["host"] + r["path"]).rstrip("/")))
         if key in seen:
             continue
         seen.add(key)
+        r["also_in"] = ",".join(a for a in documented_in[key] if a != r["api"])
         hit = idx.get(key)
         if hit:
             r["operation_id"] = hit["operation_id"]
@@ -241,6 +254,7 @@ def build_endpoints(specs) -> list[dict]:
             "path": url[len(host):], "query_params": "", "rate_limit": "",
             "operation_id": hit["operation_id"], "spec": hit["spec"],
             "description": hit["description"], "auth": "channel access token",
+            "also_in": "",
             "doc_url": "https://developers.line.biz/en/reference/messaging-api/",
         })
     return sorted(out, key=lambda r: (r["api"], r["path"], r["method"]))
@@ -1006,8 +1020,9 @@ def main() -> int:
     print("Generating line-api/data/ ...")
 
     write_csv("endpoints.csv",
-              ["api", "category", "title", "method", "host", "path", "query_params",
-               "auth", "rate_limit", "operation_id", "spec", "description", "doc_url"],
+              ["api", "also_in", "category", "title", "method", "host", "path",
+               "query_params", "auth", "rate_limit", "operation_id", "spec",
+               "description", "doc_url"],
               build_endpoints(specs))
 
     write_csv("webhook-properties.csv", SCHEMA_FIELDS,
