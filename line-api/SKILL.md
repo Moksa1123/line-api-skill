@@ -7,7 +7,7 @@ user-invocable: true
 # LINE Platform 開發技能
 
 > 資料全部由 [`line/line-openapi`](https://github.com/line/line-openapi) 官方 OpenAPI 規格
-> 與 https://developers.line.biz 官方文件自動萃取，共 **2882 筆**。
+> 與 https://developers.line.biz 官方文件自動萃取，共 **3379 筆**。
 > 每一筆都附官方文件連結，且連結經 `tools/check_links.py` 實際驗證過。
 
 ## 何時使用
@@ -50,7 +50,7 @@ python scripts/lineapi.py validate-push --json m.json  # LINE 官方驗證端點
 
 ---
 
-## 19 個搜尋域
+## 22 個搜尋域
 
 | 域 | 內容 | 筆數 |
 |---|---|---|
@@ -62,7 +62,10 @@ python scripts/lineapi.py validate-push --json m.json  # LINE 官方驗證端點
 | `richmenu` | 圖文選單物件 | 23 |
 | `webhook` | 20 種 webhook 事件 + 7 種訊息子型別 | 27 |
 | `webhook_field` | 每個 webhook 事件的逐欄位型別與說明 | 247 |
-| `liff` | LIFF SDK v2 全部 API | 35 |
+| `response` | 每支端點回應主體的逐欄位型別 | 218 |
+| `guide` | 221 頁官方指南的標題與各節索引 | 221 |
+| `liff_version` | LIFF 版本沿革（哪一版引進哪個 API） | 58 |
+| `liff` | LIFF SDK v2 全部 API（含引進版本、可否在 init 前呼叫） | 35 |
 | `error` | 狀態碼、錯誤訊息、每支端點的錯誤表 | 226 |
 | `limit` | OpenAPI 明訂的數值限制 | 114 |
 | `term` | 官方術語表（57 條，附中文定義） | 57 |

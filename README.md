@@ -9,7 +9,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/endpoints-121-success?style=flat-square" alt="121 endpoints">
   <img src="https://img.shields.io/badge/fields-1584-blue?style=flat-square" alt="1584 fields">
-  <img src="https://img.shields.io/badge/dataset-2882%20rows-orange?style=flat-square" alt="2882 rows">
+  <img src="https://img.shields.io/badge/dataset-3379%20rows-orange?style=flat-square" alt="3379 rows">
   <img src="https://img.shields.io/badge/python-3.9%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.9+">
   <img src="https://img.shields.io/badge/dependencies-0-brightgreen?style=flat-square" alt="zero dependencies">
 </p>
@@ -22,7 +22,7 @@
 
 它把 **https://developers.line.biz 的全部文件**與
 **[`line/line-openapi`](https://github.com/line/line-openapi) 官方 OpenAPI 規格**
-萃取成一份 2,882 筆的可搜尋資料庫，並附上能實際執行的驗證與 API 工具。
+萃取成一份 3,379 筆的可搜尋資料庫，並附上能實際執行的驗證與 API 工具。
 
 AI 助理因此不必憑記憶回答 LINE API 問題——欄位名稱、字數上限、
 enum 可用值、rate limit、錯誤碼全部查得到，而且每一筆都附官方文件連結。
@@ -33,7 +33,7 @@ enum 可用值、rate limit、錯誤碼全部查得到，而且每一筆都附�
 line-api/
 ├── SKILL.md                 技能說明（AI 讀這份）
 ├── EXAMPLES.md              程式碼範例集
-├── data/                    20 個 CSV，共 2,882 筆
+├── data/                    23 個 CSV，共 3,379 筆
 │   ├── endpoints.csv            121 個端點（method / host / path / rate limit / auth）
 │   ├── parameters.csv          1584 個請求/回應欄位（8 份官方 reference，含 LIFF SDK）
 │   ├── message-objects.csv      142 訊息物件 / template / imagemap action
@@ -42,6 +42,9 @@ line-api/
 │   ├── richmenu.csv              23 圖文選單欄位
 │   ├── webhook-events.csv        27 webhook 事件與訊息子型別
 │   ├── webhook-properties.csv   247 webhook 事件的逐欄位型別與說明
+│   ├── responses.csv            218 每支端點回應主體的逐欄位型別
+│   ├── guides.csv               221 官方指南頁索引（標題 + 各節）
+│   ├── liff-versions.csv         58 LIFF 版本沿革
 │   ├── liff-api.csv              35 LIFF SDK v2 API
 │   ├── error-codes.csv          226 狀態碼與錯誤訊息
 │   ├── limits.csv               114 數值限制
@@ -106,11 +109,11 @@ python scripts/test_line.py --live
 
 | 工具 | 做什麼 |
 |---|---|
-| `search.py` | BM25 搜尋 19 個資料域；中文查詢會自動補上英文術語 |
+| `search.py` | BM25 搜尋 22 個資料域；中文查詢會自動補上英文術語 |
 | `validate.py` | 離線驗證訊息 / Flex / request body：型別、必填、typo、enum、上限、已淘汰元件 |
 | `signature.py` | webhook 簽章驗證；channel access token（含純 Python 實作的 RS256 JWT） |
 | `lineapi.py` | 零依賴 Messaging API client，自動切換 `api.line.me` / `api-data.line.me` |
-| `test_line.py` | 37 項離線測試 + 4 項線上測試 |
+| `test_line.py` | 40 項離線測試 + 4 項線上測試 |
 
 ## 資料怎麼來的
 

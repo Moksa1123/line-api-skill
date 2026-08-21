@@ -567,6 +567,173 @@ def merge_from_docs(schema_rows: list[dict], param_rows: list[dict]) -> list[dic
 # --------------------------------------------------------------------------
 # webhook-events.csv
 # --------------------------------------------------------------------------
+LIFF_VERSION_RE = re.compile(r"^##\s+LIFF\s+v(\d+\.\d+\.\d+)\s+released", re.I)
+LIFF_DATE_RE = re.compile(r"LIFF v(\d+\.\d+\.\d+):\s*([A-Z][a-z]+ \d{1,2}, \d{4})")
+LIFF_API_RE = re.compile(r"`?(liff\.[A-Za-z][A-Za-z0-9.]*\(?\)?)`?")
+
+
+def build_liff_versions() -> list[dict]:
+    """LIFF 版本沿革：版本號、發布日期、該版動到哪些 liff.* API。
+
+    用來回答「shareTargetPicker 要 LIFF 幾版以上」這類問題。只收版本號、
+    日期與 API 名稱這些事實性識別資訊，不轉載公告內文。
+    """
+    path = DOCS / "liff" / "release-notes.md"
+    if not path.exists():
+        return []
+    text = path.read_text(encoding="utf-8")
+    lines = text.splitlines()
+    fenced = fence_mask(lines)
+    marks = [(i, LIFF_VERSION_RE.match(l).group(1))
+             for i, l in enumerate(lines)
+             if not fenced[i] and LIFF_VERSION_RE.match(l)]
+
+    def date_before(idx: int) -> str:
+        """發布日期是版本標題前面那行裸日期（2026/08/17）。"""
+        for back in range(idx - 1, max(idx - 6, -1), -1):
+            m = re.fullmatch(r"(\d{4})/(\d{2})/(\d{2})", lines[back].strip())
+            if m:
+                return "-".join(m.groups())
+        return ""
+
+    rows = []
+    for idx, (start, version) in enumerate(marks):
+        end = marks[idx + 1][0] if idx + 1 < len(marks) else len(lines)
+        body = "\n".join(lines[start:end])
+        apis = []
+        for name in LIFF_API_RE.findall(body):
+            name = name.strip("()")
+            if name.count(".") >= 1 and name not in apis:
+                apis.append(name)
+        rows.append({
+            "version": version,
+            "released": date_before(start),
+            # 不截斷：annotate_liff_introduced 要靠這份完整清單算出
+            # 每個 API 最早出現在哪一版，截掉就會算錯
+            "apis_touched": ",".join(apis),
+            "api_count": len(apis),
+            "doc_url": "https://developers.line.biz/en/docs/liff/release-notes/"
+                       "#liff-v" + version.replace(".", "-"),
+        })
+    return rows
+
+
+def annotate_liff_introduced(liff_rows: list[dict], versions: list[dict]) -> list[dict]:
+    """標出每個 liff.* API 最早出現在哪一版。
+
+    liff-versions.csv 記的是「每一版動到哪些 API」，但開發者真正要問的是
+    「這個 API 要幾版以上」。答案是最舊的那一版，直接算好放進欄位，
+    比讓搜尋去猜可靠。
+    """
+    earliest: dict[str, dict] = {}
+    for v in sorted(versions, key=lambda r: [int(x) for x in r["version"].split(".")]):
+        for api in (v.get("apis_touched") or "").split(","):
+            api = api.strip()
+            if api and api not in earliest:
+                earliest[api] = v
+    for row in liff_rows:
+        base = row["name"].rstrip("()")
+        hit = earliest.get(base)
+        row["introduced_in"] = hit["version"] if hit else ""
+        row["introduced_on"] = hit["released"] if hit else ""
+    return liff_rows
+
+
+def build_guides() -> list[dict]:
+    """221 頁 docs/ 指南的索引。
+
+    先前這 221 頁只被用來抓 emoji 與 sticker 兩份清單，其餘完全沒進資料集，
+    導致「圖文選單怎麼切換」「webhook 重送怎麼處理」這類問題查不到該讀哪一頁。
+    這裡收頁面標題與各節標題（皆為事實性中繼資料），讓搜尋能指到正確的指南。
+    """
+    rows = []
+    for path in sorted(DOCS.rglob("*.md")):
+        rel = path.relative_to(DOCS).as_posix()[:-3]
+        text = path.read_text(encoding="utf-8")
+        lines = text.splitlines()
+        fenced = fence_mask(lines)
+
+        title = ""
+        headings = []
+        for i, ln in enumerate(lines):
+            if fenced[i]:
+                continue
+            m = HEAD_RE.match(ln)
+            if not m:
+                continue
+            level, name = len(m.group(1)), m.group(2).strip()
+            # docs 頁的標題常寫成 "## [Send a sticker](#send-sticker)"
+            name = re.sub(r"^\[(.*?)\]\(#.*\)$", r"\1", name).strip()
+            if level == 1 and not title:
+                title = name
+            elif 2 <= level <= 3 and name:
+                headings.append(name)
+
+        product = rel.split("/")[0]
+        rows.append({
+            "product": product,
+            "page": rel,
+            "title": title or rel.rsplit("/", 1)[-1].replace("-", " "),
+            "sections": " / ".join(dict.fromkeys(headings))[:600],
+            "section_count": len(headings),
+            "doc_url": f"https://developers.line.biz/en/docs/{rel}/",
+        })
+    return rows
+
+
+def build_responses(specs) -> list[dict]:
+    """每支端點回應主體的逐欄位表。
+
+    先前只攤平了「請求」用的 schema，回應完全沒有進資料集——問「GET
+    /v2/bot/info 會回什麼欄位」時查不到任何東西。這裡把每支 operation 的
+    2xx 回應 schema 攤平，並帶上 operation_id 與路徑，讓人用端點名稱就查得到。
+    """
+    rows: list[dict] = []
+    for fname, doc in specs.items():
+        schemas = (doc.get("components") or {}).get("schemas") or {}
+        default = (doc.get("servers") or [{}])[0].get("url", "").rstrip("/")
+        for path, item in (doc.get("paths") or {}).items():
+            for method, op in item.items():
+                if method.upper() not in METHODS:
+                    continue
+                host = (op.get("servers") or [{"url": default}])[0]["url"].rstrip("/")
+                for status, resp in (op.get("responses") or {}).items():
+                    if not str(status).startswith("2"):
+                        continue
+                    body = ((resp.get("content") or {}).get("application/json") or {})
+                    schema_ref = body.get("schema") or {}
+                    name = schema_ref.get("$ref", "").split("/")[-1]
+                    if not name:
+                        continue
+                    info = resolve(schemas, schema_ref)
+                    ext = (info["externalDocs"] or {}).get("url", "")
+                    if not info["properties"]:
+                        rows.append({
+                            "operation_id": op.get("operationId", ""),
+                            "method": method.upper(), "host": host, "path": path,
+                            "status": str(status), "schema": name, "property": "",
+                            "value_type": "", "required": "", "enum": "",
+                            "max_length": "",
+                            "description": one_line((schemas.get(name) or {}).get("description", "")),
+                            "doc_url": ext,
+                        })
+                        continue
+                    for pname, prop in info["properties"].items():
+                        rows.append({
+                            "operation_id": op.get("operationId", ""),
+                            "method": method.upper(), "host": host, "path": path,
+                            "status": str(status), "schema": name, "property": pname,
+                            "value_type": type_of(schemas, prop),
+                            "required": "true" if pname in info["required"] else "false",
+                            "enum": enum_of(prop),
+                            "max_length": max_of(prop),
+                            "description": one_line(
+                                prop.get("description") if isinstance(prop, dict) else ""),
+                            "doc_url": ext,
+                        })
+    return rows
+
+
 WEBHOOK_DOC = "https://developers.line.biz/en/reference/messaging-api/#webhook-event-objects"
 
 # webhook.yml 裡不屬於任何判別聯集的具名物件
@@ -934,6 +1101,9 @@ def build_liff_api() -> list[dict]:
                         "category": section,
                         "syntax": "",
                         "returns": "",
+                        # 文件用一個提示框標註「這個方法可在 liff.init() 之前呼叫」。
+                        # 是很常被問到的事實，抽成欄位而不是留在說明文字裡。
+                        "before_init": "false",
                         "description": "",
                         "_desc": [],
                         "doc_url": "https://developers.line.biz/en/reference/liff/#" + anchor(name),
@@ -944,6 +1114,8 @@ def build_liff_api() -> list[dict]:
         if cur is None:
             continue
         s = ln.strip()
+        if "can be used before the LIFF app is initialized" in s:
+            cur["before_init"] = "true"
         if not s or s.startswith(("<!--", "```", "|", "![")):
             continue
         if sub.startswith("syntax") and not cur["syntax"]:
@@ -1025,6 +1197,21 @@ def main() -> int:
                "description", "doc_url"],
               build_endpoints(specs))
 
+    liff_versions = build_liff_versions()
+    write_csv("liff-versions.csv",
+              ["version", "released", "apis_touched", "api_count", "doc_url"],
+              liff_versions)
+
+    write_csv("guides.csv",
+              ["product", "page", "title", "sections", "section_count", "doc_url"],
+              build_guides())
+
+    write_csv("responses.csv",
+              ["operation_id", "method", "host", "path", "status", "schema",
+               "property", "value_type", "required", "enum", "max_length",
+               "description", "doc_url"],
+              build_responses(specs))
+
     write_csv("webhook-properties.csv", SCHEMA_FIELDS,
               build_webhook_properties(specs))
 
@@ -1086,8 +1273,9 @@ def main() -> int:
               build_limits(specs))
 
     write_csv("liff-api.csv",
-              ["name", "kind", "category", "syntax", "returns", "description", "doc_url"],
-              build_liff_api())
+              ["name", "kind", "category", "before_init", "introduced_in",
+               "introduced_on", "syntax", "returns", "description", "doc_url"],
+              annotate_liff_introduced(build_liff_api(), liff_versions))
 
     write_csv("emoji.csv",
               ["product_id", "emoji_id_from", "emoji_id_to", "count", "emoji_ids"],

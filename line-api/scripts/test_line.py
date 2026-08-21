@@ -83,7 +83,8 @@ def t_dataset_present():
     expected = [
         "endpoints.csv", "parameters.csv", "message-objects.csv", "flex-components.csv",
         "actions.csv", "richmenu.csv", "webhook-events.csv", "liff-api.csv",
-        "webhook-properties.csv",
+        "webhook-properties.csv", "responses.csv", "guides.csv",
+        "liff-versions.csv", "terms.csv",
         "error-codes.csv", "limits.csv", "products.csv", "channel-tokens.csv",
         "troubleshooting.csv", "reasoning.csv", "deprecations.csv", "glossary.csv",
         "emoji.csv", "stickers.csv",
@@ -155,6 +156,66 @@ def t_webhook_events():
     missing = required - events
     assert not missing, f"缺少 webhook 事件：{sorted(missing)}"
     return f"{len(events)} 種事件（含 message 子型別）"
+
+
+@check("dataset: 端點回應欄位有進資料集")
+def t_responses():
+    resp = rows("responses.csv")
+    assert len(resp) >= 180, f"回應欄位只有 {len(resp)} 筆"
+
+    def fields(op):
+        return {r["property"] for r in resp if r["operation_id"] == op}
+
+    # 這些先前完全查不到——只攤平了請求 schema，回應沒有
+    assert {"userId", "basicId", "displayName", "chatMode"} <= fields("getBotInfo")
+    assert "type" in fields("getMessageQuota")
+    assert fields("getProfile"), "getProfile 沒有回應欄位"
+
+    ops = {r["operation_id"] for r in resp}
+    assert len(ops) >= 60, f"只有 {len(ops)} 支端點有回應欄位"
+    return f"{len(resp)} 個回應欄位，涵蓋 {len(ops)} 支端點"
+
+
+@check("dataset: 221 頁官方指南都有索引")
+def t_guides():
+    guides = rows("guides.csv")
+    assert len(guides) >= 200, f"指南只有 {len(guides)} 頁"
+    assert all(g["title"] for g in guides), "有指南頁沒有標題"
+    assert all(g["doc_url"].startswith("https://developers.line.biz/en/docs/")
+               for g in guides), "指南頁的 doc_url 格式錯誤"
+
+    products = {g["product"] for g in guides}
+    for want in ("messaging-api", "liff", "line-login", "line-mini-app"):
+        assert want in products, f"指南索引缺少 {want}"
+
+    titles = " ".join(g["title"] for g in guides)
+    assert "Switch between tabs on rich menus" in titles, "缺少圖文選單切換指南"
+    return f"{len(guides)} 頁、{len(products)} 個產品線"
+
+
+@check("dataset: LIFF 版本沿革能回答『這個 API 要幾版』")
+def t_liff_versions():
+    versions = rows("liff-versions.csv")
+    assert len(versions) >= 50, f"版本只有 {len(versions)} 個"
+    dated = [v for v in versions if v["released"]]
+    assert len(dated) >= 30, f"只有 {len(dated)} 個版本有日期"
+
+    api = rows("liff-api.csv")
+
+    def intro(name):
+        return next((r["introduced_in"] for r in api if r["name"] == name), None)
+
+    # release notes 明確公告過的，一定要算得出來
+    assert intro("liff.shareTargetPicker()") == "2.3.0"
+    assert intro("liff.scanCodeV2()") == "2.15.0"
+
+    # 可在 init() 之前呼叫的方法，是文件用提示框標註的事實
+    before = [r["name"] for r in api if r["before_init"] == "true"]
+    assert "liff.getOS()" in before and "liff.isInClient()" in before, before
+    assert "liff.getProfile()" not in before, "getProfile 需要先 init，不該被標記"
+    return (f"{len(versions)} 版、{len(dated)} 個有日期；"
+            f"{sum(1 for r in api if r['introduced_in'])} 個 API 標出引進版本；"
+            f"{len(before)} 個可在 init 前呼叫")
 
 
 @check("dataset: 官方術語表 57 條全部收錄且錨點正確")

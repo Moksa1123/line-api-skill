@@ -42,6 +42,9 @@ tools/               ← 只在這個 repo 用，不隨技能安裝
 | `actions.csv` / `richmenu.csv` | OpenAPI schema | ❌ |
 | `webhook-events.csv` | `webhook.yml` discriminator | ❌ |
 | `webhook-properties.csv` | `webhook.yml` 全部聯集與具名物件 | ❌ |
+| `responses.csv` | OpenAPI 各 operation 的 2xx 回應 schema | ❌ |
+| `guides.csv` | `docs/**/*.md` 的標題與各節標題 | ❌ |
+| `liff-versions.csv` | LIFF release notes 的版本、日期、API | ❌ |
 | `liff-api.csv` | LIFF reference 的 `### liff.*` 區塊 | ❌ |
 | `parameters.csv` 的 liff 部分 | `liff.md` 的參數區塊 | ❌ |
 | `error-codes.csv` / `limits.csv` | reference 表格 + OpenAPI 約束 | ❌ |
@@ -93,7 +96,7 @@ python tools/check_links.py --md
 python tools/audit_coverage.py      # A/B/C/E 應為 0（Template 基底除外）
 
 # 測試
-python line-api/scripts/test_line.py            # 離線 37 項
+python line-api/scripts/test_line.py            # 離線 40 項
 python line-api/scripts/test_line.py --live     # 加 4 項實打 LINE API
 
 # 技能本身的工具
