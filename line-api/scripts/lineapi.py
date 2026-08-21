@@ -35,9 +35,10 @@ import urllib.request
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from core import use_utf8_stdout  # noqa: E402
+from core import load_dotenv, use_utf8_stdout  # noqa: E402
 
 use_utf8_stdout()
+load_dotenv()
 
 API = "https://api.line.me"
 API_DATA = "https://api-data.line.me"

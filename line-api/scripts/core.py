@@ -24,6 +24,35 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 DATA_DIR = SCRIPT_DIR.parent / "data"
 
 
+def load_dotenv(start: Path | None = None) -> int:
+    """把 .env 裡的設定讀進 os.environ（只用標準函式庫）。
+
+    repo 裡放了 .env.example 要人填憑證，腳本卻只讀 os.environ——寫進 .env
+    根本不會生效。這裡從腳本位置往上找 .env，補上這一段。
+    已存在的環境變數優先，不會被 .env 覆寫。
+    """
+    import os
+
+    here = (start or SCRIPT_DIR).resolve()
+    for folder in [here, *here.parents]:
+        env = folder / ".env"
+        if not env.exists():
+            continue
+        loaded = 0
+        for raw in env.read_text(encoding="utf-8").splitlines():
+            line = raw.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, _, value = line.partition("=")
+            key = key.strip()
+            value = value.strip().strip('"').strip("'")
+            if key and value and key not in os.environ:
+                os.environ[key] = value
+                loaded += 1
+        return loaded
+    return 0
+
+
 def use_utf8_stdout() -> None:
     """Windows consoles default to cp950/cp1252 and mangle the Chinese output."""
     import sys as _sys

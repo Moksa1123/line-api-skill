@@ -6,11 +6,18 @@ Offline tests (always run, no credentials, no network):
     dataset integrity, search engine, message validator, webhook signature,
     RS256 JWT construction, api-data host routing.
 
-Live tests (only with LINE_CHANNEL_ACCESS_TOKEN set):
-    GET /v2/bot/info, /v2/bot/message/quota, webhook endpoint,
-    POST /v2/bot/message/validate/push — LINE's own validator is used to
-    confirm the messages this skill produces are accepted, without sending
-    anything to a user.
+Live tests (--live). 憑證從環境變數或 .env 讀，缺哪個就跳過哪幾項：
+    LINE_CHANNEL_ACCESS_TOKEN
+        GET /v2/bot/info、/v2/bot/message/quota、webhook endpoint，
+        以及 POST /v2/bot/message/validate/push——用 LINE 官方驗證器確認
+        本技能產出的訊息會被接受，且不會發訊息給任何使用者。
+    LINE_CHANNEL_ID + LINE_CHANNEL_SECRET
+        POST /oauth2/v3/token，驗證 stateless token 與 15 分鐘效期。
+    LINE_CHANNEL_ID + LINE_ASSERTION_PRIVATE_KEY (+ LINE_ASSERTION_KID)
+        POST /oauth2/v2.1/token，驗證本專案純標準函式庫實作的 RS256 JWT
+        能被 LINE 伺服器接受——這是唯一能證明簽章實作相容的檢查。
+
+    測試不會印出任何憑證。
 
 Usage
     python scripts/test_line.py
@@ -37,9 +44,10 @@ sys.path.insert(0, str(HERE))
 import core  # noqa: E402
 import signature as sig  # noqa: E402
 import validate as val  # noqa: E402
-from core import use_utf8_stdout  # noqa: E402
+from core import load_dotenv, use_utf8_stdout  # noqa: E402
 
 use_utf8_stdout()
+load_dotenv()
 
 DATA = HERE.parent / "data"
 REFS = HERE.parent / "references"
@@ -1034,7 +1042,37 @@ def live_tests() -> None:
         client.validate_push(messages)   # raises on rejection
         return "離線驗證與 LINE 官方驗證結果一致"
 
-    for fn in (t_info, t_quota, t_webhook, t_validate_live):
+    channel_id = os.environ.get("LINE_CHANNEL_ID")
+    channel_secret = os.environ.get("LINE_CHANNEL_SECRET")
+    jwk_path = os.environ.get("LINE_ASSERTION_PRIVATE_KEY")
+    kid = os.environ.get("LINE_ASSERTION_KID")
+
+    @check("live: 用 channel ID + secret 換 stateless channel access token")
+    def t_stateless():
+        if not (channel_id and channel_secret):
+            raise _Skip("需要 LINE_CHANNEL_ID 與 LINE_CHANNEL_SECRET")
+        result = sig.issue_stateless_token(channel_id, channel_secret)
+        assert result.get("access_token"), result
+        assert result.get("token_type") == "Bearer", result
+        # 官方文件說 stateless token 效期 15 分鐘
+        assert int(result.get("expires_in", 0)) == 900,             f"expires_in 應為 900 秒，實際 {result.get('expires_in')}"
+        return "取得成功，效期 900 秒（不印出 token）"
+
+    @check("live: 純 Python RS256 JWT 能被 LINE 接受並換到 v2.1 token")
+    def t_jwt_live():
+        if not (channel_id and jwk_path):
+            raise _Skip("需要 LINE_CHANNEL_ID 與 LINE_ASSERTION_PRIVATE_KEY")
+        jwk = json.loads(Path(jwk_path).read_text(encoding="utf-8"))
+        if "keys" in jwk:
+            jwk = jwk["keys"][0]
+        assertion = sig.make_jwt(jwk, channel_id, kid=kid or jwk.get("kid"),
+                                 token_exp=86400)
+        result = sig.issue_token_v21(assertion)
+        assert result.get("access_token"), result
+        # 這是唯一能證明本專案自己實作的 RS256 簽章與 LINE 伺服器相容的檢查
+        return f"LINE 接受了本專案簽出的 JWT，token 效期 {result.get('expires_in')} 秒"
+
+    for fn in (t_info, t_quota, t_webhook, t_validate_live, t_stateless, t_jwt_live):
         fn()
 
 
