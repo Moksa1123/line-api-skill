@@ -107,12 +107,32 @@ REF_FILES = {
 }
 
 HEAD_RE = re.compile(r"^(#{1,6})\s+(.*?)\s*$")
+
+
+def fence_mask(lines: list[str]) -> list[bool]:
+    """標出每一行是否位在 ``` 程式碼區塊內。
+
+    非做不可：官方文件的 shell 範例裡有 `# Example of creating rich menu alias A`
+    這種註解，長得跟 h1 標題一模一樣。不濾掉的話解析器會以為章節結束，
+    把後面的 Rate limit、參數區塊整段丟掉。
+    """
+    mask, inside = [], False
+    for ln in lines:
+        if ln.lstrip().startswith("```"):
+            inside = not inside
+            mask.append(True)          # 圍籬本身也不是內容
+            continue
+        mask.append(inside)
+    return mask
+
+
 EP_INLINE = re.compile(r"^Endpoint:\s*`(" + "|".join(METHODS) + r")`\s*`(https?://[^`]+)`")
 EP_BARE = re.compile(r"^`(" + "|".join(METHODS) + r")\s+(https?://[^`]+)`\s*$")
 
 
 def parse_reference(path: Path, api: str, base_url: str) -> list[dict]:
     lines = path.read_text(encoding="utf-8").splitlines()
+    fenced = fence_mask(lines)
     out, cur, section, sub, want_http = [], None, "", "", False
 
     def flush():
@@ -121,7 +141,9 @@ def parse_reference(path: Path, api: str, base_url: str) -> list[dict]:
             out.append(cur)
         cur = None
 
-    for ln in lines:
+    for idx, ln in enumerate(lines):
+        if fenced[idx]:
+            continue
         hm = HEAD_RE.match(ln)
         if hm:
             level, title = len(hm.group(1)), hm.group(2).strip()
@@ -391,7 +413,9 @@ SCHEMA_HEADINGS = {
     "QuickReply": ("Common properties for messages", "Quick reply", ""),
     "QuickReplyItem": ("Common properties for messages", "Quick reply", "items object"),
     "Sender": ("Common properties for messages", "Customize icon and display name", ""),
-    "Emoji": ("Text message (v2)", "Emoji object", ""),
+    # v1 的 emoji 物件寫成 emojis.index / emojis.productId（見 SCHEMA_PREFIXES）；
+    # "Text message (v2)" 底下的 Emoji object 是 v2 substitution，不是同一個 schema
+    "Emoji": ("Text message", "", ""),
     # ---- templates -------------------------------------------------------
     "ButtonsTemplate": ("Template messages", "Buttons template", ""),
     "ConfirmTemplate": ("Template messages", "Confirm template", ""),
@@ -401,13 +425,22 @@ SCHEMA_HEADINGS = {
     "ImageCarouselTemplate": ("Template messages", "Image carousel template", ""),
     "ImageCarouselColumn": ("Template messages", "Image carousel template",
                             "Column object for image carousel"),
+    "TemplateMessage": ("Template messages",
+                        "Common properties of template message objects", ""),
     # ---- imagemap --------------------------------------------------------
-    "ImagemapUriAction": ("Imagemap message", "Imagemap action objects",
+    "URIImagemapAction": ("Imagemap message", "Imagemap action objects",
                           "Imagemap URI action object"),
-    "ImagemapMessageAction": ("Imagemap message", "Imagemap action objects",
+    "MessageImagemapAction": ("Imagemap message", "Imagemap action objects",
                               "Imagemap message action object"),
-    "ImagemapClipboardAction": ("Imagemap message", "Imagemap action objects",
+    "ClipboardImagemapAction": ("Imagemap message", "Imagemap action objects",
                                 "Imagemap clipboard action object"),
+    # the area object's x/y/width/height are documented inside the clipboard
+    # action section; the names don't collide, so the same path works
+    "ImagemapArea": ("Imagemap message", "Imagemap action objects",
+                     "Imagemap clipboard action object"),
+    "ImagemapBaseSize": ("Imagemap message", "", ""),
+    "ImagemapVideo": ("Imagemap message", "", ""),
+    "ImagemapExternalLink": ("Imagemap message", "", ""),
     # ---- flex ------------------------------------------------------------
     "FlexBubble": ("Flex Message", "Container", "Bubble"),
     "FlexCarousel": ("Flex Message", "Container", "Carousel"),
@@ -430,8 +463,34 @@ SCHEMA_HEADINGS = {
     "LocationAction": ("Location action", "", ""),
     "RichMenuSwitchAction": ("Rich menu switch action", "", ""),
     "ClipboardAction": ("Clipboard action", "", ""),
+    # ---- flex block style ------------------------------------------------
+    # FlexBubbleStyles (header/hero/body/footer) and FlexBlockStyle
+    # (backgroundColor/separator/separatorColor) share one section; their
+    # property names don't overlap, so one path serves both.
+    "FlexBubbleStyles": ("Flex Message", "Container", "Objects for the block style"),
+    "FlexBlockStyle": ("Flex Message", "Container", "Objects for the block style"),
+    "FlexBoxLinearGradient": ("Flex Message", "Component", "Box"),
     # ---- rich menu -------------------------------------------------------
-    "RichMenuRequest": ("Create rich menu", "Request body", ""),
+    "RichMenuRequest": ("Rich menu object", "", ""),
+    "RichMenuResponse": ("Rich menu response object", "", ""),
+    "RichMenuSize": ("Rich menu response object", "`size` object", ""),
+    "RichMenuArea": ("Rich menu response object", "Area object", ""),
+    "RichMenuBounds": ("Rich menu response object", "Area object", "`bounds` object"),
+    "RichMenuBatchRequest": ("Replace or unlink the linked rich menus in batches",
+                             "Request body", ""),
+    "RichMenuAliasResponse": ("Get rich menu alias information", "Response", ""),
+}
+
+
+# A few schemas are documented as *nested* properties of their parent rather
+# than in a section of their own — the reference writes "baseSize.width", not
+# "width". The prefix lets the same heading join still find them.
+SCHEMA_PREFIXES = {
+    "ImagemapBaseSize": "baseSize.",
+    "ImagemapVideo": "video.",
+    "ImagemapExternalLink": "video.externalLink.",
+    "FlexBoxLinearGradient": "background.",
+    "Emoji": "emojis.",
 }
 
 
@@ -457,10 +516,14 @@ def merge_from_docs(schema_rows: list[dict], param_rows: list[dict]) -> list[dic
 
     filled = {"max_length": 0, "enum": 0, "default": 0}
     for row in schema_rows:
-        path = SCHEMA_HEADINGS.get(row.get("schema", ""))
+        schema = row.get("schema", "")
+        path = SCHEMA_HEADINGS.get(schema)
         if not path:
             continue
-        doc = by_heading.get((path[0], path[1], path[2], row.get("property", "")))
+        prop = row.get("property", "")
+        prefix = SCHEMA_PREFIXES.get(schema, "")
+        doc = (by_heading.get((path[0], path[1], path[2], prefix + prop))
+               or (by_heading.get((path[0], path[1], path[2], prop)) if prefix else None))
         if not doc:
             continue
 
@@ -490,6 +553,45 @@ def merge_from_docs(schema_rows: list[dict], param_rows: list[dict]) -> list[dic
 # --------------------------------------------------------------------------
 # webhook-events.csv
 # --------------------------------------------------------------------------
+WEBHOOK_DOC = "https://developers.line.biz/en/reference/messaging-api/#webhook-event-objects"
+
+# webhook.yml 裡不屬於任何判別聯集的具名物件
+WEBHOOK_OBJECTS = [
+    "BeaconContent", "CallbackRequest", "ChatControl", "ContentProvider",
+    "DeliveryContext", "Emoji", "EventMode", "FollowDetail", "ImageSet",
+    "JoinedMembers", "LeftMembers", "LinkContent", "Mention", "PnpDelivery",
+    "PostbackContent", "UnsendDetail", "VideoPlayComplete",
+]
+
+WEBHOOK_UNIONS = [
+    ("Event", "event"),
+    ("MessageContent", "message-content"),
+    ("Source", "source"),
+    ("MembershipContent", "membership-content"),
+    ("ModuleContent", "module-content"),
+    ("Mentionee", "mentionee"),
+]
+
+
+def build_webhook_properties(specs) -> list[dict]:
+    """webhook 事件的逐欄位表。
+
+    webhook-events.csv 只列出每個事件有哪些屬性名稱，回答不了「postback.params
+    是什麼型別」「source 有哪幾種」。這裡把 webhook.yml 的 6 個判別聯集與 17 個
+    具名物件全部攤平，補上型別、必填、說明。
+    """
+    doc = specs.get("webhook.yml") or {}
+    schemas = (doc.get("components") or {}).get("schemas") or {}
+    rows: list[dict] = []
+    for parent, group in WEBHOOK_UNIONS:
+        rows.extend(flatten_variants(schemas, parent, group))
+    rows.extend(flatten_named(schemas, WEBHOOK_OBJECTS, "webhook-object"))
+    for r in rows:
+        if not r.get("doc_url"):
+            r["doc_url"] = WEBHOOK_DOC
+    return rows
+
+
 def build_webhook_events(specs) -> list[dict]:
     doc = specs.get("webhook.yml") or {}
     schemas = (doc.get("components") or {}).get("schemas") or {}
@@ -596,10 +698,14 @@ def build_parameters() -> list[dict]:
         if not p.exists():
             continue
         lines = p.read_text(encoding="utf-8").splitlines()
+        fenced = fence_mask(lines)
         h2 = h3 = h4 = h5 = ""
         i = 0
         while i < len(lines):
             ln = lines[i]
+            if fenced[i]:
+                i += 1
+                continue
             hm = HEAD_RE.match(ln)
             if hm:
                 lvl, title = len(hm.group(1)), hm.group(2).strip()
@@ -632,7 +738,8 @@ def build_parameters() -> list[dict]:
                 i += 1
             i += 1
 
-            content = [b for b in body if b.strip() and not b.strip().startswith("<!--")]
+            content = [b for b in body
+                       if b.strip() and not b.strip().startswith(("<!--", "```"))]
             if not content:
                 continue
             name = strip_md(content[0])
@@ -903,6 +1010,9 @@ def main() -> int:
                "auth", "rate_limit", "operation_id", "spec", "description", "doc_url"],
               build_endpoints(specs))
 
+    write_csv("webhook-properties.csv", SCHEMA_FIELDS,
+              build_webhook_properties(specs))
+
     write_csv("webhook-events.csv",
               ["event", "schema", "properties", "required", "description", "doc_url"],
               build_webhook_events(specs))
@@ -939,10 +1049,12 @@ def main() -> int:
                   flatten_variants(msg, "Action", "action", FLEX_DOC), params))
 
     write_csv("richmenu.csv", SCHEMA_FIELDS,
+              merge_from_docs(
               flatten_named(msg, ["RichMenuRequest", "RichMenuResponse", "RichMenuArea",
                                   "RichMenuBounds", "RichMenuSize", "RichMenuBatchRequest",
                                   "RichMenuAliasResponse"], "richmenu",
-                              "https://developers.line.biz/en/reference/messaging-api/#rich-menu-object"))
+                              "https://developers.line.biz/en/reference/messaging-api/#rich-menu-object"),
+              params))
 
     write_csv("parameters.csv",
               ["api", "section", "endpoint", "block", "subblock", "parameter",

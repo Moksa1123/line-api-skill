@@ -40,7 +40,7 @@ message,sticker,StickerMessage,quoteToken,string,false,,,,Quote token of the mes
 message,sticker,StickerMessage,type,string,true,,,,Type of message,https://developers.line.biz/en/reference/messaging-api/#sticker-message
 message,sticker,StickerMessage,quickReply,QuickReply,false,,,,,https://developers.line.biz/en/reference/messaging-api/#sticker-message
 message,sticker,StickerMessage,sender,Sender,false,,,,,https://developers.line.biz/en/reference/messaging-api/#sticker-message
-message,template,TemplateMessage,altText,string,true,,,,,https://developers.line.biz/en/reference/messaging-api/#template-messages
+message,template,TemplateMessage,altText,string,true,,1500,,,https://developers.line.biz/en/reference/messaging-api/#template-messages
 message,template,TemplateMessage,template,Template,true,,,,,https://developers.line.biz/en/reference/messaging-api/#template-messages
 message,template,TemplateMessage,type,string,true,,,,Type of message,https://developers.line.biz/en/reference/messaging-api/#template-messages
 message,template,TemplateMessage,quickReply,QuickReply,false,,,,,https://developers.line.biz/en/reference/messaging-api/#template-messages
@@ -82,15 +82,15 @@ template,confirm,ConfirmTemplate,type,string,true,,,,,
 template,image_carousel,ImageCarouselTemplate,columns,array<ImageCarouselColumn>,true,,10,,,
 template,image_carousel,ImageCarouselTemplate,type,string,true,,,,,
 imagemap-action,clipboard,ClipboardImagemapAction,clipboardText,string,true,,1000,,Text that is copied to the clipboard. Max character limit: 1000,https://developers.line.biz/en/reference/messaging-api/#imagemap-clipboard-action-object
-imagemap-action,clipboard,ClipboardImagemapAction,label,string,false,,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-clipboard-action-object
+imagemap-action,clipboard,ClipboardImagemapAction,label,string,false,,100,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-clipboard-action-object
 imagemap-action,clipboard,ClipboardImagemapAction,type,string,true,,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-clipboard-action-object
 imagemap-action,clipboard,ClipboardImagemapAction,area,ImagemapArea,true,,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-clipboard-action-object
-imagemap-action,message,MessageImagemapAction,text,string,true,,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-action-objects
-imagemap-action,message,MessageImagemapAction,label,string,false,,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-action-objects
+imagemap-action,message,MessageImagemapAction,text,string,true,,400,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-action-objects
+imagemap-action,message,MessageImagemapAction,label,string,false,,100,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-action-objects
 imagemap-action,message,MessageImagemapAction,type,string,true,,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-action-objects
 imagemap-action,message,MessageImagemapAction,area,ImagemapArea,true,,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-action-objects
-imagemap-action,uri,URIImagemapAction,linkUri,string,true,,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-action-objects
-imagemap-action,uri,URIImagemapAction,label,string,false,,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-action-objects
+imagemap-action,uri,URIImagemapAction,linkUri,string,true,,1000,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-action-objects
+imagemap-action,uri,URIImagemapAction,label,string,false,,100,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-action-objects
 imagemap-action,uri,URIImagemapAction,type,string,true,,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-action-objects
 imagemap-action,uri,URIImagemapAction,area,ImagemapArea,true,,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-action-objects
 message-part,Emoji,Emoji,index,integer,false,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
@@ -106,12 +106,12 @@ message-part,ImagemapArea,ImagemapArea,x,integer,true,,,,,https://developers.lin
 message-part,ImagemapArea,ImagemapArea,y,integer,true,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
 message-part,ImagemapArea,ImagemapArea,width,integer,true,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
 message-part,ImagemapArea,ImagemapArea,height,integer,true,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,ImagemapVideo,ImagemapVideo,originalContentUrl,string,false,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,ImagemapVideo,ImagemapVideo,previewImageUrl,string,false,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,ImagemapVideo,ImagemapVideo,originalContentUrl,string,false,,2000,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,ImagemapVideo,ImagemapVideo,previewImageUrl,string,false,,2000,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
 message-part,ImagemapVideo,ImagemapVideo,area,ImagemapArea,false,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
 message-part,ImagemapVideo,ImagemapVideo,externalLink,ImagemapExternalLink,false,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,ImagemapExternalLink,ImagemapExternalLink,linkUri,string,false,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,ImagemapExternalLink,ImagemapExternalLink,label,string,false,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,ImagemapExternalLink,ImagemapExternalLink,linkUri,string,false,,1000,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,ImagemapExternalLink,ImagemapExternalLink,label,string,false,,30,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
 message-part,ImagemapBaseSize,ImagemapBaseSize,height,integer,true,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
 message-part,ImagemapBaseSize,ImagemapBaseSize,width,integer,true,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
 message-part,Template,Template,type,string,true,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects

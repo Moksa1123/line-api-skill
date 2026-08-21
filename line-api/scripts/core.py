@@ -87,6 +87,13 @@ CSV_CONFIG: Dict[str, dict] = {
         "output_cols": ["event", "schema", "required", "properties", "description", "doc_url"],
         "label": "Webhook 事件",
     },
+    "webhook_field": {
+        "file": "webhook-properties.csv",
+        "search_cols": ["type", "schema", "property", "description", "enum", "group"],
+        "output_cols": ["group", "type", "property", "value_type", "required",
+                        "enum", "max_length", "default", "description", "doc_url"],
+        "label": "Webhook 欄位",
+    },
     "liff": {
         "file": "liff-api.csv",
         "search_cols": ["name", "category", "description", "returns", "syntax"],
@@ -165,6 +172,9 @@ DOMAIN_KEYWORDS: Dict[str, List[str]] = {
     "action": ["action", "postback", "datetimepicker", "uri", "動作", "按鈕"],
     "richmenu": ["richmenu", "rich menu", "圖文選單", "選單"],
     "webhook": ["webhook", "event", "follow", "unfollow", "join", "leave", "事件", "回呼"],
+    "webhook_field": ["postback.params", "deliverycontext", "webhookeventid", "replytoken",
+                      "quotetoken", "markasreadtoken", "source.type", "isredelivery",
+                      "事件欄位", "webhook 欄位"],
     "liff": ["liff", "front-end", "前端", "liff.init", "liff."],
     "error": ["error", "400", "401", "403", "404", "409", "429", "500", "錯誤", "失敗"],
     "limit": ["limit", "max", "maximum", "限制", "上限", "最多", "長度"],

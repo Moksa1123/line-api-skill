@@ -7,7 +7,7 @@ user-invocable: true
 # LINE Platform 開發技能
 
 > 資料全部由 [`line/line-openapi`](https://github.com/line/line-openapi) 官方 OpenAPI 規格
-> 與 https://developers.line.biz 官方文件自動萃取，共 **2479 筆**。
+> 與 https://developers.line.biz 官方文件自動萃取，共 **2726 筆**。
 > 每一筆都附官方文件連結，且連結經 `tools/check_links.py` 實際驗證過。
 
 ## 何時使用
@@ -50,7 +50,7 @@ python scripts/lineapi.py validate-push --json m.json  # LINE 官方驗證端點
 
 ---
 
-## 17 個搜尋域
+## 18 個搜尋域
 
 | 域 | 內容 | 筆數 |
 |---|---|---|
@@ -61,6 +61,7 @@ python scripts/lineapi.py validate-push --json m.json  # LINE 官方驗證端點
 | `action` | 9 種 action 物件 | 34 |
 | `richmenu` | 圖文選單物件 | 23 |
 | `webhook` | 20 種 webhook 事件 + 7 種訊息子型別 | 27 |
+| `webhook_field` | 每個 webhook 事件的逐欄位型別與說明 | 247 |
 | `liff` | LIFF SDK v2 全部 API | 35 |
 | `error` | 狀態碼、錯誤訊息、每支端點的錯誤表 | 226 |
 | `limit` | OpenAPI 明訂的數值限制 | 114 |

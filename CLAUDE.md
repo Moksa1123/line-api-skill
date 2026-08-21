@@ -25,6 +25,7 @@ tools/               ← 只在這個 repo 用，不隨技能安裝
   fetch_sources.py     抓來源到 .docs-cache/
   build_dataset.py     由 .docs-cache/ 產生 line-api/data/*.csv
   check_links.py       驗證所有 doc_url
+  audit_coverage.py    逐條比對官方文件與資料集的覆蓋缺口
 
 .docs-cache/         ← 抓下來的官方文件與 line-openapi。git 忽略，絕不 commit
 ```
@@ -39,6 +40,7 @@ tools/               ← 只在這個 repo 用，不隨技能安裝
 | `flex-components.csv` | OpenAPI `FlexComponent` / `FlexContainer` | ❌ |
 | `actions.csv` / `richmenu.csv` | OpenAPI schema | ❌ |
 | `webhook-events.csv` | `webhook.yml` discriminator | ❌ |
+| `webhook-properties.csv` | `webhook.yml` 全部聯集與具名物件 | ❌ |
 | `liff-api.csv` | LIFF reference 的 `### liff.*` 區塊 | ❌ |
 | `error-codes.csv` / `limits.csv` | reference 表格 + OpenAPI 約束 | ❌ |
 | `emoji.csv` / `stickers.csv` | emoji-list / sticker-list 頁面 | ❌ |
@@ -78,9 +80,10 @@ python line-api/scripts/test_line.py
 python tools/fetch_sources.py          # 需要網路，約 220 頁 + git clone
 python tools/build_dataset.py
 python tools/check_links.py --md
+python tools/audit_coverage.py      # A/B/C/E 應為 0（Template 基底除外）
 
 # 測試
-python line-api/scripts/test_line.py            # 離線 26 項
+python line-api/scripts/test_line.py            # 離線 34 項
 python line-api/scripts/test_line.py --live     # 加 4 項實打 LINE API
 
 # 技能本身的工具
@@ -103,6 +106,11 @@ python line-api/scripts/lineapi.py info
 - 驗證器：9 類錯誤（type 錯、缺必填、超長、typo、enum 錯、巢狀 action 錯、陣列超量…）
 - 簽章與 RS256 JWT 與獨立實作結果一致
 - 所有範例 JSON 驗證零 error 零 warning、Python 範例語法正確
+- 輪播三層限制（template 10 欄 / 每欄 3 動作 / Flex 12 bubble）與條件式 text 上限
+- Flex 容器體積（bubble 30KB、carousel 50KB）與同一輪播內 bubble 寬度一致
+- 只寫在文件散文裡的 enum 與預設值（imageAspectRatio、imageSize…）有進資料集
+- camelCase 與點號識別字可用子詞查到（查 multicast 要找得到 MulticastRequest.to）
+- webhook 逐欄位表涵蓋所有事件，且共同屬性型別正確
 
 新增功能請一併補測試。
 

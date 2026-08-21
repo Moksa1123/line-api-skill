@@ -83,6 +83,7 @@ def t_dataset_present():
     expected = [
         "endpoints.csv", "parameters.csv", "message-objects.csv", "flex-components.csv",
         "actions.csv", "richmenu.csv", "webhook-events.csv", "liff-api.csv",
+        "webhook-properties.csv",
         "error-codes.csv", "limits.csv", "products.csv", "channel-tokens.csv",
         "troubleshooting.csv", "reasoning.csv", "deprecations.csv", "glossary.csv",
         "emoji.csv", "stickers.csv",
@@ -154,6 +155,37 @@ def t_webhook_events():
     missing = required - events
     assert not missing, f"缺少 webhook 事件：{sorted(missing)}"
     return f"{len(events)} 種事件（含 message 子型別）"
+
+
+@check("dataset: webhook 事件有逐欄位的型別與說明")
+def t_webhook_properties():
+    rows_ = rows("webhook-properties.csv")
+    assert len(rows_) >= 200, f"webhook 欄位只有 {len(rows_)} 筆"
+
+    def get(schema, prop, col="value_type"):
+        return next((r[col] for r in rows_ if r["schema"] == schema and r["property"] == prop), None)
+
+    # 每個事件都該有的共同屬性，型別要正確
+    assert get("PostbackEvent", "postback") == "PostbackContent"
+    assert get("PostbackEvent", "webhookEventId") == "string"
+    assert get("MessageEvent", "message") == "MessageContent"
+    assert get("FollowEvent", "follow") == "FollowDetail"
+    assert get("DeliveryContext", "isRedelivery") == "boolean"
+    assert get("TextMessageContent", "quoteToken") == "string"
+
+    # source 的三種型別要齊
+    sources = {r["type"] for r in rows_ if r["group"] == "source"}
+    for want in ("user", "group", "room"):
+        assert want in sources, f"source 缺少 {want}（目前 {sorted(sources)}）"
+
+    # 事件屬性表要涵蓋 webhook-events.csv 列出的每一種事件
+    events = {r["event"] for r in rows("webhook-events.csv") if "." not in r["event"]}
+    covered = {r["type"] for r in rows_ if r["group"] == "event"}
+    missing = events - covered
+    assert not missing, f"這些事件沒有欄位表：{sorted(missing)}"
+
+    described = sum(1 for r in rows_ if r["description"])
+    return f"{len(rows_)} 個欄位、{len(covered)} 種事件，{described} 個有說明"
 
 
 @check("dataset: every message / flex / action discriminator is covered")

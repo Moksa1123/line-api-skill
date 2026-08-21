@@ -1,0 +1,248 @@
+group,type,schema,property,value_type,required,enum,max_length,default,description,doc_url
+event,accountLink,AccountLinkEvent,replyToken,string,false,,,,Reply token used to send reply message to this event. This property won't be included if linking the account has failed.,https://developers.line.biz/en/reference/messaging-api/#account-link-event
+event,accountLink,AccountLinkEvent,link,LinkContent,true,,,,,https://developers.line.biz/en/reference/messaging-api/#account-link-event
+event,accountLink,AccountLinkEvent,type,string,true,,,,Type of the event,https://developers.line.biz/en/reference/messaging-api/#account-link-event
+event,accountLink,AccountLinkEvent,source,Source,false,,,,,https://developers.line.biz/en/reference/messaging-api/#account-link-event
+event,accountLink,AccountLinkEvent,timestamp,integer,true,,,,Time of the event in milliseconds.,https://developers.line.biz/en/reference/messaging-api/#account-link-event
+event,accountLink,AccountLinkEvent,mode,EventMode,true,,,,,https://developers.line.biz/en/reference/messaging-api/#account-link-event
+event,accountLink,AccountLinkEvent,webhookEventId,string,true,,,,Webhook Event ID. An ID that uniquely identifies a webhook event. This is a string in ULID format.,https://developers.line.biz/en/reference/messaging-api/#account-link-event
+event,accountLink,AccountLinkEvent,deliveryContext,DeliveryContext,true,,,,,https://developers.line.biz/en/reference/messaging-api/#account-link-event
+event,activated,ActivatedEvent,chatControl,ChatControl,true,,,,,https://developers.line.biz/en/reference/partner-docs/#activated-event
+event,activated,ActivatedEvent,type,string,true,,,,Type of the event,https://developers.line.biz/en/reference/partner-docs/#activated-event
+event,activated,ActivatedEvent,source,Source,false,,,,,https://developers.line.biz/en/reference/partner-docs/#activated-event
+event,activated,ActivatedEvent,timestamp,integer,true,,,,Time of the event in milliseconds.,https://developers.line.biz/en/reference/partner-docs/#activated-event
+event,activated,ActivatedEvent,mode,EventMode,true,,,,,https://developers.line.biz/en/reference/partner-docs/#activated-event
+event,activated,ActivatedEvent,webhookEventId,string,true,,,,Webhook Event ID. An ID that uniquely identifies a webhook event. This is a string in ULID format.,https://developers.line.biz/en/reference/partner-docs/#activated-event
+event,activated,ActivatedEvent,deliveryContext,DeliveryContext,true,,,,,https://developers.line.biz/en/reference/partner-docs/#activated-event
+event,beacon,BeaconEvent,replyToken,string,true,,,,Reply token used to send reply message to this event,https://developers.line.biz/en/reference/messaging-api/#beacon-event
+event,beacon,BeaconEvent,beacon,BeaconContent,true,,,,,https://developers.line.biz/en/reference/messaging-api/#beacon-event
+event,beacon,BeaconEvent,type,string,true,,,,Type of the event,https://developers.line.biz/en/reference/messaging-api/#beacon-event
+event,beacon,BeaconEvent,source,Source,false,,,,,https://developers.line.biz/en/reference/messaging-api/#beacon-event
+event,beacon,BeaconEvent,timestamp,integer,true,,,,Time of the event in milliseconds.,https://developers.line.biz/en/reference/messaging-api/#beacon-event
+event,beacon,BeaconEvent,mode,EventMode,true,,,,,https://developers.line.biz/en/reference/messaging-api/#beacon-event
+event,beacon,BeaconEvent,webhookEventId,string,true,,,,Webhook Event ID. An ID that uniquely identifies a webhook event. This is a string in ULID format.,https://developers.line.biz/en/reference/messaging-api/#beacon-event
+event,beacon,BeaconEvent,deliveryContext,DeliveryContext,true,,,,,https://developers.line.biz/en/reference/messaging-api/#beacon-event
+event,botResumed,BotResumedEvent,type,string,true,,,,Type of the event,https://developers.line.biz/en/reference/partner-docs/#botresumed-event
+event,botResumed,BotResumedEvent,source,Source,false,,,,,https://developers.line.biz/en/reference/partner-docs/#botresumed-event
+event,botResumed,BotResumedEvent,timestamp,integer,true,,,,Time of the event in milliseconds.,https://developers.line.biz/en/reference/partner-docs/#botresumed-event
+event,botResumed,BotResumedEvent,mode,EventMode,true,,,,,https://developers.line.biz/en/reference/partner-docs/#botresumed-event
+event,botResumed,BotResumedEvent,webhookEventId,string,true,,,,Webhook Event ID. An ID that uniquely identifies a webhook event. This is a string in ULID format.,https://developers.line.biz/en/reference/partner-docs/#botresumed-event
+event,botResumed,BotResumedEvent,deliveryContext,DeliveryContext,true,,,,,https://developers.line.biz/en/reference/partner-docs/#botresumed-event
+event,botSuspended,BotSuspendedEvent,type,string,true,,,,Type of the event,https://developers.line.biz/en/reference/partner-docs/#botsuspend-event
+event,botSuspended,BotSuspendedEvent,source,Source,false,,,,,https://developers.line.biz/en/reference/partner-docs/#botsuspend-event
+event,botSuspended,BotSuspendedEvent,timestamp,integer,true,,,,Time of the event in milliseconds.,https://developers.line.biz/en/reference/partner-docs/#botsuspend-event
+event,botSuspended,BotSuspendedEvent,mode,EventMode,true,,,,,https://developers.line.biz/en/reference/partner-docs/#botsuspend-event
+event,botSuspended,BotSuspendedEvent,webhookEventId,string,true,,,,Webhook Event ID. An ID that uniquely identifies a webhook event. This is a string in ULID format.,https://developers.line.biz/en/reference/partner-docs/#botsuspend-event
+event,botSuspended,BotSuspendedEvent,deliveryContext,DeliveryContext,true,,,,,https://developers.line.biz/en/reference/partner-docs/#botsuspend-event
+event,deactivated,DeactivatedEvent,type,string,true,,,,Type of the event,https://developers.line.biz/en/reference/partner-docs/#deactivated-event
+event,deactivated,DeactivatedEvent,source,Source,false,,,,,https://developers.line.biz/en/reference/partner-docs/#deactivated-event
+event,deactivated,DeactivatedEvent,timestamp,integer,true,,,,Time of the event in milliseconds.,https://developers.line.biz/en/reference/partner-docs/#deactivated-event
+event,deactivated,DeactivatedEvent,mode,EventMode,true,,,,,https://developers.line.biz/en/reference/partner-docs/#deactivated-event
+event,deactivated,DeactivatedEvent,webhookEventId,string,true,,,,Webhook Event ID. An ID that uniquely identifies a webhook event. This is a string in ULID format.,https://developers.line.biz/en/reference/partner-docs/#deactivated-event
+event,deactivated,DeactivatedEvent,deliveryContext,DeliveryContext,true,,,,,https://developers.line.biz/en/reference/partner-docs/#deactivated-event
+event,delivery,PnpDeliveryCompletionEvent,delivery,PnpDelivery,true,,,,,https://developers.line.biz/en/docs/partner-docs/line-notification-messages/message-sending-complete-webhook-event/#overview-delivery-webhook-event
+event,delivery,PnpDeliveryCompletionEvent,type,string,true,,,,Type of the event,https://developers.line.biz/en/docs/partner-docs/line-notification-messages/message-sending-complete-webhook-event/#overview-delivery-webhook-event
+event,delivery,PnpDeliveryCompletionEvent,source,Source,false,,,,,https://developers.line.biz/en/docs/partner-docs/line-notification-messages/message-sending-complete-webhook-event/#overview-delivery-webhook-event
+event,delivery,PnpDeliveryCompletionEvent,timestamp,integer,true,,,,Time of the event in milliseconds.,https://developers.line.biz/en/docs/partner-docs/line-notification-messages/message-sending-complete-webhook-event/#overview-delivery-webhook-event
+event,delivery,PnpDeliveryCompletionEvent,mode,EventMode,true,,,,,https://developers.line.biz/en/docs/partner-docs/line-notification-messages/message-sending-complete-webhook-event/#overview-delivery-webhook-event
+event,delivery,PnpDeliveryCompletionEvent,webhookEventId,string,true,,,,Webhook Event ID. An ID that uniquely identifies a webhook event. This is a string in ULID format.,https://developers.line.biz/en/docs/partner-docs/line-notification-messages/message-sending-complete-webhook-event/#overview-delivery-webhook-event
+event,delivery,PnpDeliveryCompletionEvent,deliveryContext,DeliveryContext,true,,,,,https://developers.line.biz/en/docs/partner-docs/line-notification-messages/message-sending-complete-webhook-event/#overview-delivery-webhook-event
+event,follow,FollowEvent,replyToken,string,true,,,,Reply token used to send reply message to this event,https://developers.line.biz/en/reference/messaging-api/#follow-event
+event,follow,FollowEvent,follow,FollowDetail,true,,,,,https://developers.line.biz/en/reference/messaging-api/#follow-event
+event,follow,FollowEvent,type,string,true,,,,Type of the event,https://developers.line.biz/en/reference/messaging-api/#follow-event
+event,follow,FollowEvent,source,Source,false,,,,,https://developers.line.biz/en/reference/messaging-api/#follow-event
+event,follow,FollowEvent,timestamp,integer,true,,,,Time of the event in milliseconds.,https://developers.line.biz/en/reference/messaging-api/#follow-event
+event,follow,FollowEvent,mode,EventMode,true,,,,,https://developers.line.biz/en/reference/messaging-api/#follow-event
+event,follow,FollowEvent,webhookEventId,string,true,,,,Webhook Event ID. An ID that uniquely identifies a webhook event. This is a string in ULID format.,https://developers.line.biz/en/reference/messaging-api/#follow-event
+event,follow,FollowEvent,deliveryContext,DeliveryContext,true,,,,,https://developers.line.biz/en/reference/messaging-api/#follow-event
+event,join,JoinEvent,replyToken,string,true,,,,Reply token used to send reply message to this event,https://developers.line.biz/en/reference/messaging-api/#join-event
+event,join,JoinEvent,type,string,true,,,,Type of the event,https://developers.line.biz/en/reference/messaging-api/#join-event
+event,join,JoinEvent,source,Source,false,,,,,https://developers.line.biz/en/reference/messaging-api/#join-event
+event,join,JoinEvent,timestamp,integer,true,,,,Time of the event in milliseconds.,https://developers.line.biz/en/reference/messaging-api/#join-event
+event,join,JoinEvent,mode,EventMode,true,,,,,https://developers.line.biz/en/reference/messaging-api/#join-event
+event,join,JoinEvent,webhookEventId,string,true,,,,Webhook Event ID. An ID that uniquely identifies a webhook event. This is a string in ULID format.,https://developers.line.biz/en/reference/messaging-api/#join-event
+event,join,JoinEvent,deliveryContext,DeliveryContext,true,,,,,https://developers.line.biz/en/reference/messaging-api/#join-event
+event,leave,LeaveEvent,type,string,true,,,,Type of the event,https://developers.line.biz/en/reference/messaging-api/#leave-event
+event,leave,LeaveEvent,source,Source,false,,,,,https://developers.line.biz/en/reference/messaging-api/#leave-event
+event,leave,LeaveEvent,timestamp,integer,true,,,,Time of the event in milliseconds.,https://developers.line.biz/en/reference/messaging-api/#leave-event
+event,leave,LeaveEvent,mode,EventMode,true,,,,,https://developers.line.biz/en/reference/messaging-api/#leave-event
+event,leave,LeaveEvent,webhookEventId,string,true,,,,Webhook Event ID. An ID that uniquely identifies a webhook event. This is a string in ULID format.,https://developers.line.biz/en/reference/messaging-api/#leave-event
+event,leave,LeaveEvent,deliveryContext,DeliveryContext,true,,,,,https://developers.line.biz/en/reference/messaging-api/#leave-event
+event,memberJoined,MemberJoinedEvent,replyToken,string,true,,,,Reply token used to send reply message to this event,https://developers.line.biz/en/reference/messaging-api/#member-joined-event
+event,memberJoined,MemberJoinedEvent,joined,JoinedMembers,true,,,,,https://developers.line.biz/en/reference/messaging-api/#member-joined-event
+event,memberJoined,MemberJoinedEvent,type,string,true,,,,Type of the event,https://developers.line.biz/en/reference/messaging-api/#member-joined-event
+event,memberJoined,MemberJoinedEvent,source,Source,false,,,,,https://developers.line.biz/en/reference/messaging-api/#member-joined-event
+event,memberJoined,MemberJoinedEvent,timestamp,integer,true,,,,Time of the event in milliseconds.,https://developers.line.biz/en/reference/messaging-api/#member-joined-event
+event,memberJoined,MemberJoinedEvent,mode,EventMode,true,,,,,https://developers.line.biz/en/reference/messaging-api/#member-joined-event
+event,memberJoined,MemberJoinedEvent,webhookEventId,string,true,,,,Webhook Event ID. An ID that uniquely identifies a webhook event. This is a string in ULID format.,https://developers.line.biz/en/reference/messaging-api/#member-joined-event
+event,memberJoined,MemberJoinedEvent,deliveryContext,DeliveryContext,true,,,,,https://developers.line.biz/en/reference/messaging-api/#member-joined-event
+event,memberLeft,MemberLeftEvent,left,LeftMembers,true,,,,,https://developers.line.biz/en/reference/messaging-api/#member-left-event
+event,memberLeft,MemberLeftEvent,type,string,true,,,,Type of the event,https://developers.line.biz/en/reference/messaging-api/#member-left-event
+event,memberLeft,MemberLeftEvent,source,Source,false,,,,,https://developers.line.biz/en/reference/messaging-api/#member-left-event
+event,memberLeft,MemberLeftEvent,timestamp,integer,true,,,,Time of the event in milliseconds.,https://developers.line.biz/en/reference/messaging-api/#member-left-event
+event,memberLeft,MemberLeftEvent,mode,EventMode,true,,,,,https://developers.line.biz/en/reference/messaging-api/#member-left-event
+event,memberLeft,MemberLeftEvent,webhookEventId,string,true,,,,Webhook Event ID. An ID that uniquely identifies a webhook event. This is a string in ULID format.,https://developers.line.biz/en/reference/messaging-api/#member-left-event
+event,memberLeft,MemberLeftEvent,deliveryContext,DeliveryContext,true,,,,,https://developers.line.biz/en/reference/messaging-api/#member-left-event
+event,membership,MembershipEvent,replyToken,string,true,,,,Reply token used to send reply message to this event,https://developers.line.biz/en/reference/messaging-api/#membership-event
+event,membership,MembershipEvent,membership,MembershipContent,true,,,,,https://developers.line.biz/en/reference/messaging-api/#membership-event
+event,membership,MembershipEvent,type,string,true,,,,Type of the event,https://developers.line.biz/en/reference/messaging-api/#membership-event
+event,membership,MembershipEvent,source,Source,false,,,,,https://developers.line.biz/en/reference/messaging-api/#membership-event
+event,membership,MembershipEvent,timestamp,integer,true,,,,Time of the event in milliseconds.,https://developers.line.biz/en/reference/messaging-api/#membership-event
+event,membership,MembershipEvent,mode,EventMode,true,,,,,https://developers.line.biz/en/reference/messaging-api/#membership-event
+event,membership,MembershipEvent,webhookEventId,string,true,,,,Webhook Event ID. An ID that uniquely identifies a webhook event. This is a string in ULID format.,https://developers.line.biz/en/reference/messaging-api/#membership-event
+event,membership,MembershipEvent,deliveryContext,DeliveryContext,true,,,,,https://developers.line.biz/en/reference/messaging-api/#membership-event
+event,message,MessageEvent,replyToken,string,false,,,,,https://developers.line.biz/en/reference/messaging-api/#message-event
+event,message,MessageEvent,message,MessageContent,true,,,,,https://developers.line.biz/en/reference/messaging-api/#message-event
+event,message,MessageEvent,type,string,true,,,,Type of the event,https://developers.line.biz/en/reference/messaging-api/#message-event
+event,message,MessageEvent,source,Source,false,,,,,https://developers.line.biz/en/reference/messaging-api/#message-event
+event,message,MessageEvent,timestamp,integer,true,,,,Time of the event in milliseconds.,https://developers.line.biz/en/reference/messaging-api/#message-event
+event,message,MessageEvent,mode,EventMode,true,,,,,https://developers.line.biz/en/reference/messaging-api/#message-event
+event,message,MessageEvent,webhookEventId,string,true,,,,Webhook Event ID. An ID that uniquely identifies a webhook event. This is a string in ULID format.,https://developers.line.biz/en/reference/messaging-api/#message-event
+event,message,MessageEvent,deliveryContext,DeliveryContext,true,,,,,https://developers.line.biz/en/reference/messaging-api/#message-event
+event,messageEdited,MessageEditedEvent,replyToken,string,false,,,,,https://developers.line.biz/en/reference/messaging-api/#edit-event
+event,messageEdited,MessageEditedEvent,message,MessageContent,true,,,,,https://developers.line.biz/en/reference/messaging-api/#edit-event
+event,messageEdited,MessageEditedEvent,type,string,true,,,,Type of the event,https://developers.line.biz/en/reference/messaging-api/#edit-event
+event,messageEdited,MessageEditedEvent,source,Source,false,,,,,https://developers.line.biz/en/reference/messaging-api/#edit-event
+event,messageEdited,MessageEditedEvent,timestamp,integer,true,,,,Time of the event in milliseconds.,https://developers.line.biz/en/reference/messaging-api/#edit-event
+event,messageEdited,MessageEditedEvent,mode,EventMode,true,,,,,https://developers.line.biz/en/reference/messaging-api/#edit-event
+event,messageEdited,MessageEditedEvent,webhookEventId,string,true,,,,Webhook Event ID. An ID that uniquely identifies a webhook event. This is a string in ULID format.,https://developers.line.biz/en/reference/messaging-api/#edit-event
+event,messageEdited,MessageEditedEvent,deliveryContext,DeliveryContext,true,,,,,https://developers.line.biz/en/reference/messaging-api/#edit-event
+event,module,ModuleEvent,module,ModuleContent,true,,,,,https://developers.line.biz/en/reference/partner-docs/#module-channel-specific-webhook-events
+event,module,ModuleEvent,type,string,true,,,,Type of the event,https://developers.line.biz/en/reference/partner-docs/#module-channel-specific-webhook-events
+event,module,ModuleEvent,source,Source,false,,,,,https://developers.line.biz/en/reference/partner-docs/#module-channel-specific-webhook-events
+event,module,ModuleEvent,timestamp,integer,true,,,,Time of the event in milliseconds.,https://developers.line.biz/en/reference/partner-docs/#module-channel-specific-webhook-events
+event,module,ModuleEvent,mode,EventMode,true,,,,,https://developers.line.biz/en/reference/partner-docs/#module-channel-specific-webhook-events
+event,module,ModuleEvent,webhookEventId,string,true,,,,Webhook Event ID. An ID that uniquely identifies a webhook event. This is a string in ULID format.,https://developers.line.biz/en/reference/partner-docs/#module-channel-specific-webhook-events
+event,module,ModuleEvent,deliveryContext,DeliveryContext,true,,,,,https://developers.line.biz/en/reference/partner-docs/#module-channel-specific-webhook-events
+event,postback,PostbackEvent,replyToken,string,false,,,,Reply token used to send reply message to this event,https://developers.line.biz/en/reference/messaging-api/#postback-event
+event,postback,PostbackEvent,postback,PostbackContent,true,,,,,https://developers.line.biz/en/reference/messaging-api/#postback-event
+event,postback,PostbackEvent,type,string,true,,,,Type of the event,https://developers.line.biz/en/reference/messaging-api/#postback-event
+event,postback,PostbackEvent,source,Source,false,,,,,https://developers.line.biz/en/reference/messaging-api/#postback-event
+event,postback,PostbackEvent,timestamp,integer,true,,,,Time of the event in milliseconds.,https://developers.line.biz/en/reference/messaging-api/#postback-event
+event,postback,PostbackEvent,mode,EventMode,true,,,,,https://developers.line.biz/en/reference/messaging-api/#postback-event
+event,postback,PostbackEvent,webhookEventId,string,true,,,,Webhook Event ID. An ID that uniquely identifies a webhook event. This is a string in ULID format.,https://developers.line.biz/en/reference/messaging-api/#postback-event
+event,postback,PostbackEvent,deliveryContext,DeliveryContext,true,,,,,https://developers.line.biz/en/reference/messaging-api/#postback-event
+event,unfollow,UnfollowEvent,type,string,true,,,,Type of the event,https://developers.line.biz/en/reference/messaging-api/#unfollow-event
+event,unfollow,UnfollowEvent,source,Source,false,,,,,https://developers.line.biz/en/reference/messaging-api/#unfollow-event
+event,unfollow,UnfollowEvent,timestamp,integer,true,,,,Time of the event in milliseconds.,https://developers.line.biz/en/reference/messaging-api/#unfollow-event
+event,unfollow,UnfollowEvent,mode,EventMode,true,,,,,https://developers.line.biz/en/reference/messaging-api/#unfollow-event
+event,unfollow,UnfollowEvent,webhookEventId,string,true,,,,Webhook Event ID. An ID that uniquely identifies a webhook event. This is a string in ULID format.,https://developers.line.biz/en/reference/messaging-api/#unfollow-event
+event,unfollow,UnfollowEvent,deliveryContext,DeliveryContext,true,,,,,https://developers.line.biz/en/reference/messaging-api/#unfollow-event
+event,unsend,UnsendEvent,unsend,UnsendDetail,true,,,,,https://developers.line.biz/en/reference/messaging-api/#unsend-event
+event,unsend,UnsendEvent,type,string,true,,,,Type of the event,https://developers.line.biz/en/reference/messaging-api/#unsend-event
+event,unsend,UnsendEvent,source,Source,false,,,,,https://developers.line.biz/en/reference/messaging-api/#unsend-event
+event,unsend,UnsendEvent,timestamp,integer,true,,,,Time of the event in milliseconds.,https://developers.line.biz/en/reference/messaging-api/#unsend-event
+event,unsend,UnsendEvent,mode,EventMode,true,,,,,https://developers.line.biz/en/reference/messaging-api/#unsend-event
+event,unsend,UnsendEvent,webhookEventId,string,true,,,,Webhook Event ID. An ID that uniquely identifies a webhook event. This is a string in ULID format.,https://developers.line.biz/en/reference/messaging-api/#unsend-event
+event,unsend,UnsendEvent,deliveryContext,DeliveryContext,true,,,,,https://developers.line.biz/en/reference/messaging-api/#unsend-event
+event,videoPlayComplete,VideoPlayCompleteEvent,replyToken,string,true,,,,Reply token used to send reply message to this event,https://developers.line.biz/en/reference/messaging-api/#video-viewing-complete
+event,videoPlayComplete,VideoPlayCompleteEvent,videoPlayComplete,VideoPlayComplete,true,,,,,https://developers.line.biz/en/reference/messaging-api/#video-viewing-complete
+event,videoPlayComplete,VideoPlayCompleteEvent,type,string,true,,,,Type of the event,https://developers.line.biz/en/reference/messaging-api/#video-viewing-complete
+event,videoPlayComplete,VideoPlayCompleteEvent,source,Source,false,,,,,https://developers.line.biz/en/reference/messaging-api/#video-viewing-complete
+event,videoPlayComplete,VideoPlayCompleteEvent,timestamp,integer,true,,,,Time of the event in milliseconds.,https://developers.line.biz/en/reference/messaging-api/#video-viewing-complete
+event,videoPlayComplete,VideoPlayCompleteEvent,mode,EventMode,true,,,,,https://developers.line.biz/en/reference/messaging-api/#video-viewing-complete
+event,videoPlayComplete,VideoPlayCompleteEvent,webhookEventId,string,true,,,,Webhook Event ID. An ID that uniquely identifies a webhook event. This is a string in ULID format.,https://developers.line.biz/en/reference/messaging-api/#video-viewing-complete
+event,videoPlayComplete,VideoPlayCompleteEvent,deliveryContext,DeliveryContext,true,,,,,https://developers.line.biz/en/reference/messaging-api/#video-viewing-complete
+message-content,audio,AudioMessageContent,contentProvider,ContentProvider,true,,,,,https://developers.line.biz/en/reference/messaging-api/#wh-audio
+message-content,audio,AudioMessageContent,duration,integer,false,,,,Length of audio file (milliseconds),https://developers.line.biz/en/reference/messaging-api/#wh-audio
+message-content,audio,AudioMessageContent,markAsReadToken,string,false,,,,Token used to mark the message as read.,https://developers.line.biz/en/reference/messaging-api/#wh-audio
+message-content,audio,AudioMessageContent,type,string,true,,,,Type,https://developers.line.biz/en/reference/messaging-api/#wh-audio
+message-content,audio,AudioMessageContent,id,string,true,,,,Message ID,https://developers.line.biz/en/reference/messaging-api/#wh-audio
+message-content,file,FileMessageContent,fileName,string,true,,,,File name,https://developers.line.biz/en/reference/messaging-api/#wh-file
+message-content,file,FileMessageContent,fileSize,integer,true,,,,File size in bytes,https://developers.line.biz/en/reference/messaging-api/#wh-file
+message-content,file,FileMessageContent,markAsReadToken,string,false,,,,Token used to mark the message as read.,https://developers.line.biz/en/reference/messaging-api/#wh-file
+message-content,file,FileMessageContent,type,string,true,,,,Type,https://developers.line.biz/en/reference/messaging-api/#wh-file
+message-content,file,FileMessageContent,id,string,true,,,,Message ID,https://developers.line.biz/en/reference/messaging-api/#wh-file
+message-content,image,ImageMessageContent,contentProvider,ContentProvider,true,,,,,https://developers.line.biz/en/reference/messaging-api/#wh-image
+message-content,image,ImageMessageContent,imageSet,ImageSet,false,,,,,https://developers.line.biz/en/reference/messaging-api/#wh-image
+message-content,image,ImageMessageContent,quoteToken,string,true,,,,Quote token to quote this message.,https://developers.line.biz/en/reference/messaging-api/#wh-image
+message-content,image,ImageMessageContent,markAsReadToken,string,false,,,,Token used to mark the message as read.,https://developers.line.biz/en/reference/messaging-api/#wh-image
+message-content,image,ImageMessageContent,type,string,true,,,,Type,https://developers.line.biz/en/reference/messaging-api/#wh-image
+message-content,image,ImageMessageContent,id,string,true,,,,Message ID,https://developers.line.biz/en/reference/messaging-api/#wh-image
+message-content,location,LocationMessageContent,title,string,false,,,,Title,https://developers.line.biz/en/reference/messaging-api/#wh-location
+message-content,location,LocationMessageContent,address,string,false,,,,Address,https://developers.line.biz/en/reference/messaging-api/#wh-location
+message-content,location,LocationMessageContent,latitude,number,true,,,,Latitude,https://developers.line.biz/en/reference/messaging-api/#wh-location
+message-content,location,LocationMessageContent,longitude,number,true,,,,Longitude,https://developers.line.biz/en/reference/messaging-api/#wh-location
+message-content,location,LocationMessageContent,markAsReadToken,string,false,,,,Token used to mark the message as read.,https://developers.line.biz/en/reference/messaging-api/#wh-location
+message-content,location,LocationMessageContent,type,string,true,,,,Type,https://developers.line.biz/en/reference/messaging-api/#wh-location
+message-content,location,LocationMessageContent,id,string,true,,,,Message ID,https://developers.line.biz/en/reference/messaging-api/#wh-location
+message-content,sticker,StickerMessageContent,packageId,string,true,,,,Package ID,https://developers.line.biz/en/reference/messaging-api/#wh-sticker
+message-content,sticker,StickerMessageContent,stickerId,string,true,,,,Sticker ID,https://developers.line.biz/en/reference/messaging-api/#wh-sticker
+message-content,sticker,StickerMessageContent,stickerResourceType,string,true,STATIC|ANIMATION|SOUND|ANIMATION_SOUND|POPUP|POPUP_SOUND|CUSTOM|MESSAGE|NAME_TEXT|PER_STICKER_TEXT,,,,https://developers.line.biz/en/reference/messaging-api/#wh-sticker
+message-content,sticker,StickerMessageContent,keywords,array<string>,false,,15,,"Array of up to 15 keywords describing the sticker. If a sticker has 16 or more keywords, a random selection of 15 keywords will be returned. The keyword selection is random for each event, so different keywords may be returned for the same sticker.",https://developers.line.biz/en/reference/messaging-api/#wh-sticker
+message-content,sticker,StickerMessageContent,text,string,false,,100,,Any text entered by the user. This property is only included for message stickers. Max character limit: 100,https://developers.line.biz/en/reference/messaging-api/#wh-sticker
+message-content,sticker,StickerMessageContent,quoteToken,string,true,,,,Quote token to quote this message.,https://developers.line.biz/en/reference/messaging-api/#wh-sticker
+message-content,sticker,StickerMessageContent,quotedMessageId,string,false,,,,Message ID of a quoted message. Only included when the received message quotes a past message.,https://developers.line.biz/en/reference/messaging-api/#wh-sticker
+message-content,sticker,StickerMessageContent,markAsReadToken,string,false,,,,Token used to mark the message as read.,https://developers.line.biz/en/reference/messaging-api/#wh-sticker
+message-content,sticker,StickerMessageContent,type,string,true,,,,Type,https://developers.line.biz/en/reference/messaging-api/#wh-sticker
+message-content,sticker,StickerMessageContent,id,string,true,,,,Message ID,https://developers.line.biz/en/reference/messaging-api/#wh-sticker
+message-content,text,TextMessageContent,text,string,true,,,,Message text.,https://developers.line.biz/en/reference/messaging-api/#wh-text
+message-content,text,TextMessageContent,emojis,array<Emoji>,false,,,,Array of one or more LINE emoji objects. Only included in the message event when the text property contains a LINE emoji.,https://developers.line.biz/en/reference/messaging-api/#wh-text
+message-content,text,TextMessageContent,mention,Mention,false,,,,,https://developers.line.biz/en/reference/messaging-api/#wh-text
+message-content,text,TextMessageContent,quoteToken,string,true,,,,Quote token to quote this message.,https://developers.line.biz/en/reference/messaging-api/#wh-text
+message-content,text,TextMessageContent,quotedMessageId,string,false,,,,Message ID of a quoted message. Only included when the received message quotes a past message.,https://developers.line.biz/en/reference/messaging-api/#wh-text
+message-content,text,TextMessageContent,markAsReadToken,string,false,,,,Token used to mark the message as read.,https://developers.line.biz/en/reference/messaging-api/#wh-text
+message-content,text,TextMessageContent,type,string,true,,,,Type,https://developers.line.biz/en/reference/messaging-api/#wh-text
+message-content,text,TextMessageContent,id,string,true,,,,Message ID,https://developers.line.biz/en/reference/messaging-api/#wh-text
+message-content,video,VideoMessageContent,duration,integer,false,,,,Length of video file (milliseconds),https://developers.line.biz/en/reference/messaging-api/#wh-video
+message-content,video,VideoMessageContent,contentProvider,ContentProvider,true,,,,,https://developers.line.biz/en/reference/messaging-api/#wh-video
+message-content,video,VideoMessageContent,quoteToken,string,true,,,,Quote token to quote this message.,https://developers.line.biz/en/reference/messaging-api/#wh-video
+message-content,video,VideoMessageContent,markAsReadToken,string,false,,,,Token used to mark the message as read.,https://developers.line.biz/en/reference/messaging-api/#wh-video
+message-content,video,VideoMessageContent,type,string,true,,,,Type,https://developers.line.biz/en/reference/messaging-api/#wh-video
+message-content,video,VideoMessageContent,id,string,true,,,,Message ID,https://developers.line.biz/en/reference/messaging-api/#wh-video
+source,group,GroupSource,groupId,string,true,,,,Group ID of the source group chat,https://developers.line.biz/en/reference/messaging-api/#source-user
+source,group,GroupSource,userId,string,false,,,,ID of the source user. Only included in message events. Only users of LINE for iOS and LINE for Android are included in userId.,https://developers.line.biz/en/reference/messaging-api/#source-user
+source,group,GroupSource,type,string,true,,,,source type,https://developers.line.biz/en/reference/messaging-api/#source-user
+source,room,RoomSource,userId,string,false,,,,ID of the source user. Only included in message events. Only users of LINE for iOS and LINE for Android are included in userId.,https://developers.line.biz/en/reference/messaging-api/#source-user
+source,room,RoomSource,roomId,string,true,,,,Room ID of the source multi-person chat,https://developers.line.biz/en/reference/messaging-api/#source-user
+source,room,RoomSource,type,string,true,,,,source type,https://developers.line.biz/en/reference/messaging-api/#source-user
+source,user,UserSource,userId,string,false,,,,ID of the source user,https://developers.line.biz/en/reference/messaging-api/#source-user
+source,user,UserSource,type,string,true,,,,source type,https://developers.line.biz/en/reference/messaging-api/#source-user
+membership-content,joined,JoinedMembershipContent,membershipId,integer,true,,,,The ID of the membership that the user joined. This is defined for each membership.,https://developers.line.biz/en/reference/messaging-api/#membership-event
+membership-content,joined,JoinedMembershipContent,type,string,true,,,,Type of membership event.,https://developers.line.biz/en/reference/messaging-api/#membership-event
+membership-content,left,LeftMembershipContent,membershipId,integer,true,,,,The ID of the membership that the user left. This is defined for each membership.,https://developers.line.biz/en/reference/messaging-api/#membership-event
+membership-content,left,LeftMembershipContent,type,string,true,,,,Type of membership event.,https://developers.line.biz/en/reference/messaging-api/#membership-event
+membership-content,renewed,RenewedMembershipContent,membershipId,integer,true,,,,The ID of the membership that the user renewed. This is defined for each membership.,https://developers.line.biz/en/reference/messaging-api/#membership-event
+membership-content,renewed,RenewedMembershipContent,type,string,true,,,,Type of membership event.,https://developers.line.biz/en/reference/messaging-api/#membership-event
+module-content,attached,AttachedModuleContent,botId,string,true,,,,User ID of the bot on the attached LINE Official Account,https://developers.line.biz/en/reference/partner-docs/#attached-event
+module-content,attached,AttachedModuleContent,scopes,array<string>,true,,,,An array of strings indicating the scope permitted by the admin of the LINE Official Account.,https://developers.line.biz/en/reference/partner-docs/#attached-event
+module-content,attached,AttachedModuleContent,type,string,true,,,,Type,https://developers.line.biz/en/reference/partner-docs/#attached-event
+module-content,detached,DetachedModuleContent,botId,string,true,,,,Detached LINE Official Account bot user ID,https://developers.line.biz/en/reference/partner-docs/#detached-event
+module-content,detached,DetachedModuleContent,reason,string,true,bot_deleted,,,Reason for detaching,https://developers.line.biz/en/reference/partner-docs/#detached-event
+module-content,detached,DetachedModuleContent,type,string,true,,,,Type,https://developers.line.biz/en/reference/partner-docs/#detached-event
+mentionee,all,AllMentionee,type,string,true,,,,Mentioned target.,https://developers.line.biz/en/reference/messaging-api/#wh-text
+mentionee,all,AllMentionee,index,integer,true,,,,"Index position of the user mention for a character in text, with the first character being at position 0.",https://developers.line.biz/en/reference/messaging-api/#wh-text
+mentionee,all,AllMentionee,length,integer,true,,,,"The length of the text of the mentioned user. For a mention @example, 8 is the length.",https://developers.line.biz/en/reference/messaging-api/#wh-text
+mentionee,user,UserMentionee,userId,string,false,,,,User ID of the mentioned user. Only included if mention.mentions[].type is user and the user consents to the LINE Official Account obtaining their user profile information.,https://developers.line.biz/en/reference/messaging-api/#wh-text
+mentionee,user,UserMentionee,isSelf,boolean,false,,,,Whether the mentioned user is the bot that receives the webhook.,https://developers.line.biz/en/reference/messaging-api/#wh-text
+mentionee,user,UserMentionee,type,string,true,,,,Mentioned target.,https://developers.line.biz/en/reference/messaging-api/#wh-text
+mentionee,user,UserMentionee,index,integer,true,,,,"Index position of the user mention for a character in text, with the first character being at position 0.",https://developers.line.biz/en/reference/messaging-api/#wh-text
+mentionee,user,UserMentionee,length,integer,true,,,,"The length of the text of the mentioned user. For a mention @example, 8 is the length.",https://developers.line.biz/en/reference/messaging-api/#wh-text
+webhook-object,BeaconContent,BeaconContent,hwid,string,true,,,,Hardware ID of the beacon that was detected,https://developers.line.biz/en/reference/messaging-api/#beacon-event
+webhook-object,BeaconContent,BeaconContent,type,string,true,enter|banner|stay,,,Type of beacon event.,https://developers.line.biz/en/reference/messaging-api/#beacon-event
+webhook-object,BeaconContent,BeaconContent,dm,string,false,,,,Device message of beacon that was detected.,https://developers.line.biz/en/reference/messaging-api/#beacon-event
+webhook-object,CallbackRequest,CallbackRequest,destination,string,true,,33,,"User ID of a bot that should receive webhook events. The user ID value is a string that matches the regular expression, `U[0-9a-f]{32}`.",https://developers.line.biz/en/reference/messaging-api/#request-body
+webhook-object,CallbackRequest,CallbackRequest,events,array<Event>,true,,,,Array of webhook event objects. The LINE Platform may send an empty array that doesn't include a webhook event object to confirm communication.,https://developers.line.biz/en/reference/messaging-api/#request-body
+webhook-object,ChatControl,ChatControl,expireAt,integer,true,,,,,https://developers.line.biz/en/reference/partner-docs/#activated-event
+webhook-object,ContentProvider,ContentProvider,type,string,true,line|external,,,Provider of the image file.,https://developers.line.biz/en/reference/messaging-api/#webhook-event-objects
+webhook-object,ContentProvider,ContentProvider,originalContentUrl,string,false,,,,URL of the image file. Only included when contentProvider.type is external.,https://developers.line.biz/en/reference/messaging-api/#webhook-event-objects
+webhook-object,ContentProvider,ContentProvider,previewImageUrl,string,false,,,,URL of the preview image. Only included when contentProvider.type is external.,https://developers.line.biz/en/reference/messaging-api/#webhook-event-objects
+webhook-object,DeliveryContext,DeliveryContext,isRedelivery,boolean,true,,,,Whether the webhook event is a redelivered one or not.,https://developers.line.biz/en/reference/messaging-api/#webhook-event-objects
+webhook-object,Emoji,Emoji,index,integer,true,,,,"Index position for a character in text, with the first character being at position 0.",https://developers.line.biz/en/reference/messaging-api/#webhook-event-objects
+webhook-object,Emoji,Emoji,length,integer,true,,,,"The length of the LINE emoji string. For LINE emoji (hello), 7 is the length.",https://developers.line.biz/en/reference/messaging-api/#webhook-event-objects
+webhook-object,Emoji,Emoji,productId,string,true,,,,Product ID for a LINE emoji set.,https://developers.line.biz/en/reference/messaging-api/#webhook-event-objects
+webhook-object,Emoji,Emoji,emojiId,string,true,,,,ID for a LINE emoji inside a set.,https://developers.line.biz/en/reference/messaging-api/#webhook-event-objects
+webhook-object,FollowDetail,FollowDetail,isUnblocked,boolean,true,,,,Whether a user has added your LINE Official Account as a friend or unblocked.,https://developers.line.biz/en/reference/messaging-api/#follow-event
+webhook-object,ImageSet,ImageSet,id,string,true,,,,Image set ID. Only included when multiple images are sent simultaneously.,https://developers.line.biz/en/reference/messaging-api/#webhook-event-objects
+webhook-object,ImageSet,ImageSet,index,integer,false,,,,"An index starting from 1, indicating the image number in a set of images sent simultaneously. Only included when multiple images are sent simultaneously. However, it won't be included if the sender is using LINE 11.15 or earlier for Android.",https://developers.line.biz/en/reference/messaging-api/#webhook-event-objects
+webhook-object,ImageSet,ImageSet,total,integer,false,,,,The total number of images sent simultaneously.,https://developers.line.biz/en/reference/messaging-api/#webhook-event-objects
+webhook-object,JoinedMembers,JoinedMembers,members,array<UserSource>,true,,,,Users who joined. Array of source user objects.,https://developers.line.biz/en/reference/messaging-api/#member-joined-event
+webhook-object,LeftMembers,LeftMembers,members,array<UserSource>,true,,,,Users who left. Array of source user objects.,https://developers.line.biz/en/reference/messaging-api/#member-left-event
+webhook-object,LinkContent,LinkContent,result,string,true,ok|failed,,,One of the following values to indicate whether linking the account was successful or not,https://developers.line.biz/en/reference/messaging-api/#account-link-event
+webhook-object,LinkContent,LinkContent,nonce,string,true,,,,Specified nonce (number used once) when verifying the user ID.,https://developers.line.biz/en/reference/messaging-api/#account-link-event
+webhook-object,Mention,Mention,mentionees,array<Mentionee>,true,,,,Array of one or more mention objects. Max: 20 mentions,https://developers.line.biz/en/reference/messaging-api/#webhook-event-objects
+webhook-object,PnpDelivery,PnpDelivery,data,string,true,,,,A hashed phone number string or a string specified by `X-Line-Delivery-Tag` header,https://developers.line.biz/en/docs/partner-docs/line-notification-messages/message-sending-complete-webhook-event/#overview-delivery-webhook-event
+webhook-object,PostbackContent,PostbackContent,data,string,true,,,,Postback data,https://developers.line.biz/en/reference/messaging-api/#postback-event
+webhook-object,PostbackContent,PostbackContent,params,object,false,,,,,https://developers.line.biz/en/reference/messaging-api/#postback-event
+webhook-object,UnsendDetail,UnsendDetail,messageId,string,true,,,,The message ID of the unsent message,https://developers.line.biz/en/reference/messaging-api/#unsend-event
+webhook-object,VideoPlayComplete,VideoPlayComplete,trackingId,string,true,,,,ID used to identify a video. Returns the same value as the trackingId assigned to the video message.,https://developers.line.biz/en/reference/messaging-api/#video-viewing-complete

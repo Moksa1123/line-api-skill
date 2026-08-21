@@ -133,5 +133,5 @@ flex-style,FlexBubbleStyles,FlexBubbleStyles,hero,FlexBlockStyle,false,,,,,https
 flex-style,FlexBubbleStyles,FlexBubbleStyles,body,FlexBlockStyle,false,,,,,https://developers.line.biz/en/reference/messaging-api/#bubble-style
 flex-style,FlexBubbleStyles,FlexBubbleStyles,footer,FlexBlockStyle,false,,,,,https://developers.line.biz/en/reference/messaging-api/#bubble-style
 flex-style,FlexBlockStyle,FlexBlockStyle,backgroundColor,string,false,,,,,https://developers.line.biz/en/reference/messaging-api/#bubble-style
-flex-style,FlexBlockStyle,FlexBlockStyle,separator,boolean,false,,,,,https://developers.line.biz/en/reference/messaging-api/#bubble-style
+flex-style,FlexBlockStyle,FlexBlockStyle,separator,boolean,false,,,false,,https://developers.line.biz/en/reference/messaging-api/#bubble-style
 flex-style,FlexBlockStyle,FlexBlockStyle,separatorColor,string,false,,,,,https://developers.line.biz/en/reference/messaging-api/#bubble-style
