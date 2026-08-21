@@ -1,0 +1,13 @@
+item,status,effective_date,replacement,note,doc_url
+LINE Notify,discontinued,2025-03-31,Messaging API push message,LINE Notify 服務已終止；改用 Messaging API 的 push/multicast，或用 LINE 通知訊息 (LINE notification messages) 發給未加好友的用戶,https://notify-bot.line.me/en/
+LIFF v1,discontinued,2021-10-01,LIFF v2 SDK,只能使用 LIFF v2 (https://static.line-scdn.net/liff/edge/2/sdk.js),https://developers.line.biz/en/docs/liff/release-notes/
+Audience match API,discontinued,2023-10-31,LINE 廣告後台 / narrowcast audience,以電話號碼建立 audience 的 API 已停止,https://developers.line.biz/en/reference/messaging-api/#create-audience-group-by-phone-number
+Send message using phone number (old),discontinued,2023-10-31,LINE notification messages (POST /bot/pnp/push),舊版電話號碼發訊已停；改用 LINE 通知訊息（需業務開通）,https://developers.line.biz/en/docs/partner-docs/line-notification-messages/overview/
+LINE original unicode emojis,discontinued,2022-03-31,emojis property in text message,改用 text message 的 emojis 陣列指定 productId + emojiId,https://developers.line.biz/en/docs/messaging-api/emoji-list/
+LINE Things documentation,discontinued,2024-05-13,,LINE Things 文件已下架,https://developers.line.biz/en/news/2024/?month=05&day=13&article=line-things-docs-discontinued
+Send mission stickers (v2),discontinued,2023-05-31,Send mission stickers (v3),Mission Stickers 改用 v3 端點,https://developers.line.biz/en/reference/partner-docs/
+liff.scanCode(),deprecated,,liff.scanCodeV2(),舊版掃碼 API；請改用 scanCodeV2（僅 LIFF browser 可用）,https://developers.line.biz/en/reference/liff/#liffscancodev2
+liff.getLanguage(),deprecated,,liff.getAppLanguage(),getLanguage() 回傳的是瀏覽器語言；要 LINE App 語言請用 getAppLanguage(),https://developers.line.biz/en/reference/liff/#liffgetapplanguage
+line:// URL scheme,deprecated,,https://line.me/R/... or https://liff.line.me/...,line:// 有被非 LINE App 劫持的風險，一律改用 https 形式,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+Flex filler component,deprecated,,margin / offset / padding properties,filler 已不建議使用；改用 box 的 margin、offset、padding 排版,https://developers.line.biz/en/reference/messaging-api/#filler
+Social API,discontinued,,LINE Login v2.1 API,舊 Social API 已整併進 LINE Login v2.1,https://developers.line.biz/en/reference/line-login/

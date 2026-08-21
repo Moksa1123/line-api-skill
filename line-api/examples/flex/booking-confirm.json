@@ -1,0 +1,48 @@
+{
+  "type": "bubble",
+  "header": {
+    "type": "box",
+    "layout": "vertical",
+    "paddingAll": "lg",
+    "background": {
+      "type": "linearGradient",
+      "angle": "135deg",
+      "startColor": "#06C755",
+      "endColor": "#04A147"
+    },
+    "contents": [
+      { "type": "text", "text": "預約確認", "color": "#FFFFFF", "weight": "bold", "size": "xl" },
+      { "type": "text", "text": "感謝您的預約", "color": "#EAFBEF", "size": "sm", "margin": "xs" }
+    ]
+  },
+  "body": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "md",
+    "contents": [
+      { "type": "box", "layout": "baseline", "spacing": "sm", "contents": [
+        { "type": "text", "text": "日期", "color": "#AAAAAA", "size": "sm", "flex": 2 },
+        { "type": "text", "text": "2026-08-25 (一) 14:00", "wrap": true, "size": "sm", "flex": 5 }
+      ]},
+      { "type": "box", "layout": "baseline", "spacing": "sm", "contents": [
+        { "type": "text", "text": "人數", "color": "#AAAAAA", "size": "sm", "flex": 2 },
+        { "type": "text", "text": "2 位", "wrap": true, "size": "sm", "flex": 5 }
+      ]},
+      { "type": "box", "layout": "baseline", "spacing": "sm", "contents": [
+        { "type": "text", "text": "門市", "color": "#AAAAAA", "size": "sm", "flex": 2 },
+        { "type": "text", "text": "台北信義店", "wrap": true, "size": "sm", "flex": 5 }
+      ]}
+    ]
+  },
+  "footer": {
+    "type": "box",
+    "layout": "horizontal",
+    "spacing": "sm",
+    "contents": [
+      { "type": "button", "style": "secondary", "height": "sm",
+        "action": { "type": "postback", "label": "取消預約", "data": "action=cancel&id=B-1024" } },
+      { "type": "button", "style": "primary", "height": "sm",
+        "action": { "type": "uri", "label": "加入行事曆", "uri": "https://example.com/ics/B-1024" } }
+    ]
+  }
+}

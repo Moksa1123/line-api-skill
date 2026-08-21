@@ -1,0 +1,127 @@
+<!--
+  LIFF app 最小完整範例
+
+  涵蓋：
+    liff.init() → 登入檢查 → 取 profile → 取 ID token 交給後端驗證
+    → 依環境判斷可用 API（sendMessages / shareTargetPicker / scanCodeV2）
+
+  部署：放到任何 HTTPS 靜態主機，把網址設成 LIFF app 的 Endpoint URL，
+  再把下方 LIFF_ID 換成你的 LIFF ID。
+
+  文件：https://developers.line.biz/en/docs/liff/developing-liff-apps/
+-->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LIFF 範例</title>
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+<style>
+  body { font-family: system-ui, "Noto Sans TC", sans-serif; margin: 0; padding: 24px; line-height: 1.6; }
+  #profile { display: flex; gap: 12px; align-items: center; margin: 16px 0; }
+  #profile img { width: 56px; height: 56px; border-radius: 50%; }
+  button { display: block; width: 100%; padding: 12px; margin: 8px 0;
+           font-size: 16px; border: 0; border-radius: 8px; background: #06C755; color: #fff; }
+  button[disabled] { background: #ccc; }
+  pre { background: #f5f5f5; padding: 12px; border-radius: 8px; overflow-x: auto; font-size: 12px; }
+</style>
+
+<h1>LIFF 範例</h1>
+<div id="status">初始化中…</div>
+<div id="profile" hidden>
+  <img id="avatar" alt="">
+  <div><strong id="name"></strong><br><small id="uid"></small></div>
+</div>
+
+<button id="send" disabled>把訊息送回聊天室</button>
+<button id="share" disabled>分享給好友</button>
+<button id="scan" disabled>掃描 QR code</button>
+<button id="close" disabled>關閉視窗</button>
+
+<pre id="log"></pre>
+
+<script>
+  // ← 換成你的 LIFF ID
+  const LIFF_ID = "1234567890-AbcdEfgh";
+
+  const $ = (id) => document.getElementById(id);
+  const log = (...args) => {
+    $("log").textContent += args
+      .map((a) => (typeof a === "string" ? a : JSON.stringify(a, null, 2)))
+      .join(" ") + "\n";
+  };
+
+  async function main() {
+    try {
+      await liff.init({ liffId: LIFF_ID });
+    } catch (err) {
+      $("status").textContent = `liff.init 失敗：${err.code} ${err.message}`;
+      log("常見原因：LIFF ID 錯誤，或目前網址不在 Endpoint URL 的路徑底下");
+      return;
+    }
+
+    if (!liff.isLoggedIn()) {
+      // login() 會導頁，之後的程式不會執行 —— 一定要 return
+      liff.login({ redirectUri: location.href });
+      return;
+    }
+
+    const profile = await liff.getProfile();
+    $("avatar").src = profile.pictureUrl || "";
+    $("name").textContent = profile.displayName;
+    $("uid").textContent = profile.userId;
+    $("profile").hidden = false;
+
+    $("status").textContent =
+      `OS=${liff.getOS()}  LINE=${liff.getLineVersion() ?? "外部瀏覽器"}  ` +
+      `inClient=${liff.isInClient()}  context=${liff.getContext()?.type}`;
+
+    // 前端的 userId 可被竄改，後端要用 ID token 驗證後才採信
+    const idToken = liff.getIDToken();
+    log("ID token（傳給後端用 POST /oauth2/v2.1/verify 驗證）:",
+        idToken ? idToken.slice(0, 24) + "…" : "(無，scope 需含 openid)");
+
+    // 依環境開放按鈕
+    $("send").disabled = !liff.isApiAvailable("sendMessages");
+    $("share").disabled = !liff.isApiAvailable("shareTargetPicker");
+    $("scan").disabled = !liff.isApiAvailable("scanCodeV2");
+    $("close").disabled = false;
+
+    if ($("send").disabled) {
+      log("sendMessages 不可用：需在 LINE 聊天室內開啟，且 LIFF app 要有 chat_message.write scope");
+    }
+  }
+
+  $("send").onclick = async () => {
+    try {
+      await liff.sendMessages([{ type: "text", text: "已完成預約 ✅" }]);
+      log("已送出");
+    } catch (err) {
+      log("sendMessages 失敗:", err.code, err.message);
+    }
+  };
+
+  $("share").onclick = async () => {
+    try {
+      const res = await liff.shareTargetPicker(
+        [{ type: "text", text: "一起來看看這個！https://example.com" }],
+        { isMultiple: true }
+      );
+      log(res ? "已分享" : "使用者取消");
+    } catch (err) {
+      log("shareTargetPicker 失敗:", err.code, err.message);
+    }
+  };
+
+  $("scan").onclick = async () => {
+    try {
+      const result = await liff.scanCodeV2();
+      log("掃到：", result.value);
+    } catch (err) {
+      log("scanCodeV2 失敗:", err.code, err.message);
+    }
+  };
+
+  $("close").onclick = () => liff.closeWindow();
+
+  main();
+</script>

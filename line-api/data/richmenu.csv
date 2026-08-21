@@ -1,0 +1,24 @@
+group,type,schema,property,value_type,required,enum,max_length,description,doc_url
+richmenu,RichMenuRequest,RichMenuRequest,size,RichMenuSize,false,,,,https://developers.line.biz/en/reference/messaging-api/#rich-menu-object
+richmenu,RichMenuRequest,RichMenuRequest,selected,boolean,false,,,"`true` to display the rich menu by default. Otherwise, `false`.",https://developers.line.biz/en/reference/messaging-api/#rich-menu-object
+richmenu,RichMenuRequest,RichMenuRequest,name,string,false,,300,Name of the rich menu. This value can be used to help manage your rich menus and is not displayed to users.,https://developers.line.biz/en/reference/messaging-api/#rich-menu-object
+richmenu,RichMenuRequest,RichMenuRequest,chatBarText,string,false,,14,Text displayed in the chat bar,https://developers.line.biz/en/reference/messaging-api/#rich-menu-object
+richmenu,RichMenuRequest,RichMenuRequest,areas,array<RichMenuArea>,false,,,Array of area objects which define the coordinates and size of tappable areas,https://developers.line.biz/en/reference/messaging-api/#rich-menu-object
+richmenu,RichMenuResponse,RichMenuResponse,richMenuId,string,true,,,ID of a rich menu,https://developers.line.biz/en/reference/messaging-api/#rich-menu-response-object
+richmenu,RichMenuResponse,RichMenuResponse,size,RichMenuSize,true,,,,https://developers.line.biz/en/reference/messaging-api/#rich-menu-response-object
+richmenu,RichMenuResponse,RichMenuResponse,selected,boolean,true,,,"`true` to display the rich menu by default. Otherwise, `false`.",https://developers.line.biz/en/reference/messaging-api/#rich-menu-response-object
+richmenu,RichMenuResponse,RichMenuResponse,name,string,true,,300,Name of the rich menu. This value can be used to help manage your rich menus and is not displayed to users.,https://developers.line.biz/en/reference/messaging-api/#rich-menu-response-object
+richmenu,RichMenuResponse,RichMenuResponse,chatBarText,string,true,,14,Text displayed in the chat bar,https://developers.line.biz/en/reference/messaging-api/#rich-menu-response-object
+richmenu,RichMenuResponse,RichMenuResponse,areas,array<RichMenuArea>,true,,20,Array of area objects which define the coordinates and size of tappable areas,https://developers.line.biz/en/reference/messaging-api/#rich-menu-response-object
+richmenu,RichMenuArea,RichMenuArea,bounds,RichMenuBounds,false,,,,https://developers.line.biz/en/reference/messaging-api/#rich-menu-object
+richmenu,RichMenuArea,RichMenuArea,action,Action,false,,,,https://developers.line.biz/en/reference/messaging-api/#rich-menu-object
+richmenu,RichMenuBounds,RichMenuBounds,x,integer,false,,,Horizontal position relative to the top-left corner of the area.,https://developers.line.biz/en/reference/messaging-api/#bounds-object
+richmenu,RichMenuBounds,RichMenuBounds,y,integer,false,,,Vertical position relative to the top-left corner of the area.,https://developers.line.biz/en/reference/messaging-api/#bounds-object
+richmenu,RichMenuBounds,RichMenuBounds,width,integer,false,,,Width of the area.,https://developers.line.biz/en/reference/messaging-api/#bounds-object
+richmenu,RichMenuBounds,RichMenuBounds,height,integer,false,,,Height of the area.,https://developers.line.biz/en/reference/messaging-api/#bounds-object
+richmenu,RichMenuSize,RichMenuSize,width,integer,false,,,width,https://developers.line.biz/en/reference/messaging-api/#rich-menu-object
+richmenu,RichMenuSize,RichMenuSize,height,integer,false,,,height,https://developers.line.biz/en/reference/messaging-api/#rich-menu-object
+richmenu,RichMenuBatchRequest,RichMenuBatchRequest,operations,array<RichMenuBatchOperation>,true,,1000,Array of Rich menu operation object...,https://developers.line.biz/en/reference/messaging-api/#rich-menu-object
+richmenu,RichMenuBatchRequest,RichMenuBatchRequest,resumeRequestKey,string,false,,100,Key for retry. Key value is a string matching the regular expression pattern,https://developers.line.biz/en/reference/messaging-api/#rich-menu-object
+richmenu,RichMenuAliasResponse,RichMenuAliasResponse,richMenuAliasId,string,true,,,Rich menu alias ID.,https://developers.line.biz/en/reference/messaging-api/#rich-menu-object
+richmenu,RichMenuAliasResponse,RichMenuAliasResponse,richMenuId,string,true,,,The rich menu ID associated with the rich menu alias.,https://developers.line.biz/en/reference/messaging-api/#rich-menu-object

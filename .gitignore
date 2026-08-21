@@ -1,0 +1,49 @@
+# ---------------------------------------------------------------------------
+# Scraped LINE documentation and upstream specs — NEVER commit these.
+# They are LY Corporation's content, regenerated on demand by:
+#     python tools/fetch_sources.py
+# The repository ships only the derived dataset (line-api/data/*.csv) and
+# our own reference notes (line-api/references/*.md).
+# ---------------------------------------------------------------------------
+.docs-cache/
+docs-cache/
+raw/
+line-openapi/
+llms.txt
+
+# credentials — a leaked channel secret lets anyone forge your webhooks
+.env
+.env.*
+!.env.example
+*.key
+private.key
+*.pem
+*.jwk
+secrets.json
+
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# node
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# editors / os
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# scratch
+tmp/
+*.tmp
+*.log

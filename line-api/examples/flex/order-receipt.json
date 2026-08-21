@@ -1,0 +1,41 @@
+{
+  "type": "bubble",
+  "body": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "md",
+    "contents": [
+      { "type": "text", "text": "訂單成立", "weight": "bold", "size": "xl" },
+      { "type": "text", "text": "A2026-0821-0007", "size": "sm", "color": "#888888" },
+      { "type": "separator", "margin": "md" },
+      { "type": "box", "layout": "vertical", "margin": "md", "spacing": "sm",
+        "contents": [
+          { "type": "box", "layout": "horizontal", "contents": [
+            { "type": "text", "text": "有機咖啡豆 x1", "size": "sm", "color": "#555555", "flex": 0, "wrap": true },
+            { "type": "text", "text": "NT$680", "size": "sm", "color": "#111111", "align": "end" }
+          ]},
+          { "type": "box", "layout": "horizontal", "contents": [
+            { "type": "text", "text": "濾掛包 x2", "size": "sm", "color": "#555555", "flex": 0, "wrap": true },
+            { "type": "text", "text": "NT$600", "size": "sm", "color": "#111111", "align": "end" }
+          ]},
+          { "type": "separator", "margin": "md" },
+          { "type": "box", "layout": "horizontal", "margin": "md", "contents": [
+            { "type": "text", "text": "合計", "size": "sm", "weight": "bold", "flex": 0 },
+            { "type": "text", "text": "NT$1,280", "size": "sm", "weight": "bold", "align": "end" }
+          ]}
+        ]
+      }
+    ]
+  },
+  "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "contents": [
+      { "type": "button", "style": "primary", "height": "sm",
+        "action": { "type": "uri", "label": "查看訂單", "uri": "https://example.com/orders/A2026-0821-0007" } },
+      { "type": "button", "style": "link", "height": "sm",
+        "action": { "type": "postback", "label": "聯絡客服", "data": "action=support&order=A2026-0821-0007" } }
+    ]
+  }
+}

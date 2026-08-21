@@ -1,0 +1,61 @@
+{
+  "type": "carousel",
+  "contents": [
+    {
+      "type": "bubble",
+      "size": "kilo",
+      "hero": {
+        "type": "image",
+        "url": "https://example.com/products/1.jpg",
+        "size": "full",
+        "aspectRatio": "20:13",
+        "aspectMode": "cover"
+      },
+      "body": {
+        "type": "box", "layout": "vertical", "spacing": "sm",
+        "contents": [
+          { "type": "text", "text": "耶加雪菲 淺焙", "weight": "bold", "size": "md", "wrap": true },
+          { "type": "box", "layout": "baseline", "contents": [
+            { "type": "text", "text": "NT$", "size": "xs", "color": "#AAAAAA", "flex": 0 },
+            { "type": "text", "text": "680", "size": "lg", "weight": "bold", "margin": "xs" }
+          ]}
+        ]
+      },
+      "footer": {
+        "type": "box", "layout": "vertical",
+        "contents": [
+          { "type": "button", "style": "primary", "height": "sm",
+            "action": { "type": "postback", "label": "加入購物車", "data": "action=add&sku=YRG-L", "displayText": "加入購物車" } }
+        ]
+      }
+    },
+    {
+      "type": "bubble",
+      "size": "kilo",
+      "hero": {
+        "type": "image",
+        "url": "https://example.com/products/2.jpg",
+        "size": "full",
+        "aspectRatio": "20:13",
+        "aspectMode": "cover"
+      },
+      "body": {
+        "type": "box", "layout": "vertical", "spacing": "sm",
+        "contents": [
+          { "type": "text", "text": "曼特寧 深焙", "weight": "bold", "size": "md", "wrap": true },
+          { "type": "box", "layout": "baseline", "contents": [
+            { "type": "text", "text": "NT$", "size": "xs", "color": "#AAAAAA", "flex": 0 },
+            { "type": "text", "text": "620", "size": "lg", "weight": "bold", "margin": "xs" }
+          ]}
+        ]
+      },
+      "footer": {
+        "type": "box", "layout": "vertical",
+        "contents": [
+          { "type": "button", "style": "primary", "height": "sm",
+            "action": { "type": "postback", "label": "加入購物車", "data": "action=add&sku=MDL-D", "displayText": "加入購物車" } }
+        ]
+      }
+    }
+  ]
+}

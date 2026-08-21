@@ -1,0 +1,115 @@
+spec,schema,field,constraint,value,description
+manage-audience.yml,AddAudienceToAudienceGroupRequest,AddAudienceToAudienceGroupRequest.audiences,maxItems,10000,"An array of up to 10,000 user IDs or IFAs."
+manage-audience.yml,CreateAudienceGroupRequest,CreateAudienceGroupRequest.audiences,maxItems,10000,"An array of user IDs or IFAs. Max number: 10,000"
+manage-audience.yml,CreateAudienceGroupRequest,CreateAudienceGroupRequest.description,maxLength,120,"The audience's name. This is case-insensitive, meaning AUDIENCE and audience are considered identical. Max character limit: 120"
+manage-audience.yml,CreateClickBasedAudienceGroupRequest,CreateClickBasedAudienceGroupRequest.clickUrl,maxLength,2000,"The URL clicked by the user. If empty, users who clicked any URL in the message are added to the list of recipients. Max character limit: 2,000"
+manage-audience.yml,CreateClickBasedAudienceGroupRequest,CreateClickBasedAudienceGroupRequest.description,maxLength,120,"The audience's name. This is case-insensitive, meaning AUDIENCE and audience are considered identical. Max character limit: 120"
+manage-audience.yml,CreateImpBasedAudienceGroupRequest,CreateImpBasedAudienceGroupRequest.description,maxLength,120,"The audience's name. This is case-insensitive, meaning `AUDIENCE` and `audience` are considered identical. Max character limit: 120"
+manage-audience.yml,CreateImpBasedAudienceGroupRequest,CreateImpBasedAudienceGroupRequest.description,minLength,1,"The audience's name. This is case-insensitive, meaning `AUDIENCE` and `audience` are considered identical. Max character limit: 120"
+manage-audience.yml,GetAudienceDataResponse,GetAudienceDataResponse.jobs,maxItems,50,An array of jobs. This array is used to keep track of each attempt to add new user IDs or IFAs to an audience for uploading user IDs. Empty array is returned for any other type of audience. Max: 50
+manage-audience.yml,GetSharedAudienceDataResponse,GetSharedAudienceDataResponse.jobs,maxItems,50,An array of jobs. This array is used to keep track of each attempt to add new user IDs or IFAs to an audience for uploading user IDs. Empty array is returned for any other type of audience. Max: 50
+manage-audience.yml,UpdateAudienceGroupDescriptionRequest,UpdateAudienceGroupDescriptionRequest.description,maxLength,120,"The audience's name. This is case-insensitive, meaning AUDIENCE and audience are considered identical. Max character limit: 120"
+manage-audience.yml,UpdateAudienceGroupDescriptionRequest,UpdateAudienceGroupDescriptionRequest.description,minLength,1,"The audience's name. This is case-insensitive, meaning AUDIENCE and audience are considered identical. Max character limit: 120"
+messaging-api.yml,AltUri,AltUri.desktop,maxLength,1000,
+messaging-api.yml,AltUri,AltUri.desktop,minLength,0,
+messaging-api.yml,BroadcastRequest,BroadcastRequest.messages,maxItems,5,List of Message objects.
+messaging-api.yml,BroadcastRequest,BroadcastRequest.messages,minItems,1,List of Message objects.
+messaging-api.yml,CashBackPercentagePriceInfoRequest,CashBackPercentagePriceInfoRequest.percentage,maximum,99,Specifies the cashback rate as a percentage. Must be an integer between 1 and 99.
+messaging-api.yml,CashBackPercentagePriceInfoRequest,CashBackPercentagePriceInfoRequest.percentage,minimum,1,Specifies the cashback rate as a percentage. Must be an integer between 1 and 99.
+messaging-api.yml,ClipboardAction,ClipboardAction.clipboardText,maxLength,1000,Text that is copied to the clipboard. Max character limit: 1000
+messaging-api.yml,ClipboardAction,ClipboardAction.clipboardText,minLength,1,Text that is copied to the clipboard. Max character limit: 1000
+messaging-api.yml,ClipboardImagemapAction,ClipboardImagemapAction.clipboardText,maxLength,1000,Text that is copied to the clipboard. Max character limit: 1000
+messaging-api.yml,ClipboardImagemapAction,ClipboardImagemapAction.clipboardText,minLength,1,Text that is copied to the clipboard. Max character limit: 1000
+messaging-api.yml,CouponCreateRequest,CouponCreateRequest.description,maxLength,1000,Detailed description of the coupon. Displayed to users.
+messaging-api.yml,CouponCreateRequest,CouponCreateRequest.description,minLength,0,Detailed description of the coupon. Displayed to users.
+messaging-api.yml,CouponCreateRequest,CouponCreateRequest.maxUseCountPerTicket,maximum,1,Maximum number of times a single coupon ticket can be used. Use -1 to indicate no limit.
+messaging-api.yml,CouponCreateRequest,CouponCreateRequest.title,maxLength,60,Title of the coupon. Displayed in the coupon list.
+messaging-api.yml,CouponCreateRequest,CouponCreateRequest.title,minLength,1,Title of the coupon. Displayed in the coupon list.
+messaging-api.yml,CouponCreateRequest,CouponCreateRequest.usageCondition,maxLength,100,Conditions for using the coupon. Shown to users.
+messaging-api.yml,CouponCreateRequest,CouponCreateRequest.usageCondition,minLength,0,Conditions for using the coupon. Shown to users.
+messaging-api.yml,CouponMessage,CouponMessage.deliveryTag,maxLength,30,Delivery route tag information. It can be used for analysis in LINE OA Manager.
+messaging-api.yml,CreateRichMenuAliasRequest,CreateRichMenuAliasRequest.richMenuAliasId,maxLength,32,"Rich menu alias ID, which can be any ID, unique for each channel."
+messaging-api.yml,CreateRichMenuAliasRequest,CreateRichMenuAliasRequest.richMenuAliasId,minLength,1,"Rich menu alias ID, which can be any ID, unique for each channel."
+messaging-api.yml,DatetimePickerAction,DatetimePickerAction.data,maxLength,300,
+messaging-api.yml,DatetimePickerAction,DatetimePickerAction.data,minLength,0,
+messaging-api.yml,DiscountPercentagePriceInfoRequest,DiscountPercentagePriceInfoRequest.percentage,maximum,99,Specifies the discount rate as a percentage. Must be an integer between 1 and 99.
+messaging-api.yml,DiscountPercentagePriceInfoRequest,DiscountPercentagePriceInfoRequest.percentage,minimum,1,Specifies the discount rate as a percentage. Must be an integer between 1 and 99.
+messaging-api.yml,ErrorResponse,ErrorResponse.sentMessages,maxItems,5,Array of sent messages.
+messaging-api.yml,ErrorResponse,ErrorResponse.sentMessages,minItems,1,Array of sent messages.
+messaging-api.yml,GetFollowersResponse,GetFollowersResponse.userIds,maxItems,1000,An array of strings indicating user IDs of users that have added the LINE Official Account as a friend. Only users of LINE for iOS and LINE for Android are included in `userIds`.
+messaging-api.yml,GetJoinedMembershipUsersResponse,GetJoinedMembershipUsersResponse.userIds,maxItems,1000,"A list of user IDs who joined the membership. Users who have not agreed to the bot user agreement, are not following the bot, or are not active will be excluded. If there are no users in the membership, an empty list will be returned."
+messaging-api.yml,GetMembershipSubscriptionResponse,GetMembershipSubscriptionResponse.subscriptions,minItems,0,List of subscription information
+messaging-api.yml,Limit,Limit.max,minimum,1,The maximum number of narrowcast messages to send. Use this parameter to limit the number of narrowcast messages sent. The recipients will be chosen at random.
+messaging-api.yml,LotteryAcquisitionConditionRequest,LotteryAcquisitionConditionRequest.lotteryProbability,maximum,99,Probability (1-99) of winning the coupon in lottery-type campaigns.
+messaging-api.yml,LotteryAcquisitionConditionRequest,LotteryAcquisitionConditionRequest.lotteryProbability,minimum,1,Probability (1-99) of winning the coupon in lottery-type campaigns.
+messaging-api.yml,LotteryAcquisitionConditionRequest,LotteryAcquisitionConditionRequest.maxAcquireCount,maximum,999999,Maximum number of coupons that can be issued in total. Use -1 to indicate no limit
+messaging-api.yml,MembersIdsResponse,MembersIdsResponse.memberIds,maxItems,100,List of user IDs of members in the group chat. Only users of LINE for iOS and LINE for Android are included in `memberIds`.
+messaging-api.yml,Membership,Membership.benefits,minItems,1,List of membership plan perks.
+messaging-api.yml,MembershipListResponse,MembershipListResponse.memberships,minItems,0,List of membership information
+messaging-api.yml,MulticastRequest,MulticastRequest.customAggregationUnits,maxItems,1,Name of aggregation unit. Case-sensitive.
+messaging-api.yml,MulticastRequest,MulticastRequest.customAggregationUnits[],maxLength,30,
+messaging-api.yml,MulticastRequest,MulticastRequest.customAggregationUnits[],minLength,1,
+messaging-api.yml,MulticastRequest,MulticastRequest.messages,maxItems,5,Messages to send
+messaging-api.yml,MulticastRequest,MulticastRequest.messages,minItems,1,Messages to send
+messaging-api.yml,MulticastRequest,MulticastRequest.to,maxItems,500,Array of user IDs. Use userId values which are returned in webhook event objects. Do not use LINE IDs found on LINE.
+messaging-api.yml,MulticastRequest,MulticastRequest.to,minItems,1,Array of user IDs. Use userId values which are returned in webhook event objects. Do not use LINE IDs found on LINE.
+messaging-api.yml,NarrowcastRequest,NarrowcastRequest.messages,maxItems,5,List of Message objects.
+messaging-api.yml,NarrowcastRequest,NarrowcastRequest.messages,minItems,1,List of Message objects.
+messaging-api.yml,PnpMessagesRequest,PnpMessagesRequest.messages,maxItems,5,Message to be sent.
+messaging-api.yml,PnpMessagesRequest,PnpMessagesRequest.messages,minItems,1,Message to be sent.
+messaging-api.yml,PostbackAction,PostbackAction.data,maxLength,300,
+messaging-api.yml,PostbackAction,PostbackAction.data,minLength,0,
+messaging-api.yml,PushMessageRequest,PushMessageRequest.messages,maxItems,5,List of Message objects.
+messaging-api.yml,PushMessageRequest,PushMessageRequest.messages,minItems,1,List of Message objects.
+messaging-api.yml,PushMessageResponse,PushMessageResponse.sentMessages,maxItems,5,Array of sent messages.
+messaging-api.yml,PushMessageResponse,PushMessageResponse.sentMessages,minItems,1,Array of sent messages.
+messaging-api.yml,QuickReply,QuickReply.items,maxItems,13,Quick reply button objects.
+messaging-api.yml,QuickReplyItem,QuickReplyItem.imageUrl,maxLength,2000,URL of the icon that is displayed at the beginning of the button
+messaging-api.yml,ReplyMessageRequest,ReplyMessageRequest.messages,maxItems,5,List of messages.
+messaging-api.yml,ReplyMessageRequest,ReplyMessageRequest.messages,minItems,1,List of messages.
+messaging-api.yml,ReplyMessageResponse,ReplyMessageResponse.sentMessages,maxItems,5,Array of sent messages.
+messaging-api.yml,ReplyMessageResponse,ReplyMessageResponse.sentMessages,minItems,1,Array of sent messages.
+messaging-api.yml,RichMenuBatchRequest,RichMenuBatchRequest.operations,maxItems,1000,Array of Rich menu operation object...
+messaging-api.yml,RichMenuBatchRequest,RichMenuBatchRequest.resumeRequestKey,maxLength,100,Key for retry. Key value is a string matching the regular expression pattern
+messaging-api.yml,RichMenuBatchRequest,RichMenuBatchRequest.resumeRequestKey,minLength,1,Key for retry. Key value is a string matching the regular expression pattern
+messaging-api.yml,RichMenuBounds,RichMenuBounds.height,maximum,2147483647,Height of the area.
+messaging-api.yml,RichMenuBounds,RichMenuBounds.height,minimum,1,Height of the area.
+messaging-api.yml,RichMenuBounds,RichMenuBounds.width,maximum,2147483647,Width of the area.
+messaging-api.yml,RichMenuBounds,RichMenuBounds.width,minimum,1,Width of the area.
+messaging-api.yml,RichMenuBounds,RichMenuBounds.x,maximum,2147483647,Horizontal position relative to the top-left corner of the area.
+messaging-api.yml,RichMenuBounds,RichMenuBounds.x,minimum,0,Horizontal position relative to the top-left corner of the area.
+messaging-api.yml,RichMenuBounds,RichMenuBounds.y,maximum,2147483647,Vertical position relative to the top-left corner of the area.
+messaging-api.yml,RichMenuBounds,RichMenuBounds.y,minimum,0,Vertical position relative to the top-left corner of the area.
+messaging-api.yml,RichMenuBulkLinkRequest,RichMenuBulkLinkRequest.userIds,maxItems,500,Array of user IDs. Found in the `source` object of webhook event objects. Do not use the LINE ID used in LINE.
+messaging-api.yml,RichMenuBulkLinkRequest,RichMenuBulkLinkRequest.userIds,minItems,1,Array of user IDs. Found in the `source` object of webhook event objects. Do not use the LINE ID used in LINE.
+messaging-api.yml,RichMenuBulkUnlinkRequest,RichMenuBulkUnlinkRequest.userIds,maxItems,500,Array of user IDs. Found in the `source` object of webhook event objects. Do not use the LINE ID used in LINE.
+messaging-api.yml,RichMenuBulkUnlinkRequest,RichMenuBulkUnlinkRequest.userIds,minItems,1,Array of user IDs. Found in the `source` object of webhook event objects. Do not use the LINE ID used in LINE.
+messaging-api.yml,RichMenuRequest,RichMenuRequest.chatBarText,maxLength,14,Text displayed in the chat bar
+messaging-api.yml,RichMenuRequest,RichMenuRequest.name,maxLength,300,Name of the rich menu. This value can be used to help manage your rich menus and is not displayed to users.
+messaging-api.yml,RichMenuResponse,RichMenuResponse.areas,maxItems,20,Array of area objects which define the coordinates and size of tappable areas
+messaging-api.yml,RichMenuResponse,RichMenuResponse.chatBarText,maxLength,14,Text displayed in the chat bar
+messaging-api.yml,RichMenuResponse,RichMenuResponse.name,maxLength,300,Name of the rich menu. This value can be used to help manage your rich menus and is not displayed to users.
+messaging-api.yml,RichMenuSize,RichMenuSize.height,maximum,2147483647,height
+messaging-api.yml,RichMenuSize,RichMenuSize.height,minimum,1,height
+messaging-api.yml,RichMenuSize,RichMenuSize.width,maximum,2147483647,width
+messaging-api.yml,RichMenuSize,RichMenuSize.width,minimum,1,width
+messaging-api.yml,RichMenuSwitchAction,RichMenuSwitchAction.data,maxLength,300,
+messaging-api.yml,RichMenuSwitchAction,RichMenuSwitchAction.data,minLength,0,
+messaging-api.yml,RichMenuSwitchAction,RichMenuSwitchAction.richMenuAliasId,maxLength,32,
+messaging-api.yml,RichMenuSwitchAction,RichMenuSwitchAction.richMenuAliasId,minLength,0,
+messaging-api.yml,Sender,Sender.iconUrl,maxLength,2000,URL of the image to display as an icon when sending a message
+messaging-api.yml,Sender,Sender.name,maxLength,20,Display name. Certain words such as `LINE` may not be used.
+messaging-api.yml,SetWebhookEndpointRequest,SetWebhookEndpointRequest.endpoint,maxLength,500,A valid webhook URL.
+messaging-api.yml,SetWebhookEndpointRequest,SetWebhookEndpointRequest.endpoint,minLength,0,A valid webhook URL.
+messaging-api.yml,ShowLoadingAnimationRequest,ShowLoadingAnimationRequest.loadingSeconds,maximum,60,The number of seconds to display the loading indicator. It must be a multiple of 5. The maximum value is 60 seconds.
+messaging-api.yml,ShowLoadingAnimationRequest,ShowLoadingAnimationRequest.loadingSeconds,minimum,5,The number of seconds to display the loading indicator. It must be a multiple of 5. The maximum value is 60 seconds.
+messaging-api.yml,SubscribedMembershipPlan,SubscribedMembershipPlan.benefits,minItems,1,List of membership plan perks.
+messaging-api.yml,TestWebhookEndpointRequest,TestWebhookEndpointRequest.endpoint,maxLength,500,A webhook URL to be validated.
+messaging-api.yml,TestWebhookEndpointRequest,TestWebhookEndpointRequest.endpoint,minLength,0,A webhook URL to be validated.
+messaging-api.yml,ValidateMessageRequest,ValidateMessageRequest.messages,maxItems,5,Array of message objects to validate
+messaging-api.yml,ValidateMessageRequest,ValidateMessageRequest.messages,minItems,1,Array of message objects to validate
+module.yml,AcquireChatControlRequest,AcquireChatControlRequest.ttl,maximum,31536000,The time it takes for initiative (Chat Control) to return to the Primary Channel (the time that the module channel stays on the Active Channel). The value is specified in seconds. The maximum value is one year (3600 * 24 * 365). The default value is 3600 (1 hour). * Ignored if the value of expired is false.
+webhook.yml,CallbackRequest,CallbackRequest.destination,maxLength,33,"User ID of a bot that should receive webhook events. The user ID value is a string that matches the regular expression, `U[0-9a-f]{32}`."
+webhook.yml,CallbackRequest,CallbackRequest.destination,minLength,33,"User ID of a bot that should receive webhook events. The user ID value is a string that matches the regular expression, `U[0-9a-f]{32}`."
+webhook.yml,StickerMessageContent,StickerMessageContent.keywords,maxItems,15,"Array of up to 15 keywords describing the sticker. If a sticker has 16 or more keywords, a random selection of 15 keywords will be returned. The keyword selection is random for each event, so different keywords may be returned for the same sticker."
+webhook.yml,StickerMessageContent,StickerMessageContent.text,maxLength,100,Any text entered by the user. This property is only included for message stickers. Max character limit: 100

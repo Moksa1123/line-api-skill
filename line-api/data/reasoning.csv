@@ -1,0 +1,24 @@
+scenario,recommendation,confidence,reason,anti_patterns,key_apis,doc_url
+使用者傳訊息給官方帳號後要回覆,reply message,HIGH,replyToken 回覆不計入月免費訊息額度，成本為零,超過 1 分鐘或第二則才發要改用 push,POST /v2/bot/message/reply,https://developers.line.biz/en/reference/messaging-api/#send-reply-message
+主動通知單一使用者,push message,HIGH,指定 userId 直接送；計入訊息額度,對已知 userId 大量發送應改用 multicast 省呼叫次數,POST /v2/bot/message/push,https://developers.line.biz/en/reference/messaging-api/#send-push-message
+一次通知 2~500 位已知 userId,multicast,HIGH,單次請求最多 500 個 userId，比逐一 push 省 API 呼叫,不能用於群組/多人聊天室,POST /v2/bot/message/multicast,https://developers.line.biz/en/reference/messaging-api/#send-multicast-message
+通知全部好友,broadcast,HIGH,一次送給所有好友，不需自行維護名單,好友數多時費用高；分眾請用 narrowcast,POST /v2/bot/message/broadcast,https://developers.line.biz/en/reference/messaging-api/#send-broadcast-message
+依性別/年齡/地區/好友期間分眾推播,narrowcast + audience,HIGH,可用人口屬性或 audience 名單篩選收訊者,受眾人數過少時 LINE 不會送出（隱私保護）,POST /v2/bot/message/narrowcast,https://developers.line.biz/en/reference/messaging-api/#send-narrowcast-message
+對方還沒加官方帳號好友但要發通知,LINE 通知訊息 (LINE notification messages),MEDIUM,用手機號碼發送、不需加好友；但需向 LINE 業務申請開通,一般開發者無法自行開通；不可用於行銷,POST /bot/pnp/push,https://developers.line.biz/en/docs/partner-docs/line-notification-messages/overview/
+只是要在官網放「加好友」按鈕,LINE Social Plugins,HIGH,純前端嵌入，不需要 channel 也不需後端,需要取得使用者資料時不適用,line-it.js,https://developers.line.biz/en/docs/line-social-plugins/
+網站要用 LINE 帳號登入,LINE Login v2.1,HIGH,OAuth 2.0 + OIDC 標準流程，可取得 userId / displayName / picture,email 需另外申請 OpenID Connect Email permission,GET /oauth2/v2.1/authorize + POST /oauth2/v2.1/token,https://developers.line.biz/en/docs/line-login/integrate-line-login/
+在 LINE 聊天室內開網頁表單/預約/購物,LIFF,HIGH,可直接取得 profile、免再登入、可回填訊息到聊天室,外部瀏覽器開啟時部分 API 不可用，要用 liff.isApiAvailable() 判斷,liff.init() / liff.getProfile(),https://developers.line.biz/en/docs/liff/overview/
+想出現在 LINE App 服務列表並取得完整權限,LINE MINI App,MEDIUM,免下載、可用服務訊息 (Service Messages)、可做 in-app purchase,需通過 LINE 審查，開發與上線成本較高,LIFF API + /message/v3/notifier/send,https://developers.line.biz/en/docs/line-mini-app/discover/introduction/
+正式環境要簽發 channel access token,stateless channel access token,HIGH,15 分鐘效期、不限發行數量，多實例/serverless 不會互相踢掉,不適合想長期快取 token 的架構,POST https://api.line.me/oauth2/v3/token,https://developers.line.biz/en/docs/basics/channel-access-token/
+需要自訂 token 效期並可撤銷,channel access token v2.1 (JWT),HIGH,可指定最長 30 天效期、可用 kid 管理與撤銷,需準備 assertion 私鑰並實作 RS256 JWT 簽章,POST https://api.line.me/oauth2/v2.1/token,https://developers.line.biz/en/docs/messaging-api/generate-json-web-token/
+只是本機測試,long-lived channel access token,MEDIUM,Console 直接複製即可用，最快,永不過期、外洩風險高；正式環境不要用,(console),https://developers.line.biz/en/docs/basics/channel-access-token/
+要做圖文選單,rich menu,HIGH,常駐於聊天室下方，是官方帳號最有效的導流入口,圖片規格嚴格（寬800-2500、比例≥1.45、≤1MB）；上傳要打 api-data.line.me,POST /v2/bot/richmenu + POST api-data /v2/bot/richmenu/{id}/content,https://developers.line.biz/en/docs/messaging-api/using-rich-menus/
+不同使用者要看到不同圖文選單,per-user rich menu,MEDIUM,用 link/unlink 將 richMenuId 綁到個別 userId,大量綁定請用 bulk link（一次 500 人）,POST /v2/bot/user/{userId}/richmenu/{richMenuId},https://developers.line.biz/en/docs/messaging-api/use-per-user-rich-menus/
+圖文選單要能分頁切換,rich menu alias + richmenuswitch action,MEDIUM,用 alias 讓使用者在多個選單間切換而不需重新 link,alias ID 需先建立（每個 channel 上限 1000 個）；切換前兩個選單都要先建立好,POST /v2/bot/richmenu/alias,https://developers.line.biz/en/docs/messaging-api/switch-rich-menus/
+要送排版豐富的卡片訊息,Flex Message,HIGH,可自由排版；carousel 最多 12 個 bubble,JSON 複雜易出錯，送出前先用 validate 端點或 Flex Message Simulator 檢查,POST /v2/bot/message/push with type=flex,https://developers.line.biz/en/docs/messaging-api/using-flex-messages/
+只是要幾個選項讓使用者點,quick reply,HIGH,最多 13 個按鈕、附在訊息下方、實作最簡單,只在最新一則訊息顯示，使用者往上滑就不見了,quickReply property,https://developers.line.biz/en/docs/messaging-api/using-quick-reply/
+要拿到使用者點了什麼而不顯示文字,postback action,HIGH,data 欄位最多 300 字，回傳在 postback event,data 放敏感資訊不安全；應放 key 再查 DB,postback action,https://developers.line.biz/en/reference/messaging-api/#postback-action
+要處理長時間任務避免使用者以為當機,loading indicator,MEDIUM,顯示「輸入中」動畫 5~60 秒,僅一對一聊天可用,POST /v2/bot/chat/loading/start,https://developers.line.biz/en/docs/messaging-api/use-loading-indicator/
+要統計訊息成效,Insight API,MEDIUM,可查好友數、送達數、開封/點擊數、圖文選單點擊,資料有延遲且需達最低人數門檻,GET /v2/bot/insight/*,https://developers.line.biz/en/reference/messaging-api/#get-insight
+要避免重複扣款/重複建立,retry key,MEDIUM,帶 X-Line-Retry-Key 讓同一請求重試時不會重複執行,只有部分端點支援,X-Line-Retry-Key header,https://developers.line.biz/en/docs/messaging-api/retrying-api-request/
+從 LINE Notify 遷移,Messaging API push,HIGH,LINE Notify 已於 2025-03-31 終止；push 是最接近的替代,收訊者必須先加官方帳號好友，這是與 Notify 最大的差異,POST /v2/bot/message/push,https://notify-bot.line.me/en/
