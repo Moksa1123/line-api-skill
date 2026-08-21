@@ -133,6 +133,12 @@ CSV_CONFIG: Dict[str, dict] = {
         "output_cols": ["schema", "field", "constraint", "value", "description"],
         "label": "數值限制",
     },
+    "sdk_api": {
+        "file": "sdk-api.csv",
+        "search_cols": ["name", "package", "platform", "kind"],
+        "output_cols": ["platform", "kind", "name", "package", "doc_url"],
+        "label": "行動 SDK 型別",
+    },
     "faq": {
         "file": "faq.csv",
         "search_cols": ["question", "tags", "product"],
@@ -223,6 +229,8 @@ DOMAIN_KEYWORDS: Dict[str, List[str]] = {
     "error": ["error", "400", "401", "403", "404", "409", "429", "500", "錯誤", "失敗"],
     "limit": ["limit", "max", "maximum", "限制", "上限", "最多", "長度"],
     "product": ["product", "login", "mini app", "social plugin", "beacon", "產品", "選哪個"],
+    "sdk_api": ["ios sdk", "android sdk", "swift", "kotlin", "java sdk",
+                "linesdk", "loginmanager", "lineapiclient", "行動 sdk", "原生 sdk"],
     "faq": ["faq", "常見問題", "官方有沒有說", "官方說明", "為什麼會", "可不可以"],
     "url_scheme": ["url scheme", "line://", "line.me/r", "openexternalbrowser",
                    "深層連結", "深連結", "開啟相機", "開啟聊天室", "加好友連結", "分享連結"],

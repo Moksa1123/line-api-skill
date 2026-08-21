@@ -84,7 +84,7 @@ def t_dataset_present():
         "endpoints.csv", "parameters.csv", "message-objects.csv", "flex-components.csv",
         "actions.csv", "richmenu.csv", "webhook-events.csv", "liff-api.csv",
         "webhook-properties.csv", "responses.csv", "guides.csv",
-        "liff-versions.csv", "terms.csv", "url-schemes.csv", "faq.csv",
+        "liff-versions.csv", "terms.csv", "url-schemes.csv", "faq.csv", "sdk-api.csv",
         "error-codes.csv", "limits.csv", "products.csv", "channel-tokens.csv",
         "troubleshooting.csv", "reasoning.csv", "deprecations.csv", "glossary.csv",
         "emoji.csv", "stickers.csv",
@@ -244,6 +244,32 @@ def t_liff_versions():
     return (f"{len(versions)} 版、{len(dated)} 個有日期；"
             f"{sum(1 for r in api if r['introduced_in'])} 個 API 標出引進版本；"
             f"{len(before)} 個可在 init 前呼叫")
+
+
+@check("dataset: 行動 SDK（iOS / Android）的型別清單有進資料集")
+def t_sdk_api():
+    sdk = rows("sdk-api.csv")
+    assert len(sdk) >= 70, f"SDK 型別只有 {len(sdk)} 個"
+
+    platforms = {r["platform"] for r in sdk}
+    assert platforms == {"ios-swift", "android"}, platforms
+
+    # jazzy 目錄名是複數，早期用 rstrip("s") 會產出 classe / typealiase
+    kinds = {r["kind"] for r in sdk}
+    assert not any(k.endswith("e") and k not in ("typealias",) and k[:-1] in kinds
+                   for k in kinds), f"型別分類看起來被截錯字：{sorted(kinds)}"
+    for bad in ("classe", "typealiase", "struct s"):
+        assert bad not in kinds, f"型別分類有誤：{bad}"
+
+    names = {r["name"] for r in sdk}
+    for want in ("LoginManager", "LineSDKError", "LineApiClient", "LineLoginApi"):
+        assert want in names, f"缺少 SDK 型別 {want}"
+
+    assert all(r["doc_url"].startswith("https://developers.line.biz/en/reference/")
+               for r in sdk), "SDK 型別的連結格式錯誤"
+    ios = sum(1 for r in sdk if r["platform"] == "ios-swift")
+    android = sum(1 for r in sdk if r["platform"] == "android")
+    return f"{len(sdk)} 個型別（iOS {ios} / Android {android}）"
 
 
 @check("dataset: 官方 FAQ 題目與錨點都正確")

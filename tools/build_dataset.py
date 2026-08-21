@@ -686,6 +686,68 @@ def strip_anchor_marks(text: str) -> str:
 FAQ_Q_RE = re.compile(r"^Q\[(.+?)\]\(#\)\s*$")
 
 
+# jazzy 的分類目錄名是複數，直接 rstrip("s") 會得到 classe / typealiase，
+# 所以用明確對照。
+IOS_KIND = {
+    "Classes": "class", "Structs": "struct", "Enums": "enum",
+    "Protocols": "protocol", "Extensions": "extension", "Typealiases": "typealias",
+}
+
+IOS_TYPE_RE = re.compile(
+    r'href="((?:Classes|Structs|Enums|Protocols|Extensions|Typealiases)[^"]*\.html)"[^>]*>([^<]+)<')
+ANDROID_TYPE_RE = re.compile(
+    r'href="\./(com/linecorp/linesdk/[^"]+\.html)"[^>]*>(?:<i>)?([A-Za-z][\w.]*)')
+
+
+def build_sdk_api() -> list[dict]:
+    """行動版 SDK 的型別清單（iOS Swift / Android）。
+
+    這兩份 API reference 是產生器輸出的獨立網站（jazzy / javadoc），沒有
+    index.html.md，所以先前整批被跳過——問「iOS SDK 的 LoginManager 在哪」
+    「Android 的錯誤型別叫什麼」完全查不到。
+
+    只收型別名稱與連結這類識別資訊，內文留在官方站上由連結指過去。
+    """
+    sdk_dir = CACHE / "sdk"
+    rows: list[dict] = []
+
+    ios = sdk_dir / "ios-sdk-swift.html"
+    if ios.exists():
+        base = "https://developers.line.biz/en/reference/ios-sdk-swift/"
+        for href, name in IOS_TYPE_RE.findall(ios.read_text(encoding="utf-8")):
+            name = name.strip()
+            # jazzy 用 "– Nested" 表示巢狀型別，也會把分類本身列成一筆
+            nested = name.startswith("–")
+            name = name.lstrip("–").strip()
+            kind = IOS_KIND.get(href.split("/")[0].replace(".html", ""), "type")
+            if not name or name in ("Classes", "Enumerations", "Structs",
+                                    "Protocols", "Extensions", "Typealiases"):
+                continue
+            rows.append({
+                "platform": "ios-swift", "kind": kind, "name": name,
+                "nested": "true" if nested else "false",
+                "package": "LineSDK",
+                "doc_url": base + href,
+            })
+
+    android = sdk_dir / "android-sdk-classes.html"
+    if android.exists():
+        base = "https://developers.line.biz/en/reference/android-sdk/reference/"
+        seen: set[str] = set()
+        for href, name in ANDROID_TYPE_RE.findall(android.read_text(encoding="utf-8")):
+            if href.endswith("package-summary.html") or name in seen:
+                continue
+            seen.add(name)
+            package = ".".join(href.split("/")[:-1])
+            rows.append({
+                "platform": "android", "kind": "class", "name": name,
+                "nested": "true" if "." in name else "false",
+                "package": package,
+                "doc_url": base + href,
+            })
+    return rows
+
+
 def build_faq() -> list[dict]:
     """官方 FAQ 的題目索引。
 
@@ -1395,6 +1457,10 @@ def main() -> int:
     write_csv("liff-versions.csv",
               ["version", "released", "apis_touched", "api_count", "doc_url"],
               liff_versions)
+
+    write_csv("sdk-api.csv",
+              ["platform", "kind", "name", "nested", "package", "doc_url"],
+              build_sdk_api())
 
     write_csv("faq.csv",
               ["question", "product", "tags", "doc_url"],

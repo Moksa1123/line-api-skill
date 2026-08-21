@@ -365,6 +365,29 @@ def crawl_html(paths: list[str]) -> int:
     return ok
 
 
+# 行動版 SDK 的 API reference 是產生器輸出的獨立網站（Android 用 javadoc、
+# iOS 用 jazzy），沒有 index.html.md，結構也和文件站不同。這裡只存索引頁，
+# 由 build_dataset 從中取出型別清單。
+SDK_INDEX_PAGES = {
+    "ios-sdk-swift.html": "/en/reference/ios-sdk-swift/",
+    "android-sdk-classes.html": "/en/reference/android-sdk/reference/classes.html",
+}
+
+
+def fetch_sdk_indexes() -> int:
+    out_dir = CACHE / "sdk"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    saved = 0
+    for name, path in SDK_INDEX_PAGES.items():
+        html = fetch(BASE + path)
+        if not html:
+            print("  ! 取不到", path)
+            continue
+        (out_dir / name).write_text(html, encoding="utf-8")
+        saved += 1
+    return saved
+
+
 def clone_openapi() -> None:
     dest = CACHE / "line-openapi"
     if dest.exists():
@@ -395,6 +418,9 @@ def main() -> int:
     print(f"     saved {ok}, no-markdown {bad}")
     extra = crawl_html(HTML_ONLY)
     print(f"     converted {extra} HTML-only pages")
+
+    n = fetch_sdk_indexes()
+    print(f"     saved {n} SDK reference index pages")
 
     print("3/3  OpenAPI specs")
     clone_openapi()
