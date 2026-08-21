@@ -76,6 +76,20 @@ TEXT_SHRINKS_WITH_IMAGE = {
                        "when": ("thumbnailImageUrl", "title")},
 }
 
+# Flex 容器的 JSON 體積上限。只寫在文件正文，OpenAPI 沒有。
+# reference/messaging-api.md > Message objects > Flex Message > Container
+FLEX_JSON_LIMITS = {
+    "bubble": 30 * 1024,
+    "carousel": 50 * 1024,
+}
+
+# 官方對 confirm template 的寫法是「Set 2 actions for the 2 buttons」——
+# 是「剛好 2 個」而不是「最多 2 個」，所以不能存成 max_length。
+# reference/messaging-api.md > Message objects > Template messages > Confirm template
+EXACT_ACTION_COUNT = {
+    "ConfirmTemplate": 2,
+}
+
 DEPRECATED_TYPES = {
     "filler": "filler 已淘汰，請改用 box 的 margin / offset / padding 排版",
 }
@@ -232,8 +246,13 @@ class Validator:
         if tag in DEPRECATED_TYPES:
             self.warn(path, DEPRECATED_TYPES[tag], REG.doc.get(f"{union}:{tag}", ""))
         doc = REG.doc.get(f"{union}:{tag}", "")
+        schema = REG.schema_of(union, tag)
         self._check_props(path, obj, table[tag], doc)
-        self._check_conditional_text(path, obj, REG.schema_of(union, tag), doc)
+        self._check_conditional_text(path, obj, schema, doc)
+        self._check_exact_action_count(path, obj, schema, doc)
+        self._check_column_consistency(path, obj, schema, doc)
+        if union == "FlexContainer":
+            self._check_flex_container(path, obj, tag, doc)
 
     def check_schema(self, path: str, obj, schema: str) -> None:
         props = REG.by_schema.get(schema)
@@ -242,8 +261,11 @@ class Validator:
         if not isinstance(obj, dict):
             self.err(path, f"必須是物件（{schema}），實際是 {type(obj).__name__}")
             return
-        self._check_props(path, obj, props, REG.doc.get(schema, ""))
-        self._check_conditional_text(path, obj, schema, REG.doc.get(schema, ""))
+        doc = REG.doc.get(schema, "")
+        self._check_props(path, obj, props, doc)
+        self._check_conditional_text(path, obj, schema, doc)
+        self._check_exact_action_count(path, obj, schema, doc)
+        self._check_column_consistency(path, obj, schema, doc)
 
     def _check_conditional_text(self, path: str, obj: dict, schema: str, doc: str) -> None:
         rule = TEXT_SHRINKS_WITH_IMAGE.get(schema)
@@ -258,6 +280,72 @@ class Validator:
             reason = ("同時有圖片或標題時" if has_image_or_title else "沒有圖片與標題時")
             self.err(f"{path}.text",
                      f"{schema} 在{reason} text 上限為 {limit}，目前 {len(text)} 字", doc)
+
+    def _check_exact_action_count(self, path: str, obj: dict, schema: str, doc: str) -> None:
+        want = EXACT_ACTION_COUNT.get(schema)
+        if want is None:
+            return
+        actions = obj.get("actions")
+        if not isinstance(actions, list):
+            return
+        if len(actions) != want:
+            self.err(f"{path}.actions",
+                     f"{schema} 必須剛好 {want} 個 action，目前 {len(actions)} 個", doc)
+
+    def _check_flex_container(self, path: str, obj: dict, tag: str, doc: str) -> None:
+        """Flex 容器的三條規則，都只寫在文件正文裡，OpenAPI 沒有。
+
+        reference/messaging-api.md > Message objects > Flex Message > Container
+          - bubble 的 JSON 最大 30 KB，carousel 最大 50 KB
+          - 同一個 carousel 內的 bubble 不能有不同寬度（size）
+        """
+        limit = FLEX_JSON_LIMITS.get(tag)
+        if limit:
+            size = len(json.dumps(obj, ensure_ascii=False, separators=(",", ":"))
+                       .encode("utf-8"))
+            if size > limit:
+                self.err(path,
+                         f"{tag} 的 JSON 為 {size/1024:.1f} KB，超過上限 {limit//1024} KB",
+                         doc)
+
+        if tag != "carousel":
+            return
+        bubbles = [b for b in (obj.get("contents") or []) if isinstance(b, dict)]
+        if len(bubbles) < 2:
+            return
+        sizes = {b.get("size", "mega") for b in bubbles}
+        if len(sizes) > 1:
+            self.err(f"{path}.contents",
+                     f"同一個 carousel 內的 bubble 寬度必須相同，目前混用了 {sorted(sizes)}",
+                     doc)
+
+    def _check_column_consistency(self, path: str, obj: dict, schema: str, doc: str) -> None:
+        """輪播各欄必須長得一樣。
+
+        官方原文：Keep the number of actions consistent for all columns. If you
+        use an image or title for a column, make sure to do the same for all
+        other columns.
+        """
+        if schema != "CarouselTemplate":
+            return
+        columns = obj.get("columns")
+        if not isinstance(columns, list) or len(columns) < 2:
+            return
+        cols = [c for c in columns if isinstance(c, dict)]
+        if len(cols) < 2:
+            return
+
+        counts = {len(c.get("actions") or []) for c in cols}
+        if len(counts) > 1:
+            self.warn(f"{path}.columns",
+                      f"各欄的 action 數量不一致（{sorted(counts)}），LINE 要求所有欄位一致",
+                      doc)
+        for field, label in (("thumbnailImageUrl", "圖片"), ("title", "標題")):
+            present = {bool(c.get(field)) for c in cols}
+            if len(present) > 1:
+                self.warn(f"{path}.columns",
+                          f"有些欄有{label}、有些沒有；LINE 要求所有欄位一致（{field}）",
+                          doc)
 
     def _check_props(self, path: str, obj: dict, props: dict, doc: str) -> None:
         for name, spec in props.items():

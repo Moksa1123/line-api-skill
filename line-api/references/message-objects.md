@@ -88,9 +88,56 @@ python scripts/search.py "446" --domain sticker
 | `template.type` | 必填 | 說明 |
 |---|---|---|
 | `buttons` | `text`, `actions` | 最多 4 個 action |
-| `confirm` | `text`, `actions` | 必須剛好 2 個 action |
+| `confirm` | `text`, `actions` | **必須剛好 2 個** action |
 | `carousel` | `columns` | 最多 10 欄，每欄最多 3 個 action |
 | `image_carousel` | `columns` | 最多 10 欄，每欄 1 個 action |
+
+### buttons template 全部欄位
+
+| 欄位 | 必填 | 上限 / 可用值 |
+|---|---|---|
+| `text` | ✅ | **160 字（沒有圖也沒有標題時）/ 60 字（有圖或標題時）** |
+| `actions` | ✅ | 最多 4 個 |
+| `title` | | 40 字 |
+| `thumbnailImageUrl` | | 2000 字；JPEG/PNG、寬 ≤1024px、≤10MB |
+| `imageAspectRatio` | | `rectangle`（1.51:1，預設）\| `square`（1:1） |
+| `imageSize` | | `cover`（預設，裁切填滿）\| `contain`（完整顯示，留白） |
+| `imageBackgroundColor` | | RGB 色碼，預設 `#FFFFFF` |
+| `defaultAction` | | 點圖片 / 標題 / 文字區時的動作 |
+
+### carousel template 全部欄位
+
+**輪播本體**
+
+| 欄位 | 必填 | 上限 / 可用值 |
+|---|---|---|
+| `columns` | ✅ | 最多 **10 欄** |
+| `imageAspectRatio` | | `rectangle`（預設）\| `square`　**套用到所有欄** |
+| `imageSize` | | `cover`（預設）\| `contain`　**套用到所有欄** |
+
+**每一欄（CarouselColumn）**
+
+| 欄位 | 必填 | 上限 |
+|---|---|---|
+| `text` | ✅ | **120 字（沒有圖也沒有標題時）/ 60 字（有圖或標題時）** |
+| `actions` | ✅ | 每欄最多 **3 個** |
+| `title` | | 40 字 |
+| `thumbnailImageUrl` | | 2000 字；比例固定 1.51:1、寬 ≤1024px、≤10MB |
+| `imageBackgroundColor` | | RGB 色碼，預設 `#FFFFFF` |
+| `defaultAction` | | 點圖片 / 標題 / 文字區時的動作 |
+
+> ⚠️ **跨欄一致性**：官方要求「所有欄位的 action 數量必須一致；若某一欄用了圖片或
+> 標題，其他欄也要一樣」。`scripts/validate.py` 會在不一致時發出警告。
+
+### image_carousel template 全部欄位
+
+| 欄位 | 必填 | 上限 |
+|---|---|---|
+| `columns` | ✅ | 最多 10 欄 |
+| `columns[].imageUrl` | ✅ | 2000 字；寬 ≤1024px、≤10MB |
+| `columns[].action` | ✅ | 每欄**只有 1 個**動作 |
+
+`image_carousel` 沒有 `imageAspectRatio` / `imageSize`，圖片一律 1:1。
 
 ```json
 {

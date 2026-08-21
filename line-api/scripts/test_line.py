@@ -423,6 +423,108 @@ def t_validate_carousel():
     return "template 10 欄 / 每欄 3 動作 / 條件式 text / Flex 12 bubble 全部生效"
 
 
+@check("dataset: 只寫在文件散文裡的 enum 與預設值也要進資料集")
+def t_prose_enums_and_defaults():
+    msg = rows("message-objects.csv")
+
+    def find(schema, prop, col):
+        return next((r[col] for r in msg if r["schema"] == schema and r["property"] == prop), None)
+
+    # OpenAPI 只說這兩個是 string，enum 只寫在文件正文裡
+    assert find("CarouselTemplate", "imageAspectRatio", "enum") == "rectangle|square"
+    assert find("CarouselTemplate", "imageSize", "enum") == "cover|contain"
+    assert find("CarouselTemplate", "imageAspectRatio", "default") == "rectangle"
+    assert find("CarouselColumn", "imageBackgroundColor", "default") == "#FFFFFF"
+
+    enums = sum(1 for r in msg if r["enum"])
+    defaults = sum(1 for r in msg if r["default"])
+    assert enums >= 8, f"訊息物件的 enum 只有 {enums} 筆"
+    assert defaults >= 10, f"訊息物件的預設值只有 {defaults} 筆"
+    return f"訊息物件：{enums} 個 enum、{defaults} 個預設值"
+
+
+@check("dataset: 輪播各層的欄位上限都齊全")
+def t_carousel_limits_complete():
+    msg = rows("message-objects.csv")
+    flex = rows("flex-components.csv")
+
+    def mx(rowset, schema, prop):
+        return next((r["max_length"] for r in rowset
+                     if r["schema"] == schema and r["property"] == prop), None)
+
+    expected = [
+        (msg, "CarouselTemplate", "columns", "10"),
+        (msg, "CarouselColumn", "actions", "3"),
+        (msg, "CarouselColumn", "title", "40"),
+        (msg, "CarouselColumn", "text", "120"),
+        (msg, "CarouselColumn", "thumbnailImageUrl", "2000"),
+        (msg, "ImageCarouselTemplate", "columns", "10"),
+        (msg, "ImageCarouselColumn", "imageUrl", "2000"),
+        (msg, "ButtonsTemplate", "actions", "4"),
+        (flex, "FlexCarousel", "contents", "12"),
+    ]
+    for rowset, schema, prop, want in expected:
+        got = mx(rowset, schema, prop)
+        assert got == want, f"{schema}.{prop} 應為 {want}，實際 {got!r}"
+    # confirm template 的官方寫法是「剛好 2 個」而非上限，規則在驗證器裡
+    exact = val.run({"type": "template", "altText": "a", "template": {
+        "type": "confirm", "text": "ok?",
+        "actions": [{"type": "message", "label": "a", "text": "a"}]}}, "message")
+    assert any("剛好 2 個" in p.message for p in exact.problems),         "confirm template 只給 1 個 action 應該要報錯"
+    return f"{len(expected)} 個輪播上限正確，confirm 的『剛好 2 個』也生效"
+
+
+@check("validate: 輪播各欄不一致時會提醒")
+def t_carousel_consistency():
+    action = [{"type": "message", "label": "a", "text": "a"}]
+
+    def run(columns):
+        return val.run({"type": "template", "altText": "a",
+                        "template": {"type": "carousel", "columns": columns}}, "message")
+
+    v = run([{"text": "a", "actions": action},
+             {"text": "b", "actions": action * 2}])
+    assert any("action 數量不一致" in p.message for p in v.problems), "沒抓到 action 數不一致"
+
+    v = run([{"text": "a", "thumbnailImageUrl": "https://e.com/1.jpg", "actions": action},
+             {"text": "b", "actions": action}])
+    assert any("thumbnailImageUrl" in p.message for p in v.problems), "沒抓到有些欄缺圖"
+
+    v = run([{"text": "a", "thumbnailImageUrl": "https://e.com/1.jpg", "actions": action},
+             {"text": "b", "thumbnailImageUrl": "https://e.com/2.jpg", "actions": action}])
+    assert not v.problems, f"一致的輪播被誤報：{[p.message for p in v.problems]}"
+    return "action 數與圖片/標題一致性都會檢查"
+
+
+@check("validate: Flex 容器的 JSON 體積與 bubble 寬度規則")
+def t_flex_container_rules():
+    def bubble(size=None, filler="x"):
+        b = {"type": "bubble", "body": {"type": "box", "layout": "vertical",
+                                        "contents": [{"type": "text", "text": filler}]}}
+        if size:
+            b["size"] = size
+        return b
+
+    # 同一個 carousel 內不能混用不同寬度
+    v = val.run({"type": "carousel", "contents": [bubble("kilo"), bubble("mega")]}, "flex")
+    assert any("寬度必須相同" in p.message for p in v.problems), "沒抓到 bubble 寬度混用"
+
+    v = val.run({"type": "carousel", "contents": [bubble("kilo"), bubble("kilo")]}, "flex")
+    assert not v.problems, f"寬度一致卻被誤報：{[p.message for p in v.problems]}"
+
+    v = val.run({"type": "carousel", "contents": [bubble(), bubble()]}, "flex")
+    assert not v.problems, "都用預設寬度卻被誤報"
+
+    # JSON 體積：bubble 30 KB、carousel 50 KB
+    v = val.run(bubble(filler="x" * 31000), "flex")
+    assert any("30 KB" in p.message for p in v.problems), "沒抓到 bubble 超過 30 KB"
+
+    big = {"type": "carousel", "contents": [bubble(filler="x" * 9000) for _ in range(6)]}
+    v = val.run(big, "flex")
+    assert any("50 KB" in p.message for p in v.problems), "沒抓到 carousel 超過 50 KB"
+    return "bubble 30KB / carousel 50KB / 寬度一致 全部生效"
+
+
 @check("validate: flags the deprecated filler component")
 def t_validate_deprecated():
     v = val.run({"type": "bubble", "body": {

@@ -34,6 +34,23 @@ flex message
 | `altText` | ✅ | 最多 1500 字 |
 | `contents` | ✅ | bubble 或 carousel |
 
+### 容器層的硬限制
+
+| 規則 | 值 |
+|---|---|
+| bubble 的 JSON 大小 | **30 KB** |
+| carousel 的 JSON 大小 | **50 KB** |
+| carousel 內的 bubble 數 | **12** |
+| carousel 內的 bubble 寬度 | **必須全部相同**（不能混用 `size`） |
+| carousel 內的 bubble 高度 | body 會自動拉齊到最高的那張；沒有 body 的不會被拉長 |
+
+`scripts/validate.py` 這四條都會檢查：
+
+```
+❌ 同一個 carousel 內的 bubble 寬度必須相同，目前混用了 ['kilo', 'mega']
+❌ carousel 的 JSON 為 53.3 KB，超過上限 50 KB
+```
+
 ## 2. bubble
 
 | 屬性 | 型別 | 說明 |

@@ -365,85 +365,125 @@ ACTION_ANCHORS = {
 
 
 SCHEMA_FIELDS = ["group", "type", "schema", "property", "value_type", "required",
-                 "enum", "max_length", "description", "doc_url"]
+                 "enum", "max_length", "default", "description", "doc_url"]
 
 
-# Flex limits that live only in the written reference and cannot be joined by
-# doc anchor (LINE documents every flex component under the single
-# "#flex-message" anchor). Each entry was read from
-# reference/messaging-api.md > Message objects > Flex Message.
-FLEX_DOCUMENTED_MAXIMA = {
-    ("FlexMessage", "altText"): "1500",     # Max character limit: 1500
-    ("FlexCarousel", "contents"): "12",     # Max: 12 bubbles
-    ("FlexImage", "url"): "2000",           # Max character limit: 2000
-    ("FlexVideo", "url"): "2000",
-    ("FlexVideo", "previewUrl"): "2000",
-    ("FlexIcon", "url"): "2000",
+# Which reference heading documents each schema, as the (h3, h4, h5) path.
+#
+# LINE gives every message object, template and flex component the *same* doc
+# anchor (#message-objects, #template-message, #flex-message) and reuses
+# property names across them (text / actions / columns / url), so the anchor
+# alone can never say which schema a documented parameter belongs to.
+# The heading path can, and it is what the reference itself is organised by.
+SCHEMA_HEADINGS = {
+    # ---- message objects -------------------------------------------------
+    "TextMessage": ("Text message", "", ""),
+    "TextMessageV2": ("Text message (v2)", "", ""),
+    "StickerMessage": ("Sticker message", "", ""),
+    "ImageMessage": ("Image message", "", ""),
+    "VideoMessage": ("Video message", "", ""),
+    "AudioMessage": ("Audio message", "", ""),
+    "LocationMessage": ("Location message", "", ""),
+    "CouponMessage": ("Coupon message", "", ""),
+    "ImagemapMessage": ("Imagemap message", "", ""),
+    "FlexMessage": ("Flex Message", "", ""),
+    # ---- shared message parts --------------------------------------------
+    "QuickReply": ("Common properties for messages", "Quick reply", ""),
+    "QuickReplyItem": ("Common properties for messages", "Quick reply", "items object"),
+    "Sender": ("Common properties for messages", "Customize icon and display name", ""),
+    "Emoji": ("Text message (v2)", "Emoji object", ""),
+    # ---- templates -------------------------------------------------------
+    "ButtonsTemplate": ("Template messages", "Buttons template", ""),
+    "ConfirmTemplate": ("Template messages", "Confirm template", ""),
+    "CarouselTemplate": ("Template messages", "Carousel template", ""),
+    "CarouselColumn": ("Template messages", "Carousel template",
+                       "Column object for carousel"),
+    "ImageCarouselTemplate": ("Template messages", "Image carousel template", ""),
+    "ImageCarouselColumn": ("Template messages", "Image carousel template",
+                            "Column object for image carousel"),
+    # ---- imagemap --------------------------------------------------------
+    "ImagemapUriAction": ("Imagemap message", "Imagemap action objects",
+                          "Imagemap URI action object"),
+    "ImagemapMessageAction": ("Imagemap message", "Imagemap action objects",
+                              "Imagemap message action object"),
+    "ImagemapClipboardAction": ("Imagemap message", "Imagemap action objects",
+                                "Imagemap clipboard action object"),
+    # ---- flex ------------------------------------------------------------
+    "FlexBubble": ("Flex Message", "Container", "Bubble"),
+    "FlexCarousel": ("Flex Message", "Container", "Carousel"),
+    "FlexBox": ("Flex Message", "Component", "Box"),
+    "FlexButton": ("Flex Message", "Component", "Button"),
+    "FlexImage": ("Flex Message", "Component", "Image"),
+    "FlexVideo": ("Flex Message", "Component", "Video"),
+    "FlexIcon": ("Flex Message", "Component", "Icon"),
+    "FlexText": ("Flex Message", "Component", "Text"),
+    "FlexSpan": ("Flex Message", "Component", "Span"),
+    "FlexSeparator": ("Flex Message", "Component", "Separator"),
+    "FlexFiller": ("Flex Message", "Component", "Filler"),
+    # ---- actions ---------------------------------------------------------
+    "PostbackAction": ("Postback action", "", ""),
+    "MessageAction": ("Message action", "", ""),
+    "URIAction": ("URI action", "", ""),
+    "DatetimePickerAction": ("Datetime picker action", "", ""),
+    "CameraAction": ("Camera action", "", ""),
+    "CameraRollAction": ("Camera roll action", "", ""),
+    "LocationAction": ("Location action", "", ""),
+    "RichMenuSwitchAction": ("Rich menu switch action", "", ""),
+    "ClipboardAction": ("Clipboard action", "", ""),
+    # ---- rich menu -------------------------------------------------------
+    "RichMenuRequest": ("Create rich menu", "Request body", ""),
 }
 
 
-# Template limits with the same problem: LINE documents every template under
-# the single "#template-message" anchor, and property names (text / actions /
-# columns) repeat across templates, so (anchor, property) can't disambiguate.
-# Read from reference/messaging-api.md > Message objects > Template message.
-# For the two conditional text limits the LOOSER bound is stored here so the
-# validator never false-positives; the conditional rule itself lives in
-# validate.py (TEXT_SHRINKS_WITH_IMAGE).
-TEMPLATE_DOCUMENTED_MAXIMA = {
-    ("ButtonsTemplate", "thumbnailImageUrl"): "2000",
-    ("ButtonsTemplate", "title"): "40",
-    ("ButtonsTemplate", "text"): "160",      # 60 when an image or title is set
-    ("ButtonsTemplate", "actions"): "4",
-    ("ConfirmTemplate", "text"): "240",
-    ("ConfirmTemplate", "actions"): "2",
-    ("CarouselTemplate", "columns"): "10",
-    ("CarouselColumn", "thumbnailImageUrl"): "2000",
-    ("CarouselColumn", "title"): "40",
-    ("CarouselColumn", "text"): "120",       # 60 when an image or title is set
-    ("CarouselColumn", "actions"): "3",
-    ("ImageCarouselTemplate", "columns"): "10",
-    ("ImageCarouselColumn", "imageUrl"): "2000",
-}
+def merge_from_docs(schema_rows: list[dict], param_rows: list[dict]) -> list[dict]:
+    """Fill max_length / enum / default from the written reference.
 
+    The OpenAPI specs carry types and required-ness but omit most size limits
+    ("Max character limit: 5000"), most enums (imageAspectRatio is just a
+    "string" there) and every default value. All three are written in the
+    reference, which parameters.csv already captures — SCHEMA_HEADINGS says
+    which heading belongs to which schema, so the join is exact.
 
-def merge_documented_maxima(schema_rows: list[dict], param_rows: list[dict]) -> list[dict]:
-    """Fill max_length from the reference prose.
-
-    The OpenAPI specs omit most size limits ("Max character limit: 5000" for a
-    text message, "Max: 12 bubbles" for a carousel) — those live only in the
-    written reference, which parameters.csv already captures. Both sides carry
-    the same doc_url anchor, so (doc_url, property) joins them exactly.
+    Where a limit is conditional (buttons / carousel-column `text` shrinks when
+    an image or title is present) the reference states the looser bound first,
+    so that is what lands here; the conditional rule itself lives in
+    validate.py (TEXT_SHRINKS_WITH_IMAGE) where it can see the sibling fields.
     """
-    index: dict[tuple[str, str], str] = {}
+    by_heading: dict[tuple, dict] = {}
     for r in param_rows:
-        raw = (r.get("max") or "").split()
-        if not raw or not raw[0].isdigit():
+        key = (r.get("endpoint", ""), r.get("block", ""), r.get("subblock", ""),
+               r.get("parameter", ""))
+        by_heading.setdefault(key, r)
+
+    filled = {"max_length": 0, "enum": 0, "default": 0}
+    for row in schema_rows:
+        path = SCHEMA_HEADINGS.get(row.get("schema", ""))
+        if not path:
             continue
-        url = r["doc_url"]
-        index.setdefault((url, r["parameter"]), raw[0])
-        # the flex components are documented under a bare anchor (#carousel)
-        # but referenced under the disambiguated one (#f-carousel)
-        base, _, frag = url.partition("#")
-        for tag, alias in FLEX_ANCHORS.items():
-            if frag == tag and alias != tag:
-                index.setdefault((base + "#" + alias, r["parameter"]), raw[0])
-    filled = 0
-    for r in schema_rows:
-        if r.get("max_length"):
+        doc = by_heading.get((path[0], path[1], path[2], row.get("property", "")))
+        if not doc:
             continue
-        vtype = r.get("value_type", "")
-        # only strings (character limit) and arrays (item limit) can carry a
-        # documented maximum — never a nested object such as FlexMessage.contents
-        joinable = vtype == "string" or vtype.startswith("array<")
-        key = (r.get("schema", ""), r.get("property", ""))
-        hit = FLEX_DOCUMENTED_MAXIMA.get(key) or TEMPLATE_DOCUMENTED_MAXIMA.get(key)
-        if not hit and joinable:
-            hit = index.get((r.get("doc_url", ""), r.get("property", "")))
-        if hit:
-            r["max_length"] = hit
-            filled += 1
-    if filled:
-        print(f"  (merged {filled} documented maxima)")
+
+        if not row.get("max_length"):
+            raw = (doc.get("max") or "").split()
+            vtype = row.get("value_type", "")
+            # only a string (character limit) or an array (item limit) can carry
+            # a maximum — never a nested object such as FlexMessage.contents
+            if raw and raw[0].isdigit() and (vtype == "string" or vtype.startswith("array<")):
+                row["max_length"] = raw[0]
+                filled["max_length"] += 1
+
+        if not row.get("enum") and doc.get("enum_doc"):
+            row["enum"] = doc["enum_doc"]
+            filled["enum"] += 1
+
+        if not row.get("default") and doc.get("default"):
+            row["default"] = doc["default"]
+            filled["default"] += 1
+
+    if any(filled.values()):
+        print("  (from docs: {max_length} maxima, {enum} enums, {default} defaults)"
+              .format(**filled))
     return schema_rows
 
 
@@ -489,8 +529,16 @@ def build_webhook_events(specs) -> list[dict]:
 # --------------------------------------------------------------------------
 PARAM_START = re.compile(r"<!--\s*parameter start(?:\s*\(props:\s*([^)]*)\))?\s*-->")
 PARAM_END = "<!-- parameter end -->"
+# The reference writes a cardinality limit in several shapes:
+#   "Max character limit: 5000"   "Max: 12 bubbles"
+#   "Max objects: 4"              "Max columns: 10"
+# It also writes limits that are NOT about character or item count and must
+# never be picked up here:
+#   "Max file size: 10 MB"        "Max width: 1024px"
+# so the qualifier between "Max" and the colon is an explicit whitelist.
 LIMIT_RE = re.compile(
-    r"Max(?:imum)?(?: character)?(?: limit)?\s*[:：]?\s*([0-9][0-9,]*)\s*(characters?|bytes?|KB|MB)?",
+    r"Max(?:imum)?\s*(?:character\s+limit|objects?|columns?|items?)?\s*[:：]\s*"
+    r"([0-9][0-9,]*)\s*([A-Za-z]+)?",
     re.I,
 )
 
@@ -501,6 +549,46 @@ def strip_md(s: str) -> str:
     return one_line(s)
 
 
+ONE_OF_RE = re.compile(r"One of[:：](.*)$", re.S)
+BACKTICKED_RE = re.compile(r"`([A-Za-z0-9_][A-Za-z0-9_\-]*)`")
+DEFAULT_RE = re.compile(
+    r"(?:The default value is|Defaults? (?:to|is)|Default)\s*[:：]?\s*`([^`]+)`", re.I)
+
+
+def prose_enum(desc: str) -> list[str]:
+    """Pull allowed values out of a written "One of: - `a` - `b`" list.
+
+    Many enums (imageAspectRatio, imageSize, ...) are documented only in prose;
+    the OpenAPI spec declares them as plain strings, so without this the
+    dataset would say "string" and nothing else.
+    """
+    m = ONE_OF_RE.search(desc or "")
+    if not m:
+        return []
+    # the description arrives as one joined line, so cut at the first phrase
+    # that is clearly no longer part of the value list
+    tail = re.split(r"Applies to all columns|The default value is|Default[:：]",
+                    m.group(1))[0]
+    values, seen = [], set()
+    for item in re.split(r"\s+-\s+", tail):
+        hit = BACKTICKED_RE.search(item)
+        if not hit:
+            continue
+        val = hit.group(1)
+        if val not in seen:
+            seen.add(val)
+            values.append(val)
+    return values if len(values) > 1 else []
+
+
+def prose_default(desc: str) -> str:
+    m = DEFAULT_RE.search(desc or "")
+    if not m:
+        return ""
+    val = m.group(1).strip()
+    return val if len(val) <= 40 else ""
+
+
 def build_parameters() -> list[dict]:
     rows = []
     for fname, (api, base) in REF_FILES.items():
@@ -508,7 +596,7 @@ def build_parameters() -> list[dict]:
         if not p.exists():
             continue
         lines = p.read_text(encoding="utf-8").splitlines()
-        h2 = h3 = h4 = ""
+        h2 = h3 = h4 = h5 = ""
         i = 0
         while i < len(lines):
             ln = lines[i]
@@ -516,11 +604,13 @@ def build_parameters() -> list[dict]:
             if hm:
                 lvl, title = len(hm.group(1)), hm.group(2).strip()
                 if lvl == 2:
-                    h2, h3, h4 = title, "", ""
+                    h2, h3, h4, h5 = title, "", "", ""
                 elif lvl == 3:
-                    h3, h4 = title, ""
+                    h3, h4, h5 = title, "", ""
                 elif lvl == 4:
-                    h4 = title
+                    h4, h5 = title, ""
+                elif lvl == 5:
+                    h5 = title
                 i += 1
                 continue
             m = PARAM_START.search(ln)
@@ -550,11 +640,15 @@ def build_parameters() -> list[dict]:
             desc_lines = content[2:] if len(content) > 1 else []
             desc = strip_md(" ".join(desc_lines))[:600]
             lm = LIMIT_RE.search(" ".join(content))
+            raw_desc = " ".join(desc_lines)
             rows.append({
                 "api": api,
                 "section": h2,
                 "endpoint": h3,
                 "block": h4,
+                "subblock": h5,
+                "enum_doc": "|".join(prose_enum(raw_desc)),
+                "default": prose_default(raw_desc),
                 "parameter": name,
                 "value_type": vtype,
                 "required": "true" if props.lower().startswith("required") else
@@ -816,7 +910,7 @@ def main() -> int:
     params = build_parameters()
 
     write_csv("message-objects.csv", SCHEMA_FIELDS,
-              merge_documented_maxima(
+              merge_from_docs(
               flatten_variants(msg, "Message", "message")
               + flatten_variants(msg, "Template", "template")
               + flatten_variants(msg, "ImagemapAction", "imagemap-action")
@@ -829,7 +923,7 @@ def main() -> int:
               params))
 
     write_csv("flex-components.csv", SCHEMA_FIELDS,
-              merge_documented_maxima(
+              merge_from_docs(
               flatten_variants(msg, "FlexComponent", "flex-component",
                                FLEX_DOC)
               + flatten_variants(msg, "FlexContainer", "flex-container",
@@ -841,7 +935,7 @@ def main() -> int:
               params))
 
     write_csv("actions.csv", SCHEMA_FIELDS,
-              merge_documented_maxima(
+              merge_from_docs(
                   flatten_variants(msg, "Action", "action", FLEX_DOC), params))
 
     write_csv("richmenu.csv", SCHEMA_FIELDS,
@@ -851,8 +945,9 @@ def main() -> int:
                               "https://developers.line.biz/en/reference/messaging-api/#rich-menu-object"))
 
     write_csv("parameters.csv",
-              ["api", "section", "endpoint", "block", "parameter", "value_type",
-               "required", "props", "max", "description", "doc_url"],
+              ["api", "section", "endpoint", "block", "subblock", "parameter",
+               "value_type", "required", "props", "max", "enum_doc", "default",
+               "description", "doc_url"],
               params)
 
     write_csv("error-codes.csv",

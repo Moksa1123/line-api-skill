@@ -1,143 +1,143 @@
-group,type,schema,property,value_type,required,enum,max_length,description,doc_url
-message,audio,AudioMessage,originalContentUrl,string,true,,2000,,https://developers.line.biz/en/reference/messaging-api/#audio-message
-message,audio,AudioMessage,duration,integer,true,,,,https://developers.line.biz/en/reference/messaging-api/#audio-message
-message,audio,AudioMessage,type,string,true,,,Type of message,https://developers.line.biz/en/reference/messaging-api/#audio-message
-message,audio,AudioMessage,quickReply,QuickReply,false,,,,https://developers.line.biz/en/reference/messaging-api/#audio-message
-message,audio,AudioMessage,sender,Sender,false,,,,https://developers.line.biz/en/reference/messaging-api/#audio-message
-message,coupon,CouponMessage,couponId,string,true,,,Unique identifier of the coupon.,https://developers.line.biz/en/reference/messaging-api/#coupon-message
-message,coupon,CouponMessage,deliveryTag,string,false,,30,Delivery route tag information. It can be used for analysis in LINE OA Manager.,https://developers.line.biz/en/reference/messaging-api/#coupon-message
-message,coupon,CouponMessage,type,string,true,,,Type of message,https://developers.line.biz/en/reference/messaging-api/#coupon-message
-message,coupon,CouponMessage,quickReply,QuickReply,false,,,,https://developers.line.biz/en/reference/messaging-api/#coupon-message
-message,coupon,CouponMessage,sender,Sender,false,,,,https://developers.line.biz/en/reference/messaging-api/#coupon-message
-message,flex,FlexMessage,altText,string,true,,1500,,https://developers.line.biz/en/reference/messaging-api/#flex-message
-message,flex,FlexMessage,contents,FlexContainer,true,,,,https://developers.line.biz/en/reference/messaging-api/#flex-message
-message,flex,FlexMessage,type,string,true,,,Type of message,https://developers.line.biz/en/reference/messaging-api/#flex-message
-message,flex,FlexMessage,quickReply,QuickReply,false,,,,https://developers.line.biz/en/reference/messaging-api/#flex-message
-message,flex,FlexMessage,sender,Sender,false,,,,https://developers.line.biz/en/reference/messaging-api/#flex-message
-message,image,ImageMessage,originalContentUrl,string,true,,2000,,https://developers.line.biz/en/reference/messaging-api/#image-message
-message,image,ImageMessage,previewImageUrl,string,true,,2000,,https://developers.line.biz/en/reference/messaging-api/#image-message
-message,image,ImageMessage,type,string,true,,,Type of message,https://developers.line.biz/en/reference/messaging-api/#image-message
-message,image,ImageMessage,quickReply,QuickReply,false,,,,https://developers.line.biz/en/reference/messaging-api/#image-message
-message,image,ImageMessage,sender,Sender,false,,,,https://developers.line.biz/en/reference/messaging-api/#image-message
-message,imagemap,ImagemapMessage,baseUrl,string,true,,2000,,https://developers.line.biz/en/reference/messaging-api/#imagemap-message
-message,imagemap,ImagemapMessage,altText,string,true,,1500,,https://developers.line.biz/en/reference/messaging-api/#imagemap-message
-message,imagemap,ImagemapMessage,baseSize,ImagemapBaseSize,true,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-message
-message,imagemap,ImagemapMessage,actions,array<ImagemapAction>,true,,50,,https://developers.line.biz/en/reference/messaging-api/#imagemap-message
-message,imagemap,ImagemapMessage,video,ImagemapVideo,false,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-message
-message,imagemap,ImagemapMessage,type,string,true,,,Type of message,https://developers.line.biz/en/reference/messaging-api/#imagemap-message
-message,imagemap,ImagemapMessage,quickReply,QuickReply,false,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-message
-message,imagemap,ImagemapMessage,sender,Sender,false,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-message
-message,location,LocationMessage,title,string,true,,100,,https://developers.line.biz/en/reference/messaging-api/#location-message
-message,location,LocationMessage,address,string,true,,100,,https://developers.line.biz/en/reference/messaging-api/#location-message
-message,location,LocationMessage,latitude,number,true,,,,https://developers.line.biz/en/reference/messaging-api/#location-message
-message,location,LocationMessage,longitude,number,true,,,,https://developers.line.biz/en/reference/messaging-api/#location-message
-message,location,LocationMessage,type,string,true,,,Type of message,https://developers.line.biz/en/reference/messaging-api/#location-message
-message,location,LocationMessage,quickReply,QuickReply,false,,,,https://developers.line.biz/en/reference/messaging-api/#location-message
-message,location,LocationMessage,sender,Sender,false,,,,https://developers.line.biz/en/reference/messaging-api/#location-message
-message,sticker,StickerMessage,packageId,string,true,,,,https://developers.line.biz/en/reference/messaging-api/#sticker-message
-message,sticker,StickerMessage,stickerId,string,true,,,,https://developers.line.biz/en/reference/messaging-api/#sticker-message
-message,sticker,StickerMessage,quoteToken,string,false,,,Quote token of the message you want to quote.,https://developers.line.biz/en/reference/messaging-api/#sticker-message
-message,sticker,StickerMessage,type,string,true,,,Type of message,https://developers.line.biz/en/reference/messaging-api/#sticker-message
-message,sticker,StickerMessage,quickReply,QuickReply,false,,,,https://developers.line.biz/en/reference/messaging-api/#sticker-message
-message,sticker,StickerMessage,sender,Sender,false,,,,https://developers.line.biz/en/reference/messaging-api/#sticker-message
-message,template,TemplateMessage,altText,string,true,,1500,,https://developers.line.biz/en/reference/messaging-api/#template-messages
-message,template,TemplateMessage,template,Template,true,,,,https://developers.line.biz/en/reference/messaging-api/#template-messages
-message,template,TemplateMessage,type,string,true,,,Type of message,https://developers.line.biz/en/reference/messaging-api/#template-messages
-message,template,TemplateMessage,quickReply,QuickReply,false,,,,https://developers.line.biz/en/reference/messaging-api/#template-messages
-message,template,TemplateMessage,sender,Sender,false,,,,https://developers.line.biz/en/reference/messaging-api/#template-messages
-message,text,TextMessage,text,string,true,,5000,,https://developers.line.biz/en/reference/messaging-api/#text-message
-message,text,TextMessage,emojis,array<Emoji>,false,,20,,https://developers.line.biz/en/reference/messaging-api/#text-message
-message,text,TextMessage,quoteToken,string,false,,,Quote token of the message you want to quote.,https://developers.line.biz/en/reference/messaging-api/#text-message
-message,text,TextMessage,type,string,true,,,Type of message,https://developers.line.biz/en/reference/messaging-api/#text-message
-message,text,TextMessage,quickReply,QuickReply,false,,,,https://developers.line.biz/en/reference/messaging-api/#text-message
-message,text,TextMessage,sender,Sender,false,,,,https://developers.line.biz/en/reference/messaging-api/#text-message
-message,textV2,TextMessageV2,text,string,true,,5000,,https://developers.line.biz/en/reference/messaging-api/#text-message-v2
-message,textV2,TextMessageV2,substitution,object,false,,,A mapping that specifies substitutions for parts enclosed in {} within the `text` field.,https://developers.line.biz/en/reference/messaging-api/#text-message-v2
-message,textV2,TextMessageV2,quoteToken,string,false,,,Quote token of the message you want to quote.,https://developers.line.biz/en/reference/messaging-api/#text-message-v2
-message,textV2,TextMessageV2,type,string,true,,,Type of message,https://developers.line.biz/en/reference/messaging-api/#text-message-v2
-message,textV2,TextMessageV2,quickReply,QuickReply,false,,,,https://developers.line.biz/en/reference/messaging-api/#text-message-v2
-message,textV2,TextMessageV2,sender,Sender,false,,,,https://developers.line.biz/en/reference/messaging-api/#text-message-v2
-message,video,VideoMessage,originalContentUrl,string,true,,2000,,https://developers.line.biz/en/reference/messaging-api/#video-message
-message,video,VideoMessage,previewImageUrl,string,true,,2000,,https://developers.line.biz/en/reference/messaging-api/#video-message
-message,video,VideoMessage,trackingId,string,false,,100,,https://developers.line.biz/en/reference/messaging-api/#video-message
-message,video,VideoMessage,type,string,true,,,Type of message,https://developers.line.biz/en/reference/messaging-api/#video-message
-message,video,VideoMessage,quickReply,QuickReply,false,,,,https://developers.line.biz/en/reference/messaging-api/#video-message
-message,video,VideoMessage,sender,Sender,false,,,,https://developers.line.biz/en/reference/messaging-api/#video-message
-template,buttons,ButtonsTemplate,thumbnailImageUrl,string,false,,2000,,
-template,buttons,ButtonsTemplate,imageAspectRatio,string,false,,,,
-template,buttons,ButtonsTemplate,imageSize,string,false,,,,
-template,buttons,ButtonsTemplate,imageBackgroundColor,string,false,,,,
-template,buttons,ButtonsTemplate,title,string,false,,40,,
-template,buttons,ButtonsTemplate,text,string,true,,160,,
-template,buttons,ButtonsTemplate,defaultAction,Action,false,,,,
-template,buttons,ButtonsTemplate,actions,array<Action>,true,,4,,
-template,buttons,ButtonsTemplate,type,string,true,,,,
-template,carousel,CarouselTemplate,columns,array<CarouselColumn>,true,,10,,
-template,carousel,CarouselTemplate,imageAspectRatio,string,false,,,,
-template,carousel,CarouselTemplate,imageSize,string,false,,,,
-template,carousel,CarouselTemplate,type,string,true,,,,
-template,confirm,ConfirmTemplate,text,string,true,,240,,
-template,confirm,ConfirmTemplate,actions,array<Action>,true,,2,,
-template,confirm,ConfirmTemplate,type,string,true,,,,
-template,image_carousel,ImageCarouselTemplate,columns,array<ImageCarouselColumn>,true,,10,,
-template,image_carousel,ImageCarouselTemplate,type,string,true,,,,
-imagemap-action,clipboard,ClipboardImagemapAction,clipboardText,string,true,,1000,Text that is copied to the clipboard. Max character limit: 1000,https://developers.line.biz/en/reference/messaging-api/#imagemap-clipboard-action-object
-imagemap-action,clipboard,ClipboardImagemapAction,label,string,false,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-clipboard-action-object
-imagemap-action,clipboard,ClipboardImagemapAction,type,string,true,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-clipboard-action-object
-imagemap-action,clipboard,ClipboardImagemapAction,area,ImagemapArea,true,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-clipboard-action-object
-imagemap-action,message,MessageImagemapAction,text,string,true,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-action-objects
-imagemap-action,message,MessageImagemapAction,label,string,false,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-action-objects
-imagemap-action,message,MessageImagemapAction,type,string,true,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-action-objects
-imagemap-action,message,MessageImagemapAction,area,ImagemapArea,true,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-action-objects
-imagemap-action,uri,URIImagemapAction,linkUri,string,true,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-action-objects
-imagemap-action,uri,URIImagemapAction,label,string,false,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-action-objects
-imagemap-action,uri,URIImagemapAction,type,string,true,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-action-objects
-imagemap-action,uri,URIImagemapAction,area,ImagemapArea,true,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-action-objects
-message-part,Emoji,Emoji,index,integer,false,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,Emoji,Emoji,productId,string,false,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,Emoji,Emoji,emojiId,string,false,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,Sender,Sender,name,string,false,,20,Display name. Certain words such as `LINE` may not be used.,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,Sender,Sender,iconUrl,string,false,,2000,URL of the image to display as an icon when sending a message,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,QuickReply,QuickReply,items,array<QuickReplyItem>,false,,13,Quick reply button objects.,https://developers.line.biz/en/reference/messaging-api/#items-object
-message-part,QuickReplyItem,QuickReplyItem,imageUrl,string,false,,2000,URL of the icon that is displayed at the beginning of the button,https://developers.line.biz/en/reference/messaging-api/#items-object
-message-part,QuickReplyItem,QuickReplyItem,action,Action,false,,,,https://developers.line.biz/en/reference/messaging-api/#items-object
-message-part,QuickReplyItem,QuickReplyItem,type,string,false,,,`action`,https://developers.line.biz/en/reference/messaging-api/#items-object
-message-part,ImagemapArea,ImagemapArea,x,integer,true,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,ImagemapArea,ImagemapArea,y,integer,true,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,ImagemapArea,ImagemapArea,width,integer,true,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,ImagemapArea,ImagemapArea,height,integer,true,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,ImagemapVideo,ImagemapVideo,originalContentUrl,string,false,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,ImagemapVideo,ImagemapVideo,previewImageUrl,string,false,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,ImagemapVideo,ImagemapVideo,area,ImagemapArea,false,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,ImagemapVideo,ImagemapVideo,externalLink,ImagemapExternalLink,false,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,ImagemapExternalLink,ImagemapExternalLink,linkUri,string,false,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,ImagemapExternalLink,ImagemapExternalLink,label,string,false,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,ImagemapBaseSize,ImagemapBaseSize,height,integer,true,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,ImagemapBaseSize,ImagemapBaseSize,width,integer,true,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,Template,Template,type,string,true,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,ButtonsTemplate,ButtonsTemplate,thumbnailImageUrl,string,false,,2000,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,ButtonsTemplate,ButtonsTemplate,imageAspectRatio,string,false,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,ButtonsTemplate,ButtonsTemplate,imageSize,string,false,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,ButtonsTemplate,ButtonsTemplate,imageBackgroundColor,string,false,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,ButtonsTemplate,ButtonsTemplate,title,string,false,,40,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,ButtonsTemplate,ButtonsTemplate,text,string,true,,160,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,ButtonsTemplate,ButtonsTemplate,defaultAction,Action,false,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,ButtonsTemplate,ButtonsTemplate,actions,array<Action>,true,,4,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,ButtonsTemplate,ButtonsTemplate,type,string,true,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,ConfirmTemplate,ConfirmTemplate,text,string,true,,240,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,ConfirmTemplate,ConfirmTemplate,actions,array<Action>,true,,2,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,ConfirmTemplate,ConfirmTemplate,type,string,true,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,CarouselTemplate,CarouselTemplate,columns,array<CarouselColumn>,true,,10,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,CarouselTemplate,CarouselTemplate,imageAspectRatio,string,false,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,CarouselTemplate,CarouselTemplate,imageSize,string,false,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,CarouselTemplate,CarouselTemplate,type,string,true,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,CarouselColumn,CarouselColumn,thumbnailImageUrl,string,false,,2000,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,CarouselColumn,CarouselColumn,imageBackgroundColor,string,false,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,CarouselColumn,CarouselColumn,title,string,false,,40,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,CarouselColumn,CarouselColumn,text,string,true,,120,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,CarouselColumn,CarouselColumn,defaultAction,Action,false,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,CarouselColumn,CarouselColumn,actions,array<Action>,true,,3,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,ImageCarouselTemplate,ImageCarouselTemplate,columns,array<ImageCarouselColumn>,true,,10,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,ImageCarouselTemplate,ImageCarouselTemplate,type,string,true,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,ImageCarouselColumn,ImageCarouselColumn,imageUrl,string,true,,2000,,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,ImageCarouselColumn,ImageCarouselColumn,action,Action,true,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+group,type,schema,property,value_type,required,enum,max_length,default,description,doc_url
+message,audio,AudioMessage,originalContentUrl,string,true,,2000,,,https://developers.line.biz/en/reference/messaging-api/#audio-message
+message,audio,AudioMessage,duration,integer,true,,,,,https://developers.line.biz/en/reference/messaging-api/#audio-message
+message,audio,AudioMessage,type,string,true,,,,Type of message,https://developers.line.biz/en/reference/messaging-api/#audio-message
+message,audio,AudioMessage,quickReply,QuickReply,false,,,,,https://developers.line.biz/en/reference/messaging-api/#audio-message
+message,audio,AudioMessage,sender,Sender,false,,,,,https://developers.line.biz/en/reference/messaging-api/#audio-message
+message,coupon,CouponMessage,couponId,string,true,,,,Unique identifier of the coupon.,https://developers.line.biz/en/reference/messaging-api/#coupon-message
+message,coupon,CouponMessage,deliveryTag,string,false,,30,,Delivery route tag information. It can be used for analysis in LINE OA Manager.,https://developers.line.biz/en/reference/messaging-api/#coupon-message
+message,coupon,CouponMessage,type,string,true,,,,Type of message,https://developers.line.biz/en/reference/messaging-api/#coupon-message
+message,coupon,CouponMessage,quickReply,QuickReply,false,,,,,https://developers.line.biz/en/reference/messaging-api/#coupon-message
+message,coupon,CouponMessage,sender,Sender,false,,,,,https://developers.line.biz/en/reference/messaging-api/#coupon-message
+message,flex,FlexMessage,altText,string,true,,1500,,,https://developers.line.biz/en/reference/messaging-api/#flex-message
+message,flex,FlexMessage,contents,FlexContainer,true,,,,,https://developers.line.biz/en/reference/messaging-api/#flex-message
+message,flex,FlexMessage,type,string,true,,,,Type of message,https://developers.line.biz/en/reference/messaging-api/#flex-message
+message,flex,FlexMessage,quickReply,QuickReply,false,,,,,https://developers.line.biz/en/reference/messaging-api/#flex-message
+message,flex,FlexMessage,sender,Sender,false,,,,,https://developers.line.biz/en/reference/messaging-api/#flex-message
+message,image,ImageMessage,originalContentUrl,string,true,,2000,,,https://developers.line.biz/en/reference/messaging-api/#image-message
+message,image,ImageMessage,previewImageUrl,string,true,,2000,,,https://developers.line.biz/en/reference/messaging-api/#image-message
+message,image,ImageMessage,type,string,true,,,,Type of message,https://developers.line.biz/en/reference/messaging-api/#image-message
+message,image,ImageMessage,quickReply,QuickReply,false,,,,,https://developers.line.biz/en/reference/messaging-api/#image-message
+message,image,ImageMessage,sender,Sender,false,,,,,https://developers.line.biz/en/reference/messaging-api/#image-message
+message,imagemap,ImagemapMessage,baseUrl,string,true,,2000,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-message
+message,imagemap,ImagemapMessage,altText,string,true,,1500,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-message
+message,imagemap,ImagemapMessage,baseSize,ImagemapBaseSize,true,,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-message
+message,imagemap,ImagemapMessage,actions,array<ImagemapAction>,true,,50,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-message
+message,imagemap,ImagemapMessage,video,ImagemapVideo,false,,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-message
+message,imagemap,ImagemapMessage,type,string,true,,,,Type of message,https://developers.line.biz/en/reference/messaging-api/#imagemap-message
+message,imagemap,ImagemapMessage,quickReply,QuickReply,false,,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-message
+message,imagemap,ImagemapMessage,sender,Sender,false,,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-message
+message,location,LocationMessage,title,string,true,,100,,,https://developers.line.biz/en/reference/messaging-api/#location-message
+message,location,LocationMessage,address,string,true,,100,,,https://developers.line.biz/en/reference/messaging-api/#location-message
+message,location,LocationMessage,latitude,number,true,,,,,https://developers.line.biz/en/reference/messaging-api/#location-message
+message,location,LocationMessage,longitude,number,true,,,,,https://developers.line.biz/en/reference/messaging-api/#location-message
+message,location,LocationMessage,type,string,true,,,,Type of message,https://developers.line.biz/en/reference/messaging-api/#location-message
+message,location,LocationMessage,quickReply,QuickReply,false,,,,,https://developers.line.biz/en/reference/messaging-api/#location-message
+message,location,LocationMessage,sender,Sender,false,,,,,https://developers.line.biz/en/reference/messaging-api/#location-message
+message,sticker,StickerMessage,packageId,string,true,,,,,https://developers.line.biz/en/reference/messaging-api/#sticker-message
+message,sticker,StickerMessage,stickerId,string,true,,,,,https://developers.line.biz/en/reference/messaging-api/#sticker-message
+message,sticker,StickerMessage,quoteToken,string,false,,,,Quote token of the message you want to quote.,https://developers.line.biz/en/reference/messaging-api/#sticker-message
+message,sticker,StickerMessage,type,string,true,,,,Type of message,https://developers.line.biz/en/reference/messaging-api/#sticker-message
+message,sticker,StickerMessage,quickReply,QuickReply,false,,,,,https://developers.line.biz/en/reference/messaging-api/#sticker-message
+message,sticker,StickerMessage,sender,Sender,false,,,,,https://developers.line.biz/en/reference/messaging-api/#sticker-message
+message,template,TemplateMessage,altText,string,true,,,,,https://developers.line.biz/en/reference/messaging-api/#template-messages
+message,template,TemplateMessage,template,Template,true,,,,,https://developers.line.biz/en/reference/messaging-api/#template-messages
+message,template,TemplateMessage,type,string,true,,,,Type of message,https://developers.line.biz/en/reference/messaging-api/#template-messages
+message,template,TemplateMessage,quickReply,QuickReply,false,,,,,https://developers.line.biz/en/reference/messaging-api/#template-messages
+message,template,TemplateMessage,sender,Sender,false,,,,,https://developers.line.biz/en/reference/messaging-api/#template-messages
+message,text,TextMessage,text,string,true,,5000,,,https://developers.line.biz/en/reference/messaging-api/#text-message
+message,text,TextMessage,emojis,array<Emoji>,false,,20,,,https://developers.line.biz/en/reference/messaging-api/#text-message
+message,text,TextMessage,quoteToken,string,false,,,,Quote token of the message you want to quote.,https://developers.line.biz/en/reference/messaging-api/#text-message
+message,text,TextMessage,type,string,true,,,,Type of message,https://developers.line.biz/en/reference/messaging-api/#text-message
+message,text,TextMessage,quickReply,QuickReply,false,,,,,https://developers.line.biz/en/reference/messaging-api/#text-message
+message,text,TextMessage,sender,Sender,false,,,,,https://developers.line.biz/en/reference/messaging-api/#text-message
+message,textV2,TextMessageV2,text,string,true,,5000,,,https://developers.line.biz/en/reference/messaging-api/#text-message-v2
+message,textV2,TextMessageV2,substitution,object,false,,,,A mapping that specifies substitutions for parts enclosed in {} within the `text` field.,https://developers.line.biz/en/reference/messaging-api/#text-message-v2
+message,textV2,TextMessageV2,quoteToken,string,false,,,,Quote token of the message you want to quote.,https://developers.line.biz/en/reference/messaging-api/#text-message-v2
+message,textV2,TextMessageV2,type,string,true,,,,Type of message,https://developers.line.biz/en/reference/messaging-api/#text-message-v2
+message,textV2,TextMessageV2,quickReply,QuickReply,false,,,,,https://developers.line.biz/en/reference/messaging-api/#text-message-v2
+message,textV2,TextMessageV2,sender,Sender,false,,,,,https://developers.line.biz/en/reference/messaging-api/#text-message-v2
+message,video,VideoMessage,originalContentUrl,string,true,,2000,,,https://developers.line.biz/en/reference/messaging-api/#video-message
+message,video,VideoMessage,previewImageUrl,string,true,,2000,,,https://developers.line.biz/en/reference/messaging-api/#video-message
+message,video,VideoMessage,trackingId,string,false,,100,,,https://developers.line.biz/en/reference/messaging-api/#video-message
+message,video,VideoMessage,type,string,true,,,,Type of message,https://developers.line.biz/en/reference/messaging-api/#video-message
+message,video,VideoMessage,quickReply,QuickReply,false,,,,,https://developers.line.biz/en/reference/messaging-api/#video-message
+message,video,VideoMessage,sender,Sender,false,,,,,https://developers.line.biz/en/reference/messaging-api/#video-message
+template,buttons,ButtonsTemplate,thumbnailImageUrl,string,false,,2000,,,
+template,buttons,ButtonsTemplate,imageAspectRatio,string,false,rectangle|square,,rectangle,,
+template,buttons,ButtonsTemplate,imageSize,string,false,cover|contain,,cover,,
+template,buttons,ButtonsTemplate,imageBackgroundColor,string,false,,,#FFFFFF,,
+template,buttons,ButtonsTemplate,title,string,false,,40,,,
+template,buttons,ButtonsTemplate,text,string,true,,160,,,
+template,buttons,ButtonsTemplate,defaultAction,Action,false,,,,,
+template,buttons,ButtonsTemplate,actions,array<Action>,true,,4,,,
+template,buttons,ButtonsTemplate,type,string,true,,,,,
+template,carousel,CarouselTemplate,columns,array<CarouselColumn>,true,,10,,,
+template,carousel,CarouselTemplate,imageAspectRatio,string,false,rectangle|square,,rectangle,,
+template,carousel,CarouselTemplate,imageSize,string,false,cover|contain,,cover,,
+template,carousel,CarouselTemplate,type,string,true,,,,,
+template,confirm,ConfirmTemplate,text,string,true,,240,,,
+template,confirm,ConfirmTemplate,actions,array<Action>,true,,,,,
+template,confirm,ConfirmTemplate,type,string,true,,,,,
+template,image_carousel,ImageCarouselTemplate,columns,array<ImageCarouselColumn>,true,,10,,,
+template,image_carousel,ImageCarouselTemplate,type,string,true,,,,,
+imagemap-action,clipboard,ClipboardImagemapAction,clipboardText,string,true,,1000,,Text that is copied to the clipboard. Max character limit: 1000,https://developers.line.biz/en/reference/messaging-api/#imagemap-clipboard-action-object
+imagemap-action,clipboard,ClipboardImagemapAction,label,string,false,,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-clipboard-action-object
+imagemap-action,clipboard,ClipboardImagemapAction,type,string,true,,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-clipboard-action-object
+imagemap-action,clipboard,ClipboardImagemapAction,area,ImagemapArea,true,,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-clipboard-action-object
+imagemap-action,message,MessageImagemapAction,text,string,true,,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-action-objects
+imagemap-action,message,MessageImagemapAction,label,string,false,,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-action-objects
+imagemap-action,message,MessageImagemapAction,type,string,true,,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-action-objects
+imagemap-action,message,MessageImagemapAction,area,ImagemapArea,true,,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-action-objects
+imagemap-action,uri,URIImagemapAction,linkUri,string,true,,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-action-objects
+imagemap-action,uri,URIImagemapAction,label,string,false,,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-action-objects
+imagemap-action,uri,URIImagemapAction,type,string,true,,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-action-objects
+imagemap-action,uri,URIImagemapAction,area,ImagemapArea,true,,,,,https://developers.line.biz/en/reference/messaging-api/#imagemap-action-objects
+message-part,Emoji,Emoji,index,integer,false,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,Emoji,Emoji,productId,string,false,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,Emoji,Emoji,emojiId,string,false,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,Sender,Sender,name,string,false,,20,,Display name. Certain words such as `LINE` may not be used.,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,Sender,Sender,iconUrl,string,false,,2000,,URL of the image to display as an icon when sending a message,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,QuickReply,QuickReply,items,array<QuickReplyItem>,false,,13,,Quick reply button objects.,https://developers.line.biz/en/reference/messaging-api/#items-object
+message-part,QuickReplyItem,QuickReplyItem,imageUrl,string,false,,2000,,URL of the icon that is displayed at the beginning of the button,https://developers.line.biz/en/reference/messaging-api/#items-object
+message-part,QuickReplyItem,QuickReplyItem,action,Action,false,,,,,https://developers.line.biz/en/reference/messaging-api/#items-object
+message-part,QuickReplyItem,QuickReplyItem,type,string,false,,,,`action`,https://developers.line.biz/en/reference/messaging-api/#items-object
+message-part,ImagemapArea,ImagemapArea,x,integer,true,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,ImagemapArea,ImagemapArea,y,integer,true,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,ImagemapArea,ImagemapArea,width,integer,true,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,ImagemapArea,ImagemapArea,height,integer,true,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,ImagemapVideo,ImagemapVideo,originalContentUrl,string,false,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,ImagemapVideo,ImagemapVideo,previewImageUrl,string,false,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,ImagemapVideo,ImagemapVideo,area,ImagemapArea,false,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,ImagemapVideo,ImagemapVideo,externalLink,ImagemapExternalLink,false,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,ImagemapExternalLink,ImagemapExternalLink,linkUri,string,false,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,ImagemapExternalLink,ImagemapExternalLink,label,string,false,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,ImagemapBaseSize,ImagemapBaseSize,height,integer,true,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,ImagemapBaseSize,ImagemapBaseSize,width,integer,true,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,Template,Template,type,string,true,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,ButtonsTemplate,ButtonsTemplate,thumbnailImageUrl,string,false,,2000,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,ButtonsTemplate,ButtonsTemplate,imageAspectRatio,string,false,rectangle|square,,rectangle,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,ButtonsTemplate,ButtonsTemplate,imageSize,string,false,cover|contain,,cover,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,ButtonsTemplate,ButtonsTemplate,imageBackgroundColor,string,false,,,#FFFFFF,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,ButtonsTemplate,ButtonsTemplate,title,string,false,,40,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,ButtonsTemplate,ButtonsTemplate,text,string,true,,160,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,ButtonsTemplate,ButtonsTemplate,defaultAction,Action,false,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,ButtonsTemplate,ButtonsTemplate,actions,array<Action>,true,,4,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,ButtonsTemplate,ButtonsTemplate,type,string,true,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,ConfirmTemplate,ConfirmTemplate,text,string,true,,240,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,ConfirmTemplate,ConfirmTemplate,actions,array<Action>,true,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,ConfirmTemplate,ConfirmTemplate,type,string,true,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,CarouselTemplate,CarouselTemplate,columns,array<CarouselColumn>,true,,10,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,CarouselTemplate,CarouselTemplate,imageAspectRatio,string,false,rectangle|square,,rectangle,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,CarouselTemplate,CarouselTemplate,imageSize,string,false,cover|contain,,cover,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,CarouselTemplate,CarouselTemplate,type,string,true,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,CarouselColumn,CarouselColumn,thumbnailImageUrl,string,false,,2000,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,CarouselColumn,CarouselColumn,imageBackgroundColor,string,false,,,#FFFFFF,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,CarouselColumn,CarouselColumn,title,string,false,,40,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,CarouselColumn,CarouselColumn,text,string,true,,120,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,CarouselColumn,CarouselColumn,defaultAction,Action,false,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,CarouselColumn,CarouselColumn,actions,array<Action>,true,,3,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,ImageCarouselTemplate,ImageCarouselTemplate,columns,array<ImageCarouselColumn>,true,,10,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,ImageCarouselTemplate,ImageCarouselTemplate,type,string,true,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,ImageCarouselColumn,ImageCarouselColumn,imageUrl,string,true,,2000,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
+message-part,ImageCarouselColumn,ImageCarouselColumn,action,Action,true,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
