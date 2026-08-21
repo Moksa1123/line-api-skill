@@ -133,6 +133,12 @@ CSV_CONFIG: Dict[str, dict] = {
         "output_cols": ["schema", "field", "constraint", "value", "description"],
         "label": "數值限制",
     },
+    "faq": {
+        "file": "faq.csv",
+        "search_cols": ["question", "tags", "product"],
+        "output_cols": ["question", "product", "tags", "doc_url"],
+        "label": "官方 FAQ",
+    },
     "url_scheme": {
         "file": "url-schemes.csv",
         "search_cols": ["scheme", "purpose", "category", "note"],
@@ -216,6 +222,7 @@ DOMAIN_KEYWORDS: Dict[str, List[str]] = {
     "error": ["error", "400", "401", "403", "404", "409", "429", "500", "錯誤", "失敗"],
     "limit": ["limit", "max", "maximum", "限制", "上限", "最多", "長度"],
     "product": ["product", "login", "mini app", "social plugin", "beacon", "產品", "選哪個"],
+    "faq": ["faq", "常見問題", "官方有沒有說", "官方說明", "為什麼會", "可不可以"],
     "url_scheme": ["url scheme", "line://", "line.me/r", "openexternalbrowser",
                    "深層連結", "深連結", "開啟相機", "開啟聊天室", "加好友連結", "分享連結"],
     "term": ["glossary", "terminology", "what is", "術語", "名詞", "是什麼", "定義",

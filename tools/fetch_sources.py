@@ -115,6 +115,10 @@ def path_for(url: str) -> Path:
 # --------------------------------------------------------------------------
 # HTML -> Markdown (only for the handful of pages with no .md variant)
 # --------------------------------------------------------------------------
+# 只收像文件錨點的 id（小寫、連字號、夠長），避免把版面用的 id 也收進來
+ANCHOR_ID_RE = re.compile(r"[a-z0-9][a-z0-9\-]{5,}")
+
+
 class MDConv(HTMLParser):
     SKIP = {"script", "style", "svg", "button", "nav"}
 
@@ -152,6 +156,13 @@ class MDConv(HTMLParser):
             return
         if self.skip_depth:
             return
+        # 有些頁面（FAQ）把錨點放在內容前的隱藏 div 上，不在標題元素。
+        # 丟掉就沒辦法連到單一題目，所以留成註解標記。
+        anchor_id = a.get("id") or ""
+        if ANCHOR_ID_RE.fullmatch(anchor_id):
+            self.nl(1)
+            self.out.append("<!-- anchor: " + anchor_id + " -->")
+            self.nl(1)
         if tag in ("h1", "h2", "h3", "h4", "h5", "h6"):
             self.nl(2)
             self.w("#" * int(tag[1]) + " ")

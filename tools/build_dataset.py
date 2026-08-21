@@ -639,6 +639,57 @@ def annotate_liff_introduced(liff_rows: list[dict], versions: list[dict]) -> lis
     return liff_rows
 
 
+ANCHOR_MARK_RE = re.compile(r"^<!-- anchor:\s*([a-z0-9\-]+)\s*-->$")
+ANCHOR_INLINE_RE = re.compile(r"<!-- anchor:[^>]*-->")
+
+
+def strip_anchor_marks(text: str) -> str:
+    """移除 HTML 轉換時保留的錨點標記。
+
+    標記有時會夾在 `**Product ID:**` 與 ID 之間，讓依賴前後相鄰的解析失效。
+    需要錨點的解析各自去讀標記，其餘一律先清掉。
+    """
+    return ANCHOR_INLINE_RE.sub("", text)
+FAQ_Q_RE = re.compile(r"^Q\[(.+?)\]\(#\)\s*$")
+
+
+def build_faq() -> list[dict]:
+    """官方 FAQ 的題目索引。
+
+    收的是題目、標籤與錨點連結——也就是「官方有沒有回答過這件事、答案在哪」。
+    答案本身留在官方頁面，由 doc_url 指過去，不搬進資料集。
+
+    錨點是 LINE 人工命名的短代號（why-do-i-get-429-error-during-message-delivery），
+    不是題目文字的 slug，所以只能從頁面原始碼取，推導不出來。
+    """
+    path = RAW / "en" / "faq.md"
+    if not path.exists():
+        return []
+    lines = path.read_text(encoding="utf-8").splitlines()
+
+    rows, pending = [], ""
+    for ln in lines:
+        m = ANCHOR_MARK_RE.match(ln.strip())
+        if m:
+            pending = m.group(1)
+            continue
+        q = FAQ_Q_RE.match(ln.strip())
+        if not q:
+            continue
+        parts = q.group(1).split(" # ")
+        question = parts[0].strip()
+        tags = [p.strip() for p in parts[1:] if p.strip()]
+        rows.append({
+            "question": question,
+            "tags": ", ".join(tags),
+            "product": tags[0] if tags else "",
+            "doc_url": "https://developers.line.biz/en/faq/"
+                       + ("#" + pending if pending else ""),
+        })
+        pending = ""
+    return rows
+
+
 def build_guides() -> list[dict]:
     """221 頁 docs/ 指南的索引。
 
@@ -1242,7 +1293,7 @@ def build_emoji() -> list[dict]:
     p = DOCS / "messaging-api" / "emoji-list.md"
     if not p.exists():
         return []
-    text = p.read_text(encoding="utf-8")
+    text = strip_anchor_marks(p.read_text(encoding="utf-8"))
     rows = []
     blocks = re.split(r"\*\*Product ID:\*\*", text)[1:]
     for blk in blocks:
@@ -1265,7 +1316,7 @@ def build_stickers() -> list[dict]:
     p = DOCS / "messaging-api" / "sticker-list.md"
     if not p.exists():
         return []
-    text = p.read_text(encoding="utf-8")
+    text = strip_anchor_marks(p.read_text(encoding="utf-8"))
     rows = []
     blocks = re.split(r"\*\*Package ID:\*\*", text)[1:]
     for blk in blocks:
@@ -1311,6 +1362,10 @@ def main() -> int:
     write_csv("liff-versions.csv",
               ["version", "released", "apis_touched", "api_count", "doc_url"],
               liff_versions)
+
+    write_csv("faq.csv",
+              ["question", "product", "tags", "doc_url"],
+              build_faq())
 
     write_csv("guides.csv",
               ["product", "page", "title", "sections", "section_count", "doc_url"],

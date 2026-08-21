@@ -84,7 +84,7 @@ def t_dataset_present():
         "endpoints.csv", "parameters.csv", "message-objects.csv", "flex-components.csv",
         "actions.csv", "richmenu.csv", "webhook-events.csv", "liff-api.csv",
         "webhook-properties.csv", "responses.csv", "guides.csv",
-        "liff-versions.csv", "terms.csv", "url-schemes.csv",
+        "liff-versions.csv", "terms.csv", "url-schemes.csv", "faq.csv",
         "error-codes.csv", "limits.csv", "products.csv", "channel-tokens.csv",
         "troubleshooting.csv", "reasoning.csv", "deprecations.csv", "glossary.csv",
         "emoji.csv", "stickers.csv",
@@ -231,6 +231,27 @@ def t_liff_versions():
     return (f"{len(versions)} 版、{len(dated)} 個有日期；"
             f"{sum(1 for r in api if r['introduced_in'])} 個 API 標出引進版本；"
             f"{len(before)} 個可在 init 前呼叫")
+
+
+@check("dataset: 官方 FAQ 題目與錨點都正確")
+def t_faq():
+    faq = rows("faq.csv")
+    assert len(faq) >= 85, f"FAQ 只有 {len(faq)} 題"
+    assert all(f["question"] for f in faq), "有題目是空的"
+
+    # 錨點是 LINE 人工命名的，推導不出來，只能從頁面原始碼取。
+    # 少一個都代表轉換器又把錨點丟了。
+    anchored = [f for f in faq if "#" in f["doc_url"]]
+    assert len(anchored) == len(faq), f"只有 {len(anchored)}/{len(faq)} 題有錨點"
+
+    urls = " ".join(f["doc_url"] for f in faq)
+    for want in ("#why-do-i-get-429-error-during-message-delivery",
+                 "#what-are-userid-groupid-and-roomid"):
+        assert want in urls, f"缺少被官方文件引用的 FAQ 錨點 {want}"
+
+    products = {f["product"] for f in faq if f["product"]}
+    assert len(products) >= 5, f"標籤分類只有 {products}"
+    return f"{len(faq)} 題全部有錨點，涵蓋 {len(products)} 個產品線"
 
 
 @check("dataset: LINE URL scheme 有收錄且分類正確")
