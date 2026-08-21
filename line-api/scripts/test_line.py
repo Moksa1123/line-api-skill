@@ -171,9 +171,24 @@ def t_responses():
     assert "type" in fields("getMessageQuota")
     assert fields("getProfile"), "getProfile 沒有回應欄位"
 
+    # 每一支端點都要有回應資料。沒有欄位的（回空物件、二進位、無主體）
+    # 也必須說明是哪一種，不能留白讓人以為是漏抓。
+    eps = rows("endpoints.csv")
     ops = {r["operation_id"] for r in resp}
-    assert len(ops) >= 60, f"只有 {len(ops)} 支端點有回應欄位"
-    return f"{len(resp)} 個回應欄位，涵蓋 {len(ops)} 支端點"
+    uncovered = [e for e in eps if (e["operation_id"] or e["title"]) not in ops]
+    assert not uncovered, f"這些端點沒有任何回應資料：{[e['path'] for e in uncovered][:5]}"
+
+    blank = [r for r in resp if not r["property"] and not r["description"]]
+    assert not blank, f"有 {len(blank)} 列既沒欄位也沒說明"
+
+    # 不在 OpenAPI 裡的 API，回應欄位要從官方文件補進來
+    login = {r["property"] for r in resp if "Verify ID token" in r["operation_id"]}
+    assert {"iss", "sub", "aud", "exp"} <= login, f"LINE Login 的 ID token 欄位不全：{login}"
+
+    from_docs = sum(1 for r in resp if r["source"] == "docs")
+    assert from_docs >= 50, f"只有 {from_docs} 筆來自文件"
+    return (f"{len(resp)} 筆、{len(eps)}/{len(eps)} 支端點全覆蓋"
+            f"（OpenAPI {len(resp) - from_docs} + 文件 {from_docs}）")
 
 
 @check("dataset: 221 頁官方指南都有索引")

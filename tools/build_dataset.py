@@ -681,6 +681,109 @@ def build_guides() -> list[dict]:
     return rows
 
 
+_REF_CACHE: dict[str, tuple[list[str], list[tuple[int, str, int]]]] = {}
+
+
+def _reference_headings(api: str):
+    """讀某個 API 的 reference，回傳 (行, 標題索引)，並快取。"""
+    if api in _REF_CACHE:
+        return _REF_CACHE[api]
+    fname = next((f for f, (a, _) in REF_FILES.items() if a == api), None)
+    if not fname or not (REF / fname).exists():
+        return None
+    lines = (REF / fname).read_text(encoding="utf-8").splitlines()
+    fenced = fence_mask(lines)
+    heads = [(i, l.strip("# ").strip(), len(l) - len(l.lstrip("#")))
+             for i, l in enumerate(lines) if not fenced[i] and l.startswith("#")]
+    _REF_CACHE[api] = (lines, heads)
+    return _REF_CACHE[api]
+
+
+def response_kind(ep: dict) -> str:
+    """沒有回應欄位的端點，回應究竟長什麼樣。
+
+    43 支端點查不到回應欄位，逐一回查原文後確認全都有正當理由：多數回一個
+    空的 JSON 物件，少數回二進位內容或根本沒有回應主體。這件事本身就是
+    開發者需要知道的答案，所以記成一列，而不是留白。
+    """
+    got = _reference_headings(ep.get("api", ""))
+    if not got:
+        return ""
+    lines, heads = got
+    start = next((i for i, t, lv in heads if t == ep["title"] and lv == 3), None)
+    if start is None:
+        return ""
+    end = next((i for i, t, lv in heads if i > start and lv <= 3), len(lines))
+    rs = next((i for i, t, lv in heads if start < i < end
+               and t.lower().startswith("response")), None)
+    if rs is None:
+        return ""
+    re_end = next((i for i, t, lv in heads if i > rs and lv <= 4), end)
+    body = " ".join(lines[rs:re_end])
+
+    if "empty JSON object" in body:
+        return "回應為空的 JSON 物件 {}，沒有欄位"
+    if ep["path"].endswith(("/content", "/content/preview")):
+        return "回應為二進位內容（圖片／影片／音訊），不是 JSON"
+    if "binary" in body.lower():
+        return "回應為二進位內容，不是 JSON"
+    return "只回狀態碼，沒有回應主體"
+
+
+def doc_responses(endpoints: list[dict], params: list[dict],
+                  covered: set[str]) -> list[dict]:
+    """替 OpenAPI 沒涵蓋的端點補上文件裡寫的回應欄位。
+
+    LINE Login、LINE MINI App、partner-docs、LIFF server 這些 API 不在
+    line-openapi 裡，所以 responses.csv 一開始只蓋到 69/121 支端點。但官方
+    reference 其實都寫了回應欄位，只是在 parameters.csv 裡以 block="Response"
+    的形式散著。用 (api, 端點標題) 把兩邊接起來。
+    """
+    by_endpoint: dict[tuple[str, str], list[dict]] = {}
+    for r in params:
+        block = (r.get("block") or "").lower()
+        sub = (r.get("subblock") or "").lower()
+        if not (block.startswith("response") or sub.startswith("response")):
+            continue
+        if block.startswith("error response") or sub.startswith("error response"):
+            continue
+        by_endpoint.setdefault((r["api"], r["endpoint"]), []).append(r)
+
+    rows = []
+    for ep in endpoints:
+        if ep.get("operation_id") and ep["operation_id"] in covered:
+            continue
+        docs = by_endpoint.get((ep["api"], ep["title"]))
+        if not docs:
+            kind = response_kind(ep)
+            if kind:
+                rows.append({
+                    "operation_id": ep.get("operation_id", "") or ep["title"],
+                    "method": ep["method"], "host": ep["host"], "path": ep["path"],
+                    "status": "2xx", "schema": "", "property": "",
+                    "value_type": "", "required": "", "enum": "", "max_length": "",
+                    "description": kind, "source": "docs",
+                    "doc_url": ep.get("doc_url", ""),
+                })
+            continue
+        for d in docs:
+            rows.append({
+                "operation_id": ep.get("operation_id", "") or ep["title"],
+                "method": ep["method"], "host": ep["host"], "path": ep["path"],
+                "status": "2xx", "schema": "", "property": d["parameter"],
+                "value_type": d.get("value_type", ""),
+                "required": d.get("required", ""),
+                "enum": d.get("enum_doc", ""),
+                "max_length": (d.get("max") or "").split(" ")[0]
+                              if (d.get("max") or "").split(" ")[:1] and
+                                 (d.get("max") or "").split(" ")[0].isdigit() else "",
+                "description": d.get("description", ""),
+                "doc_url": d.get("doc_url", ep.get("doc_url", "")),
+                "source": "docs",
+            })
+    return rows
+
+
 def build_responses(specs) -> list[dict]:
     """每支端點回應主體的逐欄位表。
 
@@ -714,8 +817,11 @@ def build_responses(specs) -> list[dict]:
                             "status": str(status), "schema": name, "property": "",
                             "value_type": "", "required": "", "enum": "",
                             "max_length": "",
-                            "description": one_line((schemas.get(name) or {}).get("description", "")),
-                            "doc_url": ext,
+                            # 這幾個 schema 在規格裡本來就沒有欄位（MulticastResponse
+                            # 等），補一句說明，才不會留一列空白讓人以為是漏抓
+                            "description": one_line((schemas.get(name) or {}).get("description", ""))
+                                           or "回應為空的 JSON 物件 {}，沒有欄位",
+                            "doc_url": ext, "source": "openapi",
                         })
                         continue
                     for pname, prop in info["properties"].items():
@@ -729,7 +835,7 @@ def build_responses(specs) -> list[dict]:
                             "max_length": max_of(prop),
                             "description": one_line(
                                 prop.get("description") if isinstance(prop, dict) else ""),
-                            "doc_url": ext,
+                            "doc_url": ext, "source": "openapi",
                         })
     return rows
 
@@ -1191,11 +1297,15 @@ def main() -> int:
     msg = (specs["messaging-api.yml"]["components"]["schemas"])
     print("Generating line-api/data/ ...")
 
+    # 這兩份被後面好幾個產生器共用，先算好再往下走
+    endpoints = build_endpoints(specs)
+    params = build_parameters()
+
     write_csv("endpoints.csv",
               ["api", "also_in", "category", "title", "method", "host", "path",
                "query_params", "auth", "rate_limit", "operation_id", "spec",
                "description", "doc_url"],
-              build_endpoints(specs))
+              endpoints)
 
     liff_versions = build_liff_versions()
     write_csv("liff-versions.csv",
@@ -1206,11 +1316,13 @@ def main() -> int:
               ["product", "page", "title", "sections", "section_count", "doc_url"],
               build_guides())
 
+    spec_responses = build_responses(specs)
+    covered_ops = {r["operation_id"] for r in spec_responses if r["operation_id"]}
     write_csv("responses.csv",
               ["operation_id", "method", "host", "path", "status", "schema",
                "property", "value_type", "required", "enum", "max_length",
-               "description", "doc_url"],
-              build_responses(specs))
+               "description", "source", "doc_url"],
+              spec_responses + doc_responses(endpoints, params, covered_ops))
 
     write_csv("webhook-properties.csv", SCHEMA_FIELDS,
               build_webhook_properties(specs))
@@ -1218,8 +1330,6 @@ def main() -> int:
     write_csv("webhook-events.csv",
               ["event", "schema", "properties", "required", "description", "doc_url"],
               build_webhook_events(specs))
-
-    params = build_parameters()
 
     write_csv("message-objects.csv", SCHEMA_FIELDS,
               merge_from_docs(
