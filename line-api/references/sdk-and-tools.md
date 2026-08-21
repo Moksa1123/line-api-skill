@@ -40,6 +40,22 @@
 | Android | https://github.com/line/line-sdk-android |
 | Flutter | https://github.com/line/flutter_line_sdk |
 
+## 2.1 行動 SDK 的型別清單
+
+iOS 與 Android SDK 的 API reference 是產生器輸出的獨立網站（jazzy / javadoc），
+`data/sdk-api.csv` 收了它們的 80 個型別與連結：
+
+```bash
+python scripts/search.py "LoginManager" --domain sdk_api
+python scripts/search.py "LineApiClient" --domain sdk_api
+python scripts/search.py "LineSDKError" --domain sdk_api
+```
+
+| 平台 | 數量 | 常用型別 |
+|---|---:|---|
+| iOS (Swift) | 58 | `LoginManager`、`LoginButton`、`Session`、`LineSDKError`（含四種 ErrorReason）、`API.Auth` |
+| Android | 22 | `LineApiClient`、`LineLoginApi`、`LineAuthenticationParams`（含 `Builder` / `BotPrompt`）、`LineApiError.ErrorCode` |
+
 ## 3. 線上工具
 
 | 工具 | 位址 |
@@ -70,14 +86,19 @@ LINE 官方提供的 MCP server，可讓 AI 助理直接操作 Messaging API：
 
 | 工具 | 用途 |
 |---|---|
-| `tools/fetch_sources.py` | 抓官方文件 Markdown + clone line-openapi 到 `.docs-cache/` |
+| `tools/fetch_sources.py` | 抓官方文件 Markdown + SDK 索引頁 + clone line-openapi 到 `.docs-cache/` |
+| `tools/discover_pages.py` | 走站上 HTML 導覽，找出 llms.txt 沒列到的頁面 |
 | `tools/build_dataset.py` | 由上述來源重新產生 `line-api/data/*.csv` |
 | `tools/check_links.py` | 實際打過每一條 doc_url，確認沒有死連結或轉址 |
+| `tools/audit_coverage.py` | 逐條比對官方文件與資料集，列出所有覆蓋缺口 |
+| `tools/check_docs.py` | 確認文件寫的數字與實際資料一致（`--fix` 可自動更正） |
 
 ```bash
 python tools/fetch_sources.py     # 更新來源（.docs-cache/ 不進 git）
 python tools/build_dataset.py     # 重新產生資料集
 python tools/check_links.py --md  # 驗證所有連結
+python tools/audit_coverage.py    # 覆蓋率缺口
+python tools/check_docs.py        # 文件數字是否過期
 python line-api/scripts/test_line.py --live
 ```
 

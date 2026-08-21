@@ -173,4 +173,42 @@ npx @line/create-liff-app    # 專案腳手架（React/Vue/Svelte/Next/Nuxt）
 ```bash
 python scripts/search.py "shareTargetPicker" --domain liff
 python scripts/search.py "getContext" --domain liff
+python scripts/search.py "availability" --domain parameter   # getContext 的回傳欄位
 ```
+
+## 7. 每個 API 還帶三個實用欄位
+
+`data/liff-api.csv` 除了說明與語法，每個 API 還記了：
+
+| 欄位 | 意義 |
+|---|---|
+| `introduced_in` | 最早出現在哪個 LIFF 版本（29/35 有值） |
+| `before_init` | 能不能在 `liff.init()` 之前呼叫 |
+| `module` | 可搖樹匯入的模組名 |
+
+**可在 `liff.init()` 之前呼叫的只有這 8 個**：
+`liff.ready`、`liff.getOS()`、`liff.getAppLanguage()`、`liff.getLanguage()`、
+`liff.getVersion()`、`liff.getLineVersion()`、`liff.isInClient()`、`liff.closeWindow()`
+
+其餘一律要等 `init()` resolve 之後才能用。
+
+**版本需求**（完整清單見 `data/liff-versions.csv`，58 個版本）：
+
+```bash
+python scripts/search.py "scanCodeV2" --domain liff        # → introduced_in 2.15.0
+python scripts/search.py "2.15.0" --domain liff_version
+```
+
+**模組化匯入**（只打包用得到的功能）：
+
+```js
+import liff from "@line/liff/core";
+import getProfile from "@line/liff/get-profile";
+import shareTargetPicker from "@line/liff/share-target-picker";
+
+liff.use(new GetProfile());
+```
+
+26 個模組的對照見 `data/liff-api.csv` 的 `module` 欄位。
+`liff.id`、`liff.ready`、`init()`、`getVersion()`、`use()`、`requestFriendship()`
+官方沒有列出專屬模組，該欄留白。

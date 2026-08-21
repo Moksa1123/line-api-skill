@@ -14,6 +14,38 @@
 
 ---
 
+## 0. 先查再寫
+
+動手前先查資料庫，不要憑印象寫 LINE 的規格。25 個搜尋域涵蓋端點、欄位、
+回應、錯誤、限制、術語、FAQ 到 URL scheme。
+
+```bash
+python scripts/search.py --stats                       # 有哪些資料
+python scripts/search.py "<關鍵字>"                     # 自動判斷域
+python scripts/search.py "<關鍵字>" --domain all        # 不確定時全域找
+```
+
+常見問題該查哪個域：
+
+| 想知道 | 指令 |
+|---|---|
+| 這支 API 怎麼呼叫 | `search.py "send push message" --domain endpoint` |
+| 這個欄位有什麼限制 | `search.py "chatBarText" --domain parameter` |
+| **這支 API 回什麼** | `search.py "get bot info" --domain response` |
+| Flex 某屬性可用值 | `search.py "aspectMode" --domain flex` |
+| webhook 事件有哪些欄位 | `search.py "postback" --domain webhook_field` |
+| 這個 LIFF API 要幾版 | `search.py "scanCodeV2" --domain liff` |
+| 該讀哪一頁官方指南 | `search.py "圖文選單怎麼切換" --domain guide` |
+| 官方 FAQ 有沒有答過 | `search.py "429" --domain faq` |
+| 加好友連結怎麼寫 | `search.py "加好友" --domain url_scheme` |
+| 這個名詞是什麼 | `search.py "provider" --domain term` |
+| 這個功能還能用嗎 | `search.py "notify" --domain deprecation` |
+| iOS/Android SDK 型別 | `search.py "LoginManager" --domain sdk_api` |
+
+中文查詢會自動補上英文術語（130 條對照），所以「圖文選單」查得到 `richmenu`。
+
+---
+
 ## 1. 驗證 webhook 簽章
 
 三種語言的正確寫法，關鍵都是「用原始 body」。

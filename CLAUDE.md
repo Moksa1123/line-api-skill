@@ -27,6 +27,7 @@ tools/               ← 只在這個 repo 用，不隨技能安裝
   discover_pages.py    走站上 HTML 導覽，找出 llms.txt 漏列的頁面
   check_links.py       驗證所有 doc_url
   audit_coverage.py    逐條比對官方文件與資料集的覆蓋缺口
+  check_docs.py        確認文件寫的數字與實際資料一致
 
 .docs-cache/         ← 抓下來的官方文件與 line-openapi。git 忽略，絕不 commit
 ```
@@ -97,6 +98,7 @@ python tools/fetch_sources.py          # 需要網路，約 231 頁 + git clone
 python tools/build_dataset.py
 python tools/check_links.py --md
 python tools/audit_coverage.py      # A/B/C/E 應為 0（Template 基底除外）
+python tools/check_docs.py          # 文件數字過期會 exit 1，--fix 可自動更正
 
 # 測試
 python line-api/scripts/test_line.py            # 離線 43 項

@@ -164,6 +164,7 @@ python scripts/test_line.py --live    # 加上實際呼叫 LINE API（需 access
 | [references/line-login.md](references/line-login.md) | OAuth 2.0 + OIDC 流程、scope、ID token 驗證 |
 | [references/liff.md](references/liff.md) | LIFF v2 設定、SDK API、環境差異 |
 | [references/line-mini-app.md](references/line-mini-app.md) | 驗證/未驗證差異、服務訊息、IAP |
+| [references/url-schemes.md](references/url-schemes.md) | LINE URL scheme：加好友、相機、設定畫面、外部瀏覽器與三大限制 |
 | [references/errors-and-limits.md](references/errors-and-limits.md) | 狀態碼、錯誤訊息、限制速查、計費 |
 | [references/sdk-and-tools.md](references/sdk-and-tools.md) | 官方 SDK、LIFF 工具、線上工具 |
 | [EXAMPLES.md](EXAMPLES.md) | 可直接執行的程式碼範例 |

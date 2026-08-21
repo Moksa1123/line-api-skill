@@ -59,7 +59,7 @@ line-api/
 │   ├── terms.csv                 57 官方術語表，附中文定義
 │   ├── glossary.csv             130 中英術語對照（讓中文查詢命中英文資料）
 │   ├── emoji.csv / stickers.csv  可用的 emoji 與貼圖 ID
-├── references/              11 份主題參考文件
+├── references/              12 份主題參考文件
 ├── scripts/                 5 支工具（純標準函式庫）
 └── examples/                Python / Node.js / PHP / LIFF / Flex 範例
 
@@ -116,7 +116,7 @@ python scripts/test_line.py --live
 | `validate.py` | 離線驗證訊息 / Flex / request body：型別、必填、typo、enum、上限、已淘汰元件 |
 | `signature.py` | webhook 簽章驗證；channel access token（含純 Python 實作的 RS256 JWT） |
 | `lineapi.py` | 零依賴 Messaging API client，自動切換 `api.line.me` / `api-data.line.me` |
-| `test_line.py` | 43 項離線測試 + 4 項線上測試 |
+| `test_line.py` | 43 項離線測試 + 6 項線上測試 |
 
 ## 資料怎麼來的
 
