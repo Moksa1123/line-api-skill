@@ -1,0 +1,26 @@
+{
+  "platform": "windsurf",
+  "displayName": "Windsurf (now Devin Desktop)",
+  "installType": "rule",
+  "folderStructure": {
+    "projectRoot": ".devin",
+    "skillPath": "rules",
+    "filename": "line-api.md"
+  },
+  "frontmatter": null,
+  "embedReferences": [
+    "messaging-api.md",
+    "webhook.md",
+    "flex-message.md"
+  ],
+  "loaderBehaviour": "Cognition 已把 Windsurf 改名為 Devin Desktop，規則目錄改為 .devin/rules/。",
+  "fallback": {
+    "projectRoot": ".windsurf",
+    "skillPath": "rules",
+    "filename": "line-api.md",
+    "note": "若你的安裝早於 Devin Desktop 改名、不認得 .devin/rules/，請改用這個路徑。"
+  },
+  "verified": true,
+  "verifiedAsOf": "2026-07-11",
+  "verificationNote": "路徑慣例沿用同作者 elementor-headless 於 2026-07-11 實測驗證的結果。平台慣例會漂移，重大改版後請重新確認。"
+}

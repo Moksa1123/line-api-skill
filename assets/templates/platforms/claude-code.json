@@ -1,0 +1,22 @@
+{
+  "platform": "claude-code",
+  "displayName": "Claude Code",
+  "installType": "full",
+  "folderStructure": {
+    "projectRoot": ".claude",
+    "globalRoot": "~/.claude",
+    "skillPath": "skills/line-api",
+    "filename": "SKILL.md"
+  },
+  "frontmatter": [
+    "name",
+    "description",
+    "license",
+    "author",
+    "version"
+  ],
+  "loaderBehaviour": "工作階段啟動時，只要 SKILL.md 的 frontmatter 解析成功就會自動載入。",
+  "verified": true,
+  "verifiedAsOf": "2026-07-11",
+  "verificationNote": "路徑慣例沿用同作者 elementor-headless 於 2026-07-11 實測驗證的結果。平台慣例會漂移，重大改版後請重新確認。"
+}

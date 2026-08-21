@@ -1,0 +1,22 @@
+{
+  "platform": "codex-cli",
+  "displayName": "OpenAI Codex CLI",
+  "installType": "full",
+  "folderStructure": {
+    "projectRoot": ".codex",
+    "globalRoot": "~/.codex",
+    "skillPath": "skills/line-api",
+    "filename": "SKILL.md"
+  },
+  "frontmatter": [
+    "name",
+    "description",
+    "license",
+    "author",
+    "version"
+  ],
+  "loaderBehaviour": "Codex CLI 原生支援 SKILL.md 規格，放進 .codex/skills/<name>/ 即可。",
+  "verified": true,
+  "verifiedAsOf": "2026-07-11",
+  "verificationNote": "路徑慣例沿用同作者 elementor-headless 於 2026-07-11 實測驗證的結果。平台慣例會漂移，重大改版後請重新確認。"
+}

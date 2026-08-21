@@ -1,152 +1,172 @@
-<h1 align="center">line-api-skill</h1>
+# line-api-skill
 
-<h3 align="center">LINE Platform AI 開發技能包</h3>
+**Stop guessing LINE's API. Look it up.**
 
-<p align="center">
-  Messaging API · LINE Login · LIFF · LINE MINI App · Social Plugins · 通知訊息
-</p>
+An [Agent Skill](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview)
+that turns the entire LINE Platform documentation into a queryable database, so your
+AI assistant answers from the spec instead of from memory.
 
-<p align="center">
+<p>
   <img src="https://img.shields.io/badge/endpoints-121-success?style=flat-square" alt="121 endpoints">
   <img src="https://img.shields.io/badge/fields-1584-blue?style=flat-square" alt="1584 fields">
   <img src="https://img.shields.io/badge/dataset-3675%20rows-orange?style=flat-square" alt="3675 rows">
+  <img src="https://img.shields.io/badge/platforms-8-9cf?style=flat-square" alt="8 platforms">
   <img src="https://img.shields.io/badge/python-3.9%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.9+">
   <img src="https://img.shields.io/badge/dependencies-0-brightgreen?style=flat-square" alt="zero dependencies">
 </p>
 
+```
+121 endpoints · 1,584 request/response fields · 295 response fields
+233 error codes · 247 webhook fields · 136 Flex components · 44 URL schemes
+35 LIFF APIs across 58 SDK versions · 80 mobile SDK types · 92 official FAQs
+```
+
+English · [繁體中文](README.zh-TW.md) · [日本語](README.ja.md) · [한국어](README.ko.md)
+
 ---
 
-## 這是什麼
+## The Problem
 
-一個給 AI 編碼助理（Claude Code、Cursor、Windsurf、Codex CLI…）使用的 LINE 開發技能包。
+LINE's API punishes small mistakes in ways that are hard to trace.
 
-它把 **https://developers.line.biz 的全部文件**與
-**[`line/line-openapi`](https://github.com/line/line-openapi) 官方 OpenAPI 規格**
-萃取成一份 3,675 筆的可搜尋資料庫，並附上能實際執行的驗證與 API 工具。
+`chatBarText` is capped at 14 characters. A carousel column's `text` allows 120
+characters — but only 60 once you add a thumbnail or a title. Rich menu images upload
+to `api-data.line.me`, not `api.line.me`. A reply token dies after one minute and one
+use. Bubbles in one carousel must all share the same width.
 
-AI 助理因此不必憑記憶回答 LINE API 問題——欄位名稱、字數上限、
-enum 可用值、rate limit、錯誤碼全部查得到，而且每一筆都附官方文件連結。
+None of that is guessable, and an assistant working from memory will confidently get
+it wrong. This skill makes it check first.
 
-## 內容
-
-```
-line-api/
-├── SKILL.md                 技能說明（AI 讀這份）
-├── EXAMPLES.md              程式碼範例集
-├── data/                    26 個 CSV，共 3,675 筆
-│   ├── endpoints.csv            121 個端點（method / host / path / rate limit / auth）
-│   ├── parameters.csv          1584 個請求/回應欄位（8 份官方 reference，含 LIFF SDK）
-│   ├── message-objects.csv      142 訊息物件 / template / imagemap action
-│   ├── flex-components.csv      136 Flex 容器、元件、樣式
-│   ├── actions.csv               34 action 物件
-│   ├── richmenu.csv              23 圖文選單欄位
-│   ├── webhook-events.csv        27 webhook 事件與訊息子型別
-│   ├── webhook-properties.csv   247 webhook 事件的逐欄位型別與說明
-│   ├── responses.csv            218 每支端點回應主體的逐欄位型別
-│   ├── guides.csv               221 官方指南頁索引（標題 + 各節）
-│   ├── liff-versions.csv         58 LIFF 版本沿革
-│   ├── faq.csv                   92 官方 FAQ 題目與錨點連結
-│   ├── url-schemes.csv           44 LINE URL scheme
-│   ├── sdk-api.csv               80 iOS / Android SDK 型別清單
-│   ├── liff-api.csv              35 LIFF SDK v2 API
-│   ├── error-codes.csv          226 狀態碼與錯誤訊息
-│   ├── limits.csv               114 數值限制
-│   ├── products.csv               8 LINE 產品選型
-│   ├── channel-tokens.csv         5 存取權杖型別
-│   ├── troubleshooting.csv       21 疑難排解
-│   ├── reasoning.csv             23 情境建議
-│   ├── deprecations.csv          12 已停用功能與替代方案
-│   ├── terms.csv                 57 官方術語表，附中文定義
-│   ├── glossary.csv             130 中英術語對照（讓中文查詢命中英文資料）
-│   ├── emoji.csv / stickers.csv  可用的 emoji 與貼圖 ID
-├── references/              12 份主題參考文件
-├── scripts/                 5 支工具（純標準函式庫）
-└── examples/                Python / Node.js / PHP / LIFF / Flex 範例
-
-tools/                       重建資料集用（不隨技能安裝）
-├── fetch_sources.py         抓官方文件 + clone line-openapi → .docs-cache/
-├── build_dataset.py         由來源重新產生 line-api/data/*.csv
-├── discover_pages.py        走遍站上 HTML 導覽，找出 llms.txt 沒列到的頁面
-├── check_links.py           實際打過每一條 doc_url，確認無死連結或轉址
-└── audit_coverage.py        逐條比對官方文件與資料集，列出所有覆蓋缺口
-```
-
-## 安裝
-
-**Claude Code**
+## Quick Start
 
 ```bash
-git clone https://github.com/<you>/line-api-skill.git
-cp -r line-api-skill/line-api ~/.claude/skills/line-api
+git clone https://github.com/Moksa1123/line-api-skill
+cd line-api-skill
+python tools/install-skill.py claude-code --global
 ```
 
-之後在 Claude Code 裡輸入 `/line-api`，或直接問「幫我做一個 LINE bot」即可觸發。
+Then just ask, in your own words:
 
-**其他 AI 助理**：把 `line-api/` 整個複製進該工具的 skill / rules 目錄即可，
-內容是純 Markdown + CSV + Python，沒有任何平台相依。
+```
+You:   Build me a LINE bot that replies to orders with a Flex card
 
-## 快速試用
-
-```bash
-cd line-api
-
-python scripts/search.py --stats
-python scripts/search.py "push message"
-python scripts/search.py "圖文選單"
-python scripts/search.py "429" --domain error
-
-python scripts/validate.py examples/flex/order-receipt.json --as flex
-python scripts/test_line.py
+Agent: (looks up the endpoint, the Flex schema and the field limits,
+        writes the code, validates the JSON offline before sending)
 ```
 
-實際打 LINE API：
+## Install
 
 ```bash
-export LINE_CHANNEL_ACCESS_TOKEN=...
+python tools/install-skill.py --list                   # see all platforms
+python tools/install-skill.py claude-code --global
+python tools/install-skill.py cursor                   # into the current project
+python tools/install-skill.py claude-ai --to ./build    # zip to upload
+```
+
+8 platforms — Claude Code, Claude.ai, Cursor, Codex CLI, Gemini CLI, Devin Desktop
+(ex-Windsurf), GitHub Copilot, Continue. Three install shapes, depending on how each
+platform loads a skill: the full directory, a single flattened rule file, or a zip for
+web upload. Upgrades delete what the previous version left behind — an installer that
+leaves last year's wrong dataset beside this year's right one is worse than no
+installer.
+
+## Use
+
+You normally never run the tools yourself. The skill teaches the agent the loop:
+
+```
+1. look it up        search.py     endpoint, field, limit, enum, error, FAQ
+2. write the JSON    (the agent)   straight from the shapes it just read
+3. validate offline  validate.py   type, required, typos, enum, caps, deprecated
+4. only then send    lineapi.py    correct host, correct headers
+```
+
+Drive it by hand when you want to:
+
+```bash
+python scripts/search.py "carousel"                  # auto-detects the domain
+python scripts/search.py "get bot info" --domain response
+python scripts/search.py "圖文選單" --domain all      # Chinese queries work too
+python scripts/validate.py message.json --as push
+python scripts/signature.py verify --secret <s> --body-file b.json --signature <sig>
 python scripts/lineapi.py info
-python scripts/lineapi.py quota
-python scripts/test_line.py --live
 ```
 
-## 五支工具
+The validator points at the exact path:
 
-| 工具 | 做什麼 |
+```
+❌ $.contents.body.layout               missing required property 'layout'
+❌ $.contents.body.contents[0].weight   'extra-bold' invalid — use: regular, bold
+⚠️  $.template.columns                  columns have inconsistent action counts
+```
+
+## What's Covered
+
+| Area | What you can look up |
 |---|---|
-| `search.py` | BM25 搜尋 25 個資料域；中文查詢會自動補上英文術語 |
-| `validate.py` | 離線驗證訊息 / Flex / request body：型別、必填、typo、enum、上限、已淘汰元件 |
-| `signature.py` | webhook 簽章驗證；channel access token（含純 Python 實作的 RS256 JWT） |
-| `lineapi.py` | 零依賴 Messaging API client，自動切換 `api.line.me` / `api-data.line.me` |
-| `test_line.py` | 43 項離線測試 + 6 項線上測試 |
+| Messaging API | 97 endpoints, rate limits, retry keys, quota, insight |
+| Message objects | 11 types, quick reply, 4 templates, 9 action objects |
+| Flex Message | containers, 9 components, every property, size limits |
+| Rich menu | object shape, image spec, aliases, per-user linking |
+| Webhook | 20 events, 247 typed fields, signature verification |
+| LINE Login | OAuth 2.0 + OIDC, scopes, ID token verification |
+| LIFF | 35 APIs, introduced-in version, tree-shakable modules |
+| LINE MINI App | verified vs unverified, service messages, in-app purchase |
+| URL schemes | 44 schemes, and the three platform limits people trip on |
+| Mobile SDKs | 80 iOS/Android types with links into the generated reference |
 
-## 資料怎麼來的
+Plus LINE's 57 official glossary terms, 92 FAQ entries, curated troubleshooting, and a
+list of what LINE has discontinued (LINE Notify ended 2025-03-31) so the assistant
+never recommends a dead API.
+
+## Tools
+
+| Tool | What it does |
+|---|---|
+| `search.py` | BM25 over 25 domains; Chinese queries auto-expand to English terms |
+| `validate.py` | Offline message/Flex validation — types, required, typos, enums, caps |
+| `signature.py` | Webhook signature; channel access tokens incl. a pure-Python RS256 JWT |
+| `lineapi.py` | Zero-dependency Messaging API client; routes `api-data.line.me` for you |
+| `test_line.py` | 43 offline tests + 6 live tests |
+
+## How the Data Is Built
 
 ```
-https://developers.line.biz/llms.txt
-        ↓  tools/fetch_sources.py
-231 頁官方文件（多數有 index.html.md；其餘由 HTML 轉換）+ github.com/line/line-openapi
-        ↓  tools/build_dataset.py
-line-api/data/*.csv  ← 交叉驗證：文件端點 ⊇ OpenAPI 端點
-        ↓  tools/check_links.py
-每一條 doc_url 實際 HTTP 驗證過（含偵測 SPA 假 200 與轉址）
-        ↓  tools/audit_coverage.py
-1492 個官方參數區塊逐條回查，確認沒有漏收的欄位、上限、enum 或預設值
+https://developers.line.biz/llms.txt        github.com/line/line-openapi
+        ↓ tools/fetch_sources.py                    ↓
+231 official pages (most have an .md variant)   10 OpenAPI specs
+        ↓ tools/build_dataset.py
+line-api/data/*.csv    ← cross-checked: docs endpoints ⊇ OpenAPI endpoints
 ```
 
-抓下來的原始文件放在 `.docs-cache/`，**已在 `.gitignore` 中，不會進入版本控制**——
-那是 LY Corporation 的內容，本倉庫只發佈萃取後的資料集與自撰的參考文件。
+Four independent guards, each of which has caught real mistakes:
 
-要更新到最新版文件：
+| Guard | Checks |
+|---|---|
+| `test_line.py` | data integrity, search, validator, signature, JWT |
+| `audit_coverage.py` | every documented field made it into the dataset |
+| `check_links.py` | every doc URL resolves (detects the SPA's fake 200s) |
+| `check_docs.py` | the numbers in this README match the actual data |
+
+The scraped pages live in `.docs-cache/`, which is **git-ignored and never
+published** — that content belongs to LY Corporation. This repository ships only the
+derived dataset and its own writing.
+
+To refresh against the latest docs:
 
 ```bash
 python tools/fetch_sources.py
 python tools/build_dataset.py
-python tools/check_links.py --md
 python tools/audit_coverage.py
+python tools/check_links.py --md
+python tools/check_docs.py
 python line-api/scripts/test_line.py
 ```
 
-## 授權
+## License
 
-本倉庫程式碼採 MIT。
-LINE、LINE Messaging API、LIFF、LINE MINI App 為 LY Corporation 的商標；
-本專案與 LY Corporation 無隸屬關係，資料集是對其公開文件與公開 OpenAPI 規格的整理。
+MIT for the code in this repository.
+
+LINE, LINE Messaging API, LIFF and LINE MINI App are trademarks of LY Corporation.
+This project is not affiliated with LY Corporation; the dataset is an organised
+reading of its public documentation and public OpenAPI specifications.

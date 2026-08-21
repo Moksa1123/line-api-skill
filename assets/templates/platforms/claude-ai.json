@@ -1,0 +1,26 @@
+{
+  "platform": "claude-ai",
+  "displayName": "Claude.ai (web app)",
+  "installType": "zip-upload",
+  "folderStructure": {
+    "skillPath": "line-api.zip",
+    "filename": "SKILL.md"
+  },
+  "frontmatter": [
+    "name",
+    "description",
+    "license",
+    "author",
+    "version"
+  ],
+  "loaderBehaviour": "Settings → Skills → Upload 上傳 zip。Claude.ai 會解析 SKILL.md 的 frontmatter。",
+  "uploadSteps": [
+    "1. 執行：python tools/install-skill.py claude-ai --to ./build",
+    "2. 到 claude.ai → Settings → Skills",
+    "3. 點 Upload skill，選剛產生的 zip",
+    "4. 在對話中輸入 /line-api 或直接問 LINE API 問題"
+  ],
+  "verified": true,
+  "verifiedAsOf": "2026-07-11",
+  "verificationNote": "路徑慣例沿用同作者 elementor-headless 於 2026-07-11 實測驗證的結果。平台慣例會漂移，重大改版後請重新確認。"
+}

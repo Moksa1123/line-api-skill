@@ -1,0 +1,34 @@
+{
+  "platform": "copilot",
+  "displayName": "GitHub Copilot",
+  "installType": "full",
+  "folderStructure": {
+    "projectRoot": ".github",
+    "skillPath": "skills/line-api",
+    "filename": "SKILL.md"
+  },
+  "frontmatter": [
+    "name",
+    "description",
+    "license",
+    "author",
+    "version"
+  ],
+  "loaderBehaviour": "Copilot 已支援 .github/skills/ 的 Agent Skills。舊版請用 fallback。",
+  "fallback": {
+    "installType": "instructions-append",
+    "projectRoot": ".github",
+    "filename": "copilot-instructions.md",
+    "appendMarker": "<!-- BEGIN: line-api -->",
+    "appendMarkerEnd": "<!-- END: line-api -->",
+    "embedReferences": [
+      "messaging-api.md",
+      "webhook.md",
+      "flex-message.md"
+    ],
+    "note": "若你的 Copilot 版本還不支援 .github/skills/，用這個附加模式。"
+  },
+  "verified": true,
+  "verifiedAsOf": "2026-07-11",
+  "verificationNote": "路徑慣例沿用同作者 elementor-headless 於 2026-07-11 實測驗證的結果。平台慣例會漂移，重大改版後請重新確認。"
+}

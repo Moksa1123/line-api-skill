@@ -1,0 +1,25 @@
+{
+  "platform": "continue",
+  "displayName": "Continue (continue.dev)",
+  "installType": "rule",
+  "folderStructure": {
+    "projectRoot": ".continue",
+    "globalRoot": "~/.continue",
+    "skillPath": "rules",
+    "filename": "line-api.md"
+  },
+  "frontmatter": [
+    "name",
+    "description",
+    "alwaysApply"
+  ],
+  "embedReferences": [
+    "messaging-api.md",
+    "webhook.md",
+    "flex-message.md"
+  ],
+  "loaderBehaviour": "Continue 讀 .continue/rules/*.md 當 Rules；alwaysApply: true 會自動附加。",
+  "verified": true,
+  "verifiedAsOf": "2026-07-11",
+  "verificationNote": "路徑慣例沿用同作者 elementor-headless 於 2026-07-11 實測驗證的結果。平台慣例會漂移，重大改版後請重新確認。"
+}

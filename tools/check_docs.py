@@ -42,29 +42,39 @@ def facts() -> dict:
         "offline_tests": sum(1 for c in checks if not c.startswith("live:")),
         "live_tests": sum(1 for c in checks if c.startswith("live:")),
         "references": len(list((SKILL / "references").glob("*.md"))),
+        "platforms": len(list((REPO / "assets" / "templates" / "platforms").glob("*.json"))),
         "endpoints": stats.get("endpoint", 0),
         "parameters": stats.get("parameter", 0),
     }
 
 
+READMES = ("README.md", "README.zh-TW.md", "README.ja.md", "README.ko.md")
+
+
 def rules(f: dict) -> list[tuple[Path, str, str, str]]:
     """(檔案, 說明, 正規式, 應有的值)。正規式第 1 組是要比對的數字。"""
-    skill, readme, claude = (SKILL / "SKILL.md"), (REPO / "README.md"), (REPO / "CLAUDE.md")
-    comma = f"{f['rows']:,}"
-    return [
+    skill, claude = (SKILL / "SKILL.md"), (REPO / "CLAUDE.md")
+    out = [
         (skill, "資料集總筆數", r"共 \*\*(\d+) 筆\*\*", str(f["rows"])),
         (skill, "搜尋域數量", r"## (\d+) 個搜尋域", str(f["domains"])),
-        (readme, "badge 筆數", r"dataset-(\d+)%20rows", str(f["rows"])),
-        (readme, "badge alt", r'alt="(\d+) rows"', str(f["rows"])),
-        (readme, "資料庫筆數", r"萃取成一份 ([\d,]+) 筆的可搜尋資料庫", comma),
-        (readme, "CSV 數量", r"├── data/ +(\d+) 個 CSV", str(f["csvs"])),
-        (readme, "CSV 總筆數", r"個 CSV，共 ([\d,]+) 筆", comma),
-        (readme, "搜尋域數量", r"BM25 搜尋 (\d+) 個資料域", str(f["domains"])),
-        (readme, "離線測試數", r"\| `test_line\.py` \| (\d+) 項離線測試", str(f["offline_tests"])),
-        (readme, "線上測試數", r"項離線測試 \+ (\d+) 項線上測試", str(f["live_tests"])),
-        (readme, "reference 份數", r"├── references/ +(\d+) 份主題參考文件", str(f["references"])),
         (claude, "離線測試數", r"test_line\.py +# 離線 (\d+) 項", str(f["offline_tests"])),
     ]
+    # 四份 README 的 badge 與統計數字必須一致——翻譯版最容易被漏掉
+    for name in READMES:
+        path = REPO / name
+        out += [
+            (path, "badge 端點數", r"endpoints-(\d+)-success", str(f["endpoints"])),
+            (path, "badge 欄位數", r"fields-(\d+)-blue", str(f["parameters"])),
+            (path, "badge 筆數", r"dataset-(\d+)%20rows", str(f["rows"])),
+            (path, "badge alt", r'alt="(\d+) rows"', str(f["rows"])),
+            (path, "badge 平台數", r"platforms-(\d+)-9cf", str(f["platforms"])),
+            # 各語言的量詞寫法不同，韓文的「121개」中間沒有空格
+            (path, "統計區端點數",
+             r"^(\d+) ?(?:endpoints|個端點|エンドポイント|개 엔드포인트)",
+             str(f["endpoints"])),
+            (path, "離線測試數", r"`test_line\.py` \|[^|]*?(\d+)", str(f["offline_tests"])),
+        ]
+    return out
 
 
 def main() -> int:
@@ -82,7 +92,7 @@ def main() -> int:
     edits: dict[Path, str] = {}
     for path, label, pattern, want in rules(f):
         text = edits.get(path) or path.read_text(encoding="utf-8")
-        m = re.search(pattern, text)
+        m = re.search(pattern, text, re.M)
         if not m:
             problems.append(f"{path.name}｜{label}：找不到對應寫法（{pattern}）")
             continue
