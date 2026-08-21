@@ -1,0 +1,45 @@
+scheme,category,purpose,note,doc_url
+https://line.me/R/,base,LINE App 功能類 URL scheme 的共同前綴,未安裝 LINE 時會開瀏覽器導向下載頁,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://liff.line.me/{liffId},base,開啟 LIFF app,未安裝 LINE 時會用外部瀏覽器開啟該 LIFF app,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://miniapp.line.me/{liffId},base,開啟 LINE MINI App,已驗證的 MINI App 可申請自訂路徑取代 liffId,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/app/{liffId},liff,開啟 LIFF app（舊式寫法）,新專案建議改用 https://liff.line.me/{liffId},https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/nv/camera/,camera,開啟相機,只能從 LINE 聊天室（含 OpenChat）觸發,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/nv/cameraRoll/single,camera,開啟相簿並選取單張圖片,只能從 LINE 聊天室（含 OpenChat）觸發,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/nv/cameraRoll/multi,camera,開啟相簿並可多選圖片,只能從 LINE 聊天室（含 OpenChat）觸發,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/nv/location/,location,開啟位置選擇畫面讓使用者傳送所在位置,只能從 LINE 聊天室觸發,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/ti/p/{Percent-encoded LINE ID},official-account,開啟指定 LINE 官方帳號的加好友畫面,LINE ID 需 percent-encode，@ 要寫成 %40,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/nv/recommendOA/{Percent-encoded LINE ID},official-account,把指定官方帳號推薦分享給好友,LINE ID 需 percent-encode,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/home/public/main?id={LINE ID without @},official-account,開啟官方帳號的 LINE VOOM 與商業檔案,id 參數不含 @,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/oaMessage/{Percent-encoded LINE ID}/?{Percent-encoded text},official-account,開啟與該官方帳號的聊天室並預先填入訊息,文字需 percent-encode；常用來做「一鍵詢問」按鈕,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/share?text={Percent-encoded text},share,開啟分享畫面讓使用者把文字傳給好友,文字需 percent-encode,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/nv/profile,profile,開啟使用者自己的個人檔案畫面,,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/nv/profileSetId,profile,開啟設定 LINE ID 的畫面,,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/nv/chat,screen,開啟聊天列表,,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/nv/addFriends,screen,開啟加好友畫面,,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/nv/officialAccounts,screen,開啟官方帳號列表,,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/nv/timeline,screen,開啟 LINE VOOM,,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/nv/wallet,screen,開啟錢包分頁,,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/nv/commerce,screen,開啟購物分頁,,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/nv/settings,settings,開啟 LINE 設定主畫面,,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/nv/settings/account,settings,開啟帳號設定,,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/nv/settings/privacy,settings,開啟隱私設定,,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/nv/settings/chatSettings,settings,開啟聊天設定,,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/nv/settings/callSettings,settings,開啟通話設定,,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/nv/settings/addressBookSync,settings,開啟通訊錄同步設定,,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/nv/settings/timelineSettings,settings,開啟 LINE VOOM 設定,,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/nv/settings/sticker,settings,開啟貼圖設定,,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/nv/settings/theme,settings,開啟主題設定,,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/nv/settings/themeSettingsMenu,settings,開啟主題設定選單,,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/nv/themeSettings,settings,開啟主題設定（另一入口）,,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/nv/connectedApps,settings,開啟已連結的應用程式清單,使用者可在此解除對你的 App 的授權,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/nv/connectedDevices,settings,開啟已連結的裝置清單,,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/nv/notificationServiceDetail,settings,開啟通知服務設定,,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/nv/suggestSettings,settings,開啟建議功能設定,,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/nv/stickerShop,sticker-shop,開啟貼圖小舖,,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/nv/stickerShop/mySticker,sticker-shop,開啟我的貼圖,,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/shop/sticker/hot,sticker-shop,開啟貼圖小舖的熱門分頁,,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/shop/sticker/new,sticker-shop,開啟貼圖小舖的最新分頁,,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/shop/sticker/event,sticker-shop,開啟貼圖小舖的活動分頁,,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+https://line.me/R/shop/sticker/category,sticker-shop,開啟貼圖小舖的分類頁,,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+{任意網址}?openExternalBrowser=1,browser,強制以外部瀏覽器開啟該網址,LIFF app 內不生效；是 query 參數不是 scheme,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+{任意網址}?openInAppBrowser=0,browser,以 Chrome custom tab 開啟該網址,僅 Android 版 LINE 有效；LIFF app 內不生效,https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/

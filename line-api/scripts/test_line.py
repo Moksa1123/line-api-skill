@@ -84,7 +84,7 @@ def t_dataset_present():
         "endpoints.csv", "parameters.csv", "message-objects.csv", "flex-components.csv",
         "actions.csv", "richmenu.csv", "webhook-events.csv", "liff-api.csv",
         "webhook-properties.csv", "responses.csv", "guides.csv",
-        "liff-versions.csv", "terms.csv",
+        "liff-versions.csv", "terms.csv", "url-schemes.csv",
         "error-codes.csv", "limits.csv", "products.csv", "channel-tokens.csv",
         "troubleshooting.csv", "reasoning.csv", "deprecations.csv", "glossary.csv",
         "emoji.csv", "stickers.csv",
@@ -231,6 +231,29 @@ def t_liff_versions():
     return (f"{len(versions)} 版、{len(dated)} 個有日期；"
             f"{sum(1 for r in api if r['introduced_in'])} 個 API 標出引進版本；"
             f"{len(before)} 個可在 init 前呼叫")
+
+
+@check("dataset: LINE URL scheme 有收錄且分類正確")
+def t_url_schemes():
+    schemes = rows("url-schemes.csv")
+    assert len(schemes) >= 40, f"URL scheme 只有 {len(schemes)} 筆"
+    assert all(s["purpose"] for s in schemes), "有 scheme 沒寫用途"
+
+    by_cat = {}
+    for s in schemes:
+        by_cat.setdefault(s["category"], []).append(s["scheme"])
+    for want in ("camera", "official-account", "settings", "sticker-shop", "browser"):
+        assert want in by_cat, f"缺少分類 {want}"
+
+    all_schemes = " ".join(s["scheme"] for s in schemes)
+    for want in ("line.me/R/ti/p/", "line.me/R/nv/camera/",
+                 "openExternalBrowser=1", "liff.line.me/"):
+        assert want in all_schemes, f"缺少 {want}"
+
+    # 相機類只能從聊天室觸發，是最常踩的雷，必須有註記
+    camera = [s for s in schemes if s["category"] == "camera"]
+    assert all("聊天室" in s["note"] for s in camera), "相機類 scheme 沒有註明使用限制"
+    return f"{len(schemes)} 個 scheme、{len(by_cat)} 種分類"
 
 
 @check("dataset: 官方術語表 57 條全部收錄且錨點正確")
