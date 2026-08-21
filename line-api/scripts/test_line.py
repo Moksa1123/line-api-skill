@@ -228,6 +228,19 @@ def t_liff_versions():
     before = [r["name"] for r in api if r["before_init"] == "true"]
     assert "liff.getOS()" in before and "liff.isInClient()" in before, before
     assert "liff.getProfile()" not in before, "getProfile 需要先 init，不該被標記"
+
+    # 可搖樹匯入的模組名。連續大寫要當一個字，否則 getOS 會變成 get-o-s
+    def module(name):
+        return next((r["module"] for r in api if r["name"] == name), None)
+
+    assert module("liff.getOS()") == "@line/liff/get-os"
+    assert module("liff.getIDToken()") == "@line/liff/get-id-token"
+    assert module("liff.getDecodedIDToken()") == "@line/liff/get-decoded-id-token"
+    assert module("liff.shareTargetPicker()") == "@line/liff/share-target-picker"
+    # 文件沒有列出專屬模組的就留白，不臆測
+    assert module("liff.init()") == "", "init 文件未列模組，不該自行填入"
+    with_module = sum(1 for r in api if r["module"])
+    assert with_module >= 28, f"只有 {with_module} 個 API 對到模組"
     return (f"{len(versions)} 版、{len(dated)} 個有日期；"
             f"{sum(1 for r in api if r['introduced_in'])} 個 API 標出引進版本；"
             f"{len(before)} 個可在 init 前呼叫")

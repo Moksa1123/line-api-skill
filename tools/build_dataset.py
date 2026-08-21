@@ -618,6 +618,39 @@ def build_liff_versions() -> list[dict]:
     return rows
 
 
+LIFF_MODULE_RE = re.compile(r"@line/liff/([a-z0-9\-]+)")
+
+
+def annotate_liff_modules(liff_rows: list[dict]) -> list[dict]:
+    """標出每個 liff.* API 對應的可搖樹匯入模組。
+
+    LIFF SDK 支援 `import getProfile from "@line/liff/get-profile"` 這種
+    模組化匯入，只打包用得到的功能。模組名是 API 名的 kebab-case，
+    所以可以由名稱推導後，再用文件裡實際出現過的模組清單驗證。
+    """
+    seen: set[str] = set()
+    for path in list(RAW.rglob("*.md")):
+        seen.update(LIFF_MODULE_RE.findall(path.read_text(encoding="utf-8")))
+
+    def to_module(name: str) -> str:
+        base = name.rstrip("()")
+        if not base.startswith("liff."):
+            return ""
+        tail = base[len("liff."):]
+        # liff.permission.query() -> permission；liff.getProfile() -> get-profile
+        head = tail.split(".")[0]
+        # 連續大寫要當成一個字：getOS -> get-os、getIDToken -> get-id-token。
+        # 單純「每個大寫前插連字號」會變成 get-o-s，對不上真正的模組名。
+        kebab = re.sub(r"([a-z0-9])([A-Z])", r"\1-\2", head)
+        kebab = re.sub(r"([A-Z]+)([A-Z][a-z])", r"\1-\2", kebab)
+        return kebab.lower()
+
+    for row in liff_rows:
+        mod = to_module(row["name"])
+        row["module"] = "@line/liff/" + mod if mod and mod in seen else ""
+    return liff_rows
+
+
 def annotate_liff_introduced(liff_rows: list[dict], versions: list[dict]) -> list[dict]:
     """標出每個 liff.* API 最早出現在哪一版。
 
@@ -1438,9 +1471,10 @@ def main() -> int:
               build_limits(specs))
 
     write_csv("liff-api.csv",
-              ["name", "kind", "category", "before_init", "introduced_in",
+              ["name", "kind", "category", "module", "before_init", "introduced_in",
                "introduced_on", "syntax", "returns", "description", "doc_url"],
-              annotate_liff_introduced(build_liff_api(), liff_versions))
+              annotate_liff_modules(
+                  annotate_liff_introduced(build_liff_api(), liff_versions)))
 
     write_csv("emoji.csv",
               ["product_id", "emoji_id_from", "emoji_id_to", "count", "emoji_ids"],

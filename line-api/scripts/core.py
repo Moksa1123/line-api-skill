@@ -117,8 +117,8 @@ CSV_CONFIG: Dict[str, dict] = {
     "liff": {
         "file": "liff-api.csv",
         "search_cols": ["name", "category", "description", "returns", "syntax"],
-        "output_cols": ["name", "kind", "category", "before_init", "syntax",
-                        "returns", "description", "doc_url"],
+        "output_cols": ["name", "kind", "category", "module", "before_init",
+                        "introduced_in", "syntax", "returns", "description", "doc_url"],
         "label": "LIFF SDK",
     },
     "error": {
@@ -214,7 +214,8 @@ DOMAIN_KEYWORDS: Dict[str, List[str]] = {
     "webhook_field": ["postback.params", "deliverycontext", "webhookeventid", "replytoken",
                       "quotetoken", "markasreadtoken", "source.type", "isredelivery",
                       "事件欄位", "webhook 欄位"],
-    "liff": ["liff", "front-end", "前端", "liff.init", "liff."],
+    "liff": ["liff", "front-end", "前端", "liff.init", "liff.", "@line/liff",
+             "模組化匯入", "tree shaking"],
     "response": ["response", "returns", "回應", "回傳", "回什麼", "response body"],
     "guide": ["guide", "how to", "tutorial", "step", "指南", "教學", "步驟",
               "怎麼做", "怎麼建", "怎麼切", "怎麼設", "哪一頁", "文件在哪", "範例流程"],
