@@ -259,6 +259,22 @@ def t_search_zh():
     return f"{len(cases)} 個中文查詢域判定正確，LINE Notify 也查得到"
 
 
+@check("search: camelCase / dotted identifiers are reachable by their parts")
+def t_tokenizer():
+    parts = core.tokenize("MulticastRequest.to")
+    for want in ("multicast", "request", "to"):
+        assert want in parts, f"{want!r} 不在 {parts}"
+    assert "chat" in core.tokenize("chatBarText")
+    assert core.tokenize("push") == ["push"], "純小寫查詢不該被拆開"
+
+    # 這正是修正前查不到的案例
+    hits = core.search("multicast", domain="limit", max_results=8)
+    assert any(h["field"] == "MulticastRequest.to" for h in hits),         "查 multicast 找不到 MulticastRequest.to"
+    hits = core.search("chatBarText", domain="richmenu", max_results=5)
+    assert any(h["max_length"] == "14" for h in hits), "查 chatBarText 找不到 14 字上限"
+    return "camelCase 與點號路徑都可被子詞命中"
+
+
 @check("search: query expansion adds the english term")
 def t_expand():
     out = core.expand_query("圖文選單怎麼建立")

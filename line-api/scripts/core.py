@@ -217,14 +217,26 @@ def expand_query(query: str) -> str:
 
 
 # --------------------------------------------------------------------------
+CAMEL_RE = re.compile(r"[A-Z]+(?![a-z])|[A-Z][a-z0-9]*|[a-z0-9]+")
+
+
 def tokenize(text: str) -> List[str]:
-    """Mixed CJK / latin tokenizer: latin words + CJK unigrams and bigrams."""
+    """Mixed CJK / latin tokenizer.
+
+    Latin runs are emitted whole *and* split on camelCase / dotted paths, so a
+    query for "multicast" still finds `MulticastRequest.to` and "chat bar"
+    finds `chatBarText`. CJK is indexed as unigrams plus bigrams.
+    """
     if not text:
         return []
-    text = text.lower()
     tokens: List[str] = []
-    for m in re.finditer(r"[a-z0-9_]+", text):
-        tokens.append(m.group())
+    for m in re.finditer(r"[A-Za-z0-9_.]+", text):
+        run = m.group()
+        tokens.append(run.lower())
+        parts = [p for chunk in run.replace("_", ".").split(".") if chunk
+                 for p in CAMEL_RE.findall(chunk)]
+        if len(parts) > 1 or parts and parts[0].lower() != run.lower():
+            tokens.extend(p.lower() for p in parts)
     cjk = re.findall(r"[一-鿿]", text)
     tokens.extend(cjk)
     tokens.extend(cjk[i] + cjk[i + 1] for i in range(len(cjk) - 1))
