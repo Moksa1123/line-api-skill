@@ -275,6 +275,25 @@ def t_tokenizer():
     return "camelCase 與點號路徑都可被子詞命中"
 
 
+@check("search: 資料裡有的 max_length，輸出欄位就不能漏掉")
+def t_output_cols_expose_limits():
+    import csv as _csv
+    missing = []
+    for domain, cfg in core.CSV_CONFIG.items():
+        path = DATA / cfg["file"]
+        with open(path, encoding="utf-8", newline="") as f:
+            reader = _csv.DictReader(f)
+            fields = reader.fieldnames or []
+            has_values = any(r.get("max_length") for r in reader)
+        if "max_length" in fields and has_values and "max_length" not in cfg["output_cols"]:
+            missing.append(domain)
+    assert not missing, f"這些域藏起了 max_length：{missing}"
+    # 輪播上限 12 是最常被問到的一條，直接釘住
+    hits = core.search("carousel", domain="flex", max_results=5)
+    assert any(h.get("max_length") == "12" for h in hits), "查 carousel 看不到 12 的上限"
+    return "有限制值的域都會顯示 max_length"
+
+
 @check("search: query expansion adds the english term")
 def t_expand():
     out = core.expand_query("圖文選單怎麼建立")
@@ -363,6 +382,45 @@ def t_validate_request():
     v = val.run({"messages": []}, "broadcast")
     assert any("空陣列" in p.message for p in v.problems), "沒抓到空 messages"
     return "multicast 500 / messages 5 / 空陣列 都抓到"
+
+
+@check("validate: 輪播的欄數、動作數與條件式 text 上限都會擋")
+def t_validate_carousel():
+    def msg(template):
+        return {"type": "template", "altText": "a", "template": template}
+
+    col = {"text": "t", "actions": [{"type": "message", "label": "a", "text": "a"}]}
+
+    # template carousel：最多 10 欄
+    v = val.run(msg({"type": "carousel", "columns": [col] * 11}), "message")
+    assert any("10" in p.message for p in v.problems), "沒抓到 carousel 10 欄上限"
+
+    # 每欄最多 3 個 action
+    over = {"text": "t", "actions": [{"type": "message", "label": "a", "text": "a"}] * 4}
+    v = val.run(msg({"type": "carousel", "columns": [over]}), "message")
+    assert any("3" in p.message for p in v.problems), "沒抓到每欄 3 個 action 上限"
+
+    # 條件式 text：沒有圖也沒有標題 → 120 字以內合法
+    v = val.run(msg({"type": "carousel",
+                     "columns": [{"text": "x" * 110,
+                                  "actions": col["actions"]}]}), "message")
+    assert not [p for p in v.problems if p.level == "error"],         f"無圖無標題的 110 字不該報錯：{[p.message for p in v.problems]}"
+
+    # 有標題 → 上限縮到 60
+    v = val.run(msg({"type": "carousel",
+                     "columns": [{"title": "標題", "text": "x" * 110,
+                                  "actions": col["actions"]}]}), "message")
+    assert any("60" in p.message for p in v.problems), "有標題時沒有套用 60 字上限"
+
+    # Flex carousel：最多 12 個 bubble
+    bubble = {"type": "bubble", "body": {"type": "box", "layout": "vertical", "contents": []}}
+    v = val.run({"type": "carousel", "contents": [bubble] * 13}, "flex")
+    assert any("12" in p.message for p in v.problems), "沒抓到 Flex carousel 12 bubble 上限"
+
+    # 正常的兩欄輪播不該有任何抱怨
+    v = val.run(msg({"type": "carousel", "columns": [col, col]}), "message")
+    assert not v.problems, f"正常輪播被誤報：{[p.message for p in v.problems]}"
+    return "template 10 欄 / 每欄 3 動作 / 條件式 text / Flex 12 bubble 全部生效"
 
 
 @check("validate: flags the deprecated filler component")

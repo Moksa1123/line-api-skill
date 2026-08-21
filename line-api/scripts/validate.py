@@ -65,6 +65,17 @@ REQUEST_SHAPES = {
     "narrowcast": {"required": ["messages"], "messages_max": 5},
 }
 
+# LINE 對這兩個地方的 text 有「條件式」上限：沒有圖也沒有標題時放寬，
+# 兩者任一存在時縮短。CSV 只存得下一個數字（存的是寬鬆值，避免誤報），
+# 縮短後的規則在這裡補上。
+# reference/messaging-api.md > Message objects > Template message
+TEXT_SHRINKS_WITH_IMAGE = {
+    "ButtonsTemplate": {"loose": 160, "tight": 60,
+                        "when": ("thumbnailImageUrl", "title")},
+    "CarouselColumn": {"loose": 120, "tight": 60,
+                       "when": ("thumbnailImageUrl", "title")},
+}
+
 DEPRECATED_TYPES = {
     "filler": "filler 已淘汰，請改用 box 的 margin / offset / padding 排版",
 }
@@ -112,6 +123,13 @@ class Registry:
 
     def union_types(self, union: str) -> list[str]:
         return sorted(self.unions.get(union, {}))
+
+    def schema_of(self, union: str, tag: str) -> str:
+        """union 的 type tag -> 具體 schema 名稱（buttons -> ButtonsTemplate）。"""
+        props = self.unions.get(union, {}).get(tag) or {}
+        for row in props.values():
+            return row.get("schema", "")
+        return ""
 
 
 REG = Registry()
@@ -213,7 +231,9 @@ class Validator:
             return
         if tag in DEPRECATED_TYPES:
             self.warn(path, DEPRECATED_TYPES[tag], REG.doc.get(f"{union}:{tag}", ""))
-        self._check_props(path, obj, table[tag], REG.doc.get(f"{union}:{tag}", ""))
+        doc = REG.doc.get(f"{union}:{tag}", "")
+        self._check_props(path, obj, table[tag], doc)
+        self._check_conditional_text(path, obj, REG.schema_of(union, tag), doc)
 
     def check_schema(self, path: str, obj, schema: str) -> None:
         props = REG.by_schema.get(schema)
@@ -223,6 +243,21 @@ class Validator:
             self.err(path, f"必須是物件（{schema}），實際是 {type(obj).__name__}")
             return
         self._check_props(path, obj, props, REG.doc.get(schema, ""))
+        self._check_conditional_text(path, obj, schema, REG.doc.get(schema, ""))
+
+    def _check_conditional_text(self, path: str, obj: dict, schema: str, doc: str) -> None:
+        rule = TEXT_SHRINKS_WITH_IMAGE.get(schema)
+        if not rule:
+            return
+        text = obj.get("text")
+        if not isinstance(text, str):
+            return
+        has_image_or_title = any(obj.get(k) for k in rule["when"])
+        limit = rule["tight"] if has_image_or_title else rule["loose"]
+        if len(text) > limit:
+            reason = ("同時有圖片或標題時" if has_image_or_title else "沒有圖片與標題時")
+            self.err(f"{path}.text",
+                     f"{schema} 在{reason} text 上限為 {limit}，目前 {len(text)} 字", doc)
 
     def _check_props(self, path: str, obj: dict, props: dict, doc: str) -> None:
         for name, spec in props.items():

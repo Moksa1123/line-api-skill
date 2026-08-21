@@ -64,7 +64,7 @@ CSV_CONFIG: Dict[str, dict] = {
         "file": "flex-components.csv",
         "search_cols": ["type", "schema", "property", "description", "enum", "group"],
         "output_cols": ["group", "type", "property", "value_type", "required",
-                        "enum", "description", "doc_url"],
+                        "enum", "max_length", "description", "doc_url"],
         "label": "Flex Message 元件",
     },
     "action": {

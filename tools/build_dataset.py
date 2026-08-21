@@ -382,6 +382,30 @@ FLEX_DOCUMENTED_MAXIMA = {
 }
 
 
+# Template limits with the same problem: LINE documents every template under
+# the single "#template-message" anchor, and property names (text / actions /
+# columns) repeat across templates, so (anchor, property) can't disambiguate.
+# Read from reference/messaging-api.md > Message objects > Template message.
+# For the two conditional text limits the LOOSER bound is stored here so the
+# validator never false-positives; the conditional rule itself lives in
+# validate.py (TEXT_SHRINKS_WITH_IMAGE).
+TEMPLATE_DOCUMENTED_MAXIMA = {
+    ("ButtonsTemplate", "thumbnailImageUrl"): "2000",
+    ("ButtonsTemplate", "title"): "40",
+    ("ButtonsTemplate", "text"): "160",      # 60 when an image or title is set
+    ("ButtonsTemplate", "actions"): "4",
+    ("ConfirmTemplate", "text"): "240",
+    ("ConfirmTemplate", "actions"): "2",
+    ("CarouselTemplate", "columns"): "10",
+    ("CarouselColumn", "thumbnailImageUrl"): "2000",
+    ("CarouselColumn", "title"): "40",
+    ("CarouselColumn", "text"): "120",       # 60 when an image or title is set
+    ("CarouselColumn", "actions"): "3",
+    ("ImageCarouselTemplate", "columns"): "10",
+    ("ImageCarouselColumn", "imageUrl"): "2000",
+}
+
+
 def merge_documented_maxima(schema_rows: list[dict], param_rows: list[dict]) -> list[dict]:
     """Fill max_length from the reference prose.
 
@@ -411,7 +435,8 @@ def merge_documented_maxima(schema_rows: list[dict], param_rows: list[dict]) -> 
         # only strings (character limit) and arrays (item limit) can carry a
         # documented maximum — never a nested object such as FlexMessage.contents
         joinable = vtype == "string" or vtype.startswith("array<")
-        hit = FLEX_DOCUMENTED_MAXIMA.get((r.get("schema", ""), r.get("property", "")))
+        key = (r.get("schema", ""), r.get("property", ""))
+        hit = FLEX_DOCUMENTED_MAXIMA.get(key) or TEMPLATE_DOCUMENTED_MAXIMA.get(key)
         if not hit and joinable:
             hit = index.get((r.get("doc_url", ""), r.get("property", "")))
         if hit:
