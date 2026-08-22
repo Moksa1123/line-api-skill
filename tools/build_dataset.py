@@ -538,6 +538,17 @@ def merge_from_docs(schema_rows: list[dict], param_rows: list[dict]) -> list[dic
         prefix = SCHEMA_PREFIXES.get(schema, "")
         doc = (by_heading.get((path[0], path[1], path[2], prefix + prop))
                or (by_heading.get((path[0], path[1], path[2], prop)) if prefix else None))
+        # 精確路徑對不上時的退路：官方偶爾把某個屬性寫在自己的子標題底下
+        # （QuickReply.items 就寫在「items object」那一節），照 subblock
+        # 比對永遠找不到。放寬成同一個 (endpoint, block) 裡找同名屬性，
+        # 但只在**整個區塊只有一個同名**時才採用——有兩個就代表不確定是哪一個，
+        # 猜錯會把不該必填的標成必填，那比漏掉更糟。
+        if not doc:
+            same = [r for r in param_rows
+                    if r.get("endpoint", "") == path[0] and r.get("block", "") == path[1]
+                    and r.get("parameter", "") in (prop, prefix + prop)]
+            if len(same) == 1:
+                doc = same[0]
         if not doc:
             continue
 

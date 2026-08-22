@@ -87,6 +87,12 @@ python scripts/signature.py verify --secret <s> --body-file b.json --signature <
 python scripts/lineapi.py info
 ```
 
+裡面每一條規則都是量出來的，不是推測的：從資料集生出 659 則訊息與 41 個圖文選單，
+逐筆送進 LINE 官方的驗證端點對照，700 筆判斷全部一致。幾個反直覺的地方就是這樣挖出來的
+—— `text` 的 5000 上限數的是 UTF-16 單位不是字元，所以 2501 個 emoji 會被退，
+但 `len()` 只會數到 2501。
+
+`error` 是「LINE 會退件」，`warning` 是「LINE 會收，但不會照你想的運作」。
 驗證器會直接指到出錯的路徑：
 
 ```
@@ -140,11 +146,11 @@ python scripts/review.py ./src --format json           # 給 CI 接
 | 工具 | 做什麼 |
 |---|---|
 | `search.py` | BM25 搜尋 25 個資料域；中文查詢會自動補上英文術語 |
-| `validate.py` | 離線驗證訊息 / Flex：型別、必填、錯字、enum、上限、已淘汰元件 |
+| `validate.py` | 離線驗證訊息 / Flex / 圖文選單：型別、必填、錯字、enum、上限、色碼與尺寸格式、網址 scheme |
 | `signature.py` | webhook 簽章；channel access token（含純 Python 實作的 RS256 JWT） |
 | `lineapi.py` | 零依賴 Messaging API client，自動判斷該打哪個主機 |
 | `review.py` | 審既有程式碼：已停服 API、主機打錯、簽章寫法、端點拼錯、訊息 JSON 錯字 |
-| `test_line.py` | 47 項離線測試 + 6 項線上測試 |
+| `test_line.py` | 49 項離線測試 + 6 項線上測試 |
 
 ## 資料怎麼來的
 

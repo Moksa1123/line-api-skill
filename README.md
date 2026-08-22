@@ -92,7 +92,14 @@ python scripts/signature.py verify --secret <s> --body-file b.json --signature <
 python scripts/lineapi.py info
 ```
 
-The validator points at the exact path:
+Every rule in it is measured, not assumed: 659 generated messages and 41 rich
+menus were sent through LINE's own validators and all 700 verdicts matched.
+That is how the counter-intuitive parts surfaced — `text`'s 5000 limit counts
+UTF-16 code units, not characters, so 2501 emoji are rejected while `len()`
+says 2501.
+
+`error` means LINE will reject the request; `warning` means LINE accepts it but
+it won't do what you intended. The validator points at the exact path:
 
 ```
 ❌ $.contents.body.layout               missing required property 'layout'
@@ -147,11 +154,11 @@ never recommends a dead API.
 | Tool | What it does |
 |---|---|
 | `search.py` | BM25 over 25 domains; Chinese queries auto-expand to English terms |
-| `validate.py` | Offline message/Flex validation — types, required, typos, enums, caps |
+| `validate.py` | Offline message/Flex/rich-menu validation — types, required, typos, enums, caps, colour and size formats, URL schemes |
 | `signature.py` | Webhook signature; channel access tokens incl. a pure-Python RS256 JWT |
 | `lineapi.py` | Zero-dependency Messaging API client; routes `api-data.line.me` for you |
 | `review.py` | Audits code you already have: dead APIs, wrong host, signature handling, typo'd endpoints, bad message JSON |
-| `test_line.py` | 47 offline tests + 6 live tests |
+| `test_line.py` | 49 offline tests + 6 live tests |
 
 ## How the Data Is Built
 

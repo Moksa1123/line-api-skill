@@ -98,10 +98,10 @@ message-part,Emoji,Emoji,productId,string,false,,,,,https://developers.line.biz/
 message-part,Emoji,Emoji,emojiId,string,false,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
 message-part,Sender,Sender,name,string,false,,20,,Display name. Certain words such as `LINE` may not be used.,https://developers.line.biz/en/reference/messaging-api/#message-objects
 message-part,Sender,Sender,iconUrl,string,false,,2000,,URL of the image to display as an icon when sending a message,https://developers.line.biz/en/reference/messaging-api/#message-objects
-message-part,QuickReply,QuickReply,items,array<QuickReplyItem>,false,,13,,Quick reply button objects.,https://developers.line.biz/en/reference/messaging-api/#items-object
+message-part,QuickReply,QuickReply,items,array<QuickReplyItem>,true,,13,,Quick reply button objects.,https://developers.line.biz/en/reference/messaging-api/#items-object
 message-part,QuickReplyItem,QuickReplyItem,imageUrl,string,false,,2000,,URL of the icon that is displayed at the beginning of the button,https://developers.line.biz/en/reference/messaging-api/#items-object
-message-part,QuickReplyItem,QuickReplyItem,action,Action,false,,,,,https://developers.line.biz/en/reference/messaging-api/#items-object
-message-part,QuickReplyItem,QuickReplyItem,type,string,false,,,,`action`,https://developers.line.biz/en/reference/messaging-api/#items-object
+message-part,QuickReplyItem,QuickReplyItem,action,Action,true,,,,,https://developers.line.biz/en/reference/messaging-api/#items-object
+message-part,QuickReplyItem,QuickReplyItem,type,string,true,,,,`action`,https://developers.line.biz/en/reference/messaging-api/#items-object
 message-part,ImagemapArea,ImagemapArea,x,integer,true,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
 message-part,ImagemapArea,ImagemapArea,y,integer,true,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects
 message-part,ImagemapArea,ImagemapArea,width,integer,true,,,,,https://developers.line.biz/en/reference/messaging-api/#message-objects

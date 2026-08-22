@@ -328,6 +328,158 @@ def t_validate_false_accepts():
     return f"{len(cases)} 個與 LINE 官方驗證器對照過的案例全部一致"
 
 
+@check("validate: 對照 LINE 官方驗證器量出來的 13 條規則")
+def t_validate_measured_rules():
+    """這些規則的數字與等級全部是實測的，不是從文件抄的。
+
+    做法是拿資料集生出 659 個訊息與 41 個圖文選單，逐筆送
+    POST /v2/bot/message/validate/push 與 /v2/bot/richmenu/validate，
+    比對兩邊的判斷。文件沒寫、或寫了但與實際行為不同的地方，
+    只有這樣才問得出來——例如 text 的 5000 是 UTF-16 單位不是字元。
+    """
+    E = "\U0001F600"          # 一個 emoji＝1 字元＝2 個 UTF-16 單位
+    img = "https://example.com/a.jpg"
+
+    def bad(msg, kind="messages"):
+        return [p for p in val.run(msg if kind == "messages" else msg, kind).problems
+                if p.level == "error"]
+
+    def m(msg):
+        return bool(bad([msg]))
+
+    def flexc(contents):
+        return {"type": "flex", "altText": "a", "contents": contents}
+
+    def box(layout, *children):
+        return flexc({"type": "bubble", "body": {"type": "box", "layout": layout,
+                                                 "contents": list(children)}})
+
+    cases = [
+        # (說明, 是否該被擋)
+        # 1. text 的 5000 是 UTF-16 單位。4999 個 a 加一個 emoji 只有 5000 個
+        #    字元，卻是 5001 個單位——用 len() 數會放行，LINE 會退
+        ("text 5000 單位", m({"type": "text", "text": "a" * 4998 + E}), False),
+        ("text 5001 單位", m({"type": "text", "text": "a" * 4999 + E}), True),
+        ("emoji 2500 個", m({"type": "text", "text": E * 2500}), False),
+        ("emoji 2501 個", m({"type": "text", "text": E * 2501}), True),
+        # 2. 其他欄位是數字元，不是數單位
+        ("quickReply label 20 個 emoji",
+         m({"type": "text", "text": "h", "quickReply": {"items": [
+             {"type": "action", "action": {"type": "message", "label": E * 20,
+                                           "text": "a"}}]}}), False),
+        # 3. bubble 至少要有一個區塊
+        ("空的 bubble", m(flexc({"type": "bubble"})), True),
+        ("bubble 只有 footer", m(flexc({"type": "bubble", "footer": {
+            "type": "box", "layout": "vertical",
+            "contents": [{"type": "text", "text": "h"}]}})), False),
+        # 4. hero 只收 box / image / video
+        ("hero 放 text", m(flexc({"type": "bubble", "hero": {"type": "text", "text": "h"},
+                                  "body": {"type": "box", "layout": "vertical",
+                                           "contents": []}})), True),
+        # 5. box 能放什麼由 layout 決定
+        ("vertical box 放 icon", m(box("vertical", {"type": "icon", "url": img})), True),
+        ("baseline box 放 icon", m(box("baseline", {"type": "icon", "url": img})), False),
+        ("baseline box 放 button",
+         m(box("baseline", {"type": "button",
+                            "action": {"type": "message", "label": "a", "text": "a"}})), True),
+        ("box 放 span", m(box("vertical", {"type": "span", "text": "h"})), True),
+        # 6. text 要有 text 或 contents
+        ("flex text 兩個都沒有", m(box("vertical", {"type": "text"})), True),
+        ("flex text 用 contents",
+         m(box("vertical", {"type": "text", "contents": [{"type": "span", "text": "h"}]})), False),
+        # 7. action 放錯位置：Flex 是退件，樣板是收單但不會動
+        ("camera 放 Flex button",
+         m(box("vertical", {"type": "button", "action": {"type": "camera", "label": "c"}})), True),
+        ("camera 放樣板（只警告）", m({"type": "template", "altText": "a", "template": {
+            "type": "buttons", "text": "t",
+            "actions": [{"type": "camera", "label": "c"}]}}), False),
+        ("richmenuswitch 放 Flex button",
+         m(box("vertical", {"type": "button", "action": {
+             "type": "richmenuswitch", "label": "a",
+             "richMenuAliasId": "x", "data": "k=v"}})), True),
+        # 8. 色碼：Flex 收 8 碼，樣板的 imageBackgroundColor 只收 6 碼
+        ("flex color #RRGGBBAA",
+         m(box("vertical", {"type": "text", "text": "h", "color": "#FF0000AA"})), False),
+        ("flex color 寫成 red",
+         m(box("vertical", {"type": "text", "text": "h", "color": "red"})), True),
+        ("imageBackgroundColor 8 碼", m({"type": "template", "altText": "a", "template": {
+            "type": "buttons", "text": "t", "imageBackgroundColor": "#FF0000AA",
+            "actions": [{"type": "message", "label": "a", "text": "a"}]}}), True),
+        # 9. 尺寸：offset/padding 收 %，margin/spacing/cornerRadius 不收
+        ("margin 10px", m(box("vertical", {"type": "text", "text": "h", "margin": "10px"})), False),
+        ("margin 10%", m(box("vertical", {"type": "text", "text": "h", "margin": "10%"})), True),
+        ("offsetTop 10%",
+         m(box("vertical", {"type": "text", "text": "h", "offsetTop": "10%"})), False),
+        # 10. 未知屬性：Flex 退件，其他地方只是沒作用
+        ("Flex 多一個屬性",
+         m(box("vertical", {"type": "text", "text": "h", "zzz": 1})), True),
+        ("訊息多一個屬性", m({"type": "text", "text": "h", "zzz": 1}), False),
+        # 11. null：必填給 null 等於沒給；Flex 連選填給 null 都退
+        ("必填給 null", m({"type": "text", "text": None}), True),
+        ("選填給 null", m({"type": "text", "text": "h", "sender": None}), False),
+        ("Flex 選填給 null",
+         m(box("vertical", {"type": "text", "text": "h", "margin": None})), True),
+        # 12. 型別轉換：訊息層級雙向都收，Flex 兩邊都不收
+        ("訊息 text 給數字", m({"type": "text", "text": 123}), False),
+        ("Flex text 給數字", m(box("vertical", {"type": "text", "text": 123})), True),
+        ("URL 欄位給數字", m({"type": "image", "originalContentUrl": 123,
+                              "previewImageUrl": img}), True),
+        # 13. imagemap 設了 video，它底下就變必填
+        ("imagemap video 空的", m({"type": "imagemap", "baseUrl": "https://e.com/b",
+                                   "altText": "a", "video": {},
+                                   "baseSize": {"width": 1040, "height": 1040},
+                                   "actions": []}), True),
+    ]
+    wrong = [f"{n}：預期{'擋' if e else '放行'}" for n, got, e in cases if got != e]
+    assert not wrong, "; ".join(wrong)
+    return f"{len(cases)} 條實測規則全部一致"
+
+
+@check("validate: 圖文選單的尺寸規則是範圍不是固定清單")
+def t_validate_richmenu():
+    """官方寫的是寬 800–2500、高 ≥250、比例 ≥1.45，不是六種固定尺寸。
+    邊界逐一對照過 POST /v2/bot/richmenu/validate：799 退、2501 退、
+    249 退、比例 1.4493 退、1.4514 收。"""
+    def rm(**kw):
+        base = {"size": {"width": 2500, "height": 1686}, "selected": False,
+                "name": "m", "chatBarText": "選單",
+                "areas": [{"bounds": {"x": 0, "y": 0, "width": 100, "height": 100},
+                           "action": {"type": "message", "label": "a", "text": "a"}}]}
+        base.update(kw)
+        return base
+
+    def bad(obj):
+        return bool([p for p in val.run(obj, "richmenu").problems if p.level == "error"])
+
+    cases = [
+        ("2500x1686", bad(rm()), False),
+        ("800x250 下界", bad(rm(size={"width": 800, "height": 250})), False),
+        ("799 寬", bad(rm(size={"width": 799, "height": 250})), True),
+        ("2501 寬", bad(rm(size={"width": 2501, "height": 250})), True),
+        ("800x249", bad(rm(size={"width": 800, "height": 249})), True),
+        ("比例 1.4493", bad(rm(size={"width": 1000, "height": 690})), True),
+        ("比例 1.4514", bad(rm(size={"width": 1000, "height": 689})), False),
+        ("正方形", bad(rm(size={"width": 1000, "height": 1000})), True),
+        ("chatBarText 14", bad(rm(chatBarText="x" * 14)), False),
+        ("chatBarText 15", bad(rm(chatBarText="x" * 15)), True),
+        ("size 給 null", bad(rm(size=None)), True),
+        ("chatBarText 給數字", bad(rm(chatBarText=123)), True),
+        ("size.width 給字串", bad(rm(size={"width": "2500", "height": 1686})), False),
+        ("area 缺 action",
+         bad(rm(areas=[{"bounds": {"x": 0, "y": 0, "width": 10, "height": 10}}])), True),
+        ("0 個 area", bad(rm(areas=[])), False),
+    ]
+    wrong = [f"{n}：預期{'擋' if e else '放行'}" for n, got, e in cases if got != e]
+    assert not wrong, "; ".join(wrong)
+    # 超出圖片範圍 LINE 收下，所以是警告不是錯誤
+    over = val.run(rm(areas=[{"bounds": {"x": 0, "y": 0, "width": 3000, "height": 1686},
+                              "action": {"type": "message", "label": "a", "text": "a"}}]),
+                   "richmenu").problems
+    assert any(p.level == "warning" for p in over), "超出範圍的區塊應該給警告"
+    assert not any(p.level == "error" for p in over), "LINE 收下這種，不該報 error"
+    return f"{len(cases)} 條邊界規則與官方驗證端點一致"
+
+
 @check("review: 對自家正確範例不得有任何誤報")
 def t_review_clean():
     import review

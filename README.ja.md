@@ -91,6 +91,12 @@ python scripts/signature.py verify --secret <s> --body-file b.json --signature <
 python scripts/lineapi.py info
 ```
 
+収録されたルールはすべて実測です：生成した 659 件のメッセージと 41 件のリッチメニューを
+LINE 公式のバリデーターに通し、700 件の判定がすべて一致しました。直感に反する挙動も
+そこで見つかっています —— `text` の 5000 は文字数ではなく UTF-16 コードユニット数なので、
+絵文字 2501 個は拒否されます。
+
+`error` は「LINE が 400 を返す」、`warning` は「送信は通るが意図どおりに動かない」。
 バリデーターは問題箇所のパスを直接示します：
 
 ```
@@ -146,11 +152,11 @@ python scripts/review.py ./src --format json           # CI 向け
 | ツール | 内容 |
 |---|---|
 | `search.py` | 25 ドメインを BM25 検索。中国語クエリは英語用語に自動展開 |
-| `validate.py` | メッセージ / Flex のオフライン検証：型、必須、タイポ、enum、上限 |
+| `validate.py` | メッセージ / Flex / リッチメニューのオフライン検証：型、必須、タイポ、enum、上限、色とサイズの書式、URL スキーム |
 | `signature.py` | webhook 署名、チャネルアクセストークン（純 Python の RS256 JWT 実装込み） |
 | `lineapi.py` | 依存ゼロの Messaging API クライアント。ホストを自動で振り分け |
 | `review.py` | 既存コードの点検：提供終了 API、ホスト誤り、署名の扱い、エンドポイントのタイポ、メッセージ JSON |
-| `test_line.py` | オフライン 47 項目 + ライブ 6 項目 |
+| `test_line.py` | オフライン 49 項目 + ライブ 6 項目 |
 
 ## データの作り方
 

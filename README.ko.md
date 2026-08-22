@@ -90,7 +90,13 @@ python scripts/signature.py verify --secret <s> --body-file b.json --signature <
 python scripts/lineapi.py info
 ```
 
-검증기는 문제 위치를 경로로 정확히 짚어줍니다:
+모든 규칙은 추정이 아니라 실측입니다: 생성한 659개 메시지와 41개 리치 메뉴를
+LINE 공식 검증 엔드포인트에 보내 700건의 판정이 모두 일치했습니다. 직관과 어긋나는
+부분도 그렇게 드러났습니다 —— `text`의 5000 제한은 문자 수가 아니라 UTF-16 코드
+유닛 수여서, 이모지 2501개는 거부됩니다.
+
+`error`는 LINE이 요청을 거부한다는 뜻이고, `warning`은 요청은 통과하지만 의도대로
+동작하지 않는다는 뜻입니다. 검증기는 문제 위치를 경로로 정확히 짚어줍니다:
 
 ```
 ❌ $.contents.body.layout               필수 속성 layout 누락
@@ -143,11 +149,11 @@ python scripts/review.py ./src --format json           # CI 연동용
 | 도구 | 하는 일 |
 |---|---|
 | `search.py` | 25개 도메인 BM25 검색. 중국어 질의는 영어 용어로 자동 확장 |
-| `validate.py` | 메시지 / Flex 오프라인 검증: 타입, 필수, 오타, enum, 상한 |
+| `validate.py` | 메시지 / Flex / 리치 메뉴 오프라인 검증: 타입, 필수, 오타, enum, 상한, 색상·크기 형식, URL 스킴 |
 | `signature.py` | webhook 서명, 채널 액세스 토큰(순수 Python RS256 JWT 구현 포함) |
 | `lineapi.py` | 의존성 없는 Messaging API 클라이언트. 호스트를 자동 분기 |
 | `review.py` | 기존 코드 점검: 종료된 API, 잘못된 호스트, 서명 처리, 엔드포인트 오타, 메시지 JSON |
-| `test_line.py` | 오프라인 47개 + 라이브 6개 테스트 |
+| `test_line.py` | 오프라인 49개 + 라이브 6개 테스트 |
 
 ## 데이터를 만드는 방법
 

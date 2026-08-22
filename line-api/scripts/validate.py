@@ -18,9 +18,17 @@ What it checks
     * the label rules that depend on where the action sits (quick reply 20,
       Flex button 40, image carousel 12) rather than on the action type
 
-Every rule here has been checked against LINE's own POST /v2/bot/message/
-validate/push: what this says is fine, LINE accepts; what this rejects,
-LINE rejects too. `test_line.py --live` re-checks that agreement.
+Severity means something specific here:
+    error    LINE will reject this request (400)
+    warning  LINE accepts it, but it won't do what you intended
+
+Both are measured, not assumed. 659 generated messages and 41 rich menus were
+sent through LINE's own validators (POST /v2/bot/message/validate/push and
+/v2/bot/richmenu/validate) and every verdict matched. That is how the
+counter-intuitive parts got found — TextMessage.text counts UTF-16 code units
+rather than characters, unknown properties are fatal inside Flex but harmless
+outside it, and a number where a string belongs is coerced at message level
+but rejected inside Flex. `test_line.py --live` re-checks the agreement.
 
 Usage
     python scripts/validate.py message.json
@@ -128,6 +136,88 @@ LABEL_CONTEXT = {
 
 URI_DOC = "https://developers.line.biz/en/reference/messaging-api/#uri-action"
 
+# action 能放哪裡是有限制的，放錯位置 LINE 會回
+# 「{0} action is not available for flex message」。
+# reference/messaging-api.md > Action objects
+#   camera / cameraRoll / location：This action can be configured only with
+#     quick reply buttons.
+#   richmenuswitch：only with rich menus. It can't be used for Flex Messages
+#     or quick replies.
+ACTION_ONLY_IN = {
+    "camera": "quickreply",
+    "cameraRoll": "quickreply",
+    "location": "quickreply",
+    "richmenuswitch": "richmenu",
+}
+PLACEMENT_LABEL = {"quickreply": "quick reply 按鈕", "richmenu": "圖文選單"}
+
+# box 能放哪些子元件由它自己的 layout 決定。放錯 LINE 回
+# 「invalid box content type」，不會渲染成空白讓你以為是 CSS 問題。
+# reference/messaging-api.md > Flex Message > Box > contents
+BOX_CHILDREN = {
+    "horizontal": {"box", "button", "image", "text", "separator", "filler"},
+    "vertical": {"box", "button", "image", "text", "separator", "filler"},
+    "baseline": {"icon", "text", "filler"},
+}
+
+# bubble 的 hero 只收這三種。reference > Flex Message > Bubble > hero
+HERO_TYPES = {"box", "image", "video"}
+
+# bubble 的四個區塊。文件說「It can contain four blocks」但沒明講至少要有一個；
+# 實測全空時 LINE 回 400「At least one block must be specified」，所以這條的
+# 依據是 API 行為而不是文件。
+BUBBLE_BLOCKS = ("header", "hero", "body", "footer")
+
+# 具名 schema 對應到哪個 flex type tag（bubble.body 標的型別是 FlexBox）
+SCHEMA_AS_FLEX_TAG = {"FlexBox": "box", "FlexText": "text", "FlexBubble": "bubble"}
+
+# ---- 值的格式 ----------------------------------------------------------
+# 這幾條在 schema 裡都只是「string」，錯了 LINE 會回「invalid property」——
+# 那句話講的是值不合法，不是屬性不存在，很容易讓人往錯的方向找。
+#
+# 色碼：官方說明寫「Use a hexadecimal color code」。實測 #RRGGBB 與
+# #RRGGBBAA 都收，大小寫皆可；#F00、red 一律退。
+COLOR_RE = re.compile(r"^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$")
+COLOR_RGB_RE = re.compile(r"^#[0-9A-Fa-f]{6}$")
+
+# 尺寸：docs/messaging-api/flex-message-layout.md > margin property of components
+#   「in pixels or with a keyword. You can't specify a percentage.」
+# 實測 offset* 與 padding* 反而收 %（也收負值），margin / spacing /
+# cornerRadius 不收。同一種寫法在不同屬性上結果不同，所以分兩組。
+SIZE_KEYWORDS = {"none", "xs", "sm", "md", "lg", "xl", "xxl"}
+SIZE_PX_RE = re.compile(r"^-?\d+(\.\d+)?px$")
+SIZE_PCT_RE = re.compile(r"^-?\d+(\.\d+)?%$")
+SIZE_NO_PERCENT = {"margin", "spacing", "cornerRadius"}
+SIZE_WITH_PERCENT = {"offsetTop", "offsetBottom", "offsetStart", "offsetEnd",
+                     "paddingAll", "paddingTop", "paddingBottom",
+                     "paddingStart", "paddingEnd"}
+
+# LINE 會去核對這些 ID 是否真的存在，轉型後的字串一樣對不上
+ID_LIKE = {"packageId", "stickerId", "productId", "emojiId", "quoteToken",
+           "couponId", "richMenuAliasId", "richMenuId"}
+
+# 圖文選單的圖片規格。官方寫的是範圍不是固定清單——Developers Console
+# 給的六種預設尺寸只是常用值，API 真正的條件是這三條，實測邊界完全吻合：
+# 799 寬退、2501 寬退、249 高退、比例 1.4493 退、1.4514 收。
+# reference/messaging-api.md > Rich menu > 圖片規格
+RICHMENU_IMAGE = {"min_width": 800, "max_width": 2500,
+                  "min_height": 250, "min_ratio": 1.45}
+RICHMENU_DOC = "https://developers.line.biz/en/reference/messaging-api/#rich-menu-object"
+
+# 字數怎麼算，LINE 各欄位的實作並不一致。逐一實測：
+#   TextMessage.text 5000      → UTF-16 code unit（4999 個 a 加一個 😀 是
+#                                 5000 個字元、5001 個 unit，會被退）
+#   buttons template text 160  → 字元
+#   message action text 300    → 字元
+#   quick reply label 20       → 字元
+#   Flex 的 text               → 完全沒有上限（2501 個 emoji 照收）
+# 所以只有這一個欄位要換算，其餘照字元數。用 emoji 打招呼的機器人
+# 很容易踩到——3000 個 emoji 是 3000 個字元、卻是 6000 個 unit。
+UTF16_COUNTED = {("TextMessage", "text"), ("TextMessageV2", "text")}
+
+LAYOUT_DOC = ("https://developers.line.biz/en/docs/messaging-api/"
+              "flex-message-layout/#margin-property")
+
 
 # --------------------------------------------------------------------------
 def _rows(fname: str) -> list[dict]:
@@ -153,6 +243,12 @@ def _fields_whose_doc_says(marker: str) -> set[str]:
 
 
 HTTPS_ONLY = _fields_whose_doc_says("Protocol: HTTPS")
+# 色碼欄位分兩種寫法，接受的位數也不同：
+#   「Use a hexadecimal color code」→ Flex，實測 #RRGGBB 與 #RRGGBBAA 都收
+#   「Specify a RGB color value」   → 樣板訊息，LINE 的錯誤訊息直接給了
+#                                     正規式 ^#[A-Fa-f0-9]{6}$，沒有 alpha
+COLOR_FIELDS = _fields_whose_doc_says("hexadecimal color code")
+COLOR_FIELDS_RGB = _fields_whose_doc_says("RGB color value")
 SCHEME_FIELDS = _fields_whose_doc_says("available schemes are")
 
 # 從同一句話把 scheme 撈出來，不要自己記：
@@ -256,19 +352,19 @@ class Validator:
             return
 
         if vtype == "string" and not isinstance(value, str):
-            self.err(path, f"必須是字串，實際是 {type(value).__name__}")
+            self._type_mismatch(path, value, "字串", spec)
             return
         if vtype in ("integer", "number") and isinstance(value, bool):
-            self.err(path, "必須是數字，實際是 boolean")
+            self._type_mismatch(path, value, "數字", spec)
             return
         if vtype == "integer" and not isinstance(value, int):
-            self.err(path, f"必須是整數，實際是 {type(value).__name__}")
+            self._type_mismatch(path, value, "整數", spec)
             return
         if vtype == "number" and not isinstance(value, (int, float)):
-            self.err(path, f"必須是數字，實際是 {type(value).__name__}")
+            self._type_mismatch(path, value, "數字", spec)
             return
         if vtype == "boolean" and not isinstance(value, bool):
-            self.err(path, f"必須是 boolean，實際是 {type(value).__name__}")
+            self._type_mismatch(path, value, "boolean", spec)
             return
 
         if enum and isinstance(value, str) and value not in enum:
@@ -278,8 +374,66 @@ class Validator:
                 limit = int(max_len)
             except ValueError:
                 limit = 0
-            if limit and len(value) > limit:
-                self.err(path, f"長度 {len(value)} 超過上限 {limit}")
+            if limit:
+                if (spec.get("schema"), spec.get("property")) in UTF16_COUNTED:
+                    n = len(value.encode("utf-16-le")) // 2
+                    unit = "UTF-16 單位"
+                else:
+                    n = len(value)
+                    unit = "字"
+                if n > limit:
+                    extra = ("" if unit == "字" or n == len(value) else
+                             f"（看起來只有 {len(value)} 個字，但 emoji 之類的"
+                             f"字元每個算兩個單位）")
+                    self.err(path, f"長度 {n} {unit}超過上限 {limit}{extra}")
+
+    def _type_mismatch(self, path: str, value, expected: str, spec: dict) -> None:
+        """型別對不上要用 error 還是 warning，取決於 LINE 會不會退件。
+
+        逐一實測出來的表，兩個方向的答案不一樣：
+
+            容器            數字→字串   字串→數字/布林
+            訊息物件          收          收
+            樣板              退          收
+            圖文選單          退          收
+            Flex             退          退
+
+        所以「LINE 會自動轉型」不是一句話講得完的事。只在量到會轉的組合
+        給 warning，其餘一律 error——沒量過的組合寧可從嚴，誤擋看得見，
+        誤放行看不見。
+        """
+        got = type(value).__name__
+        schema = spec.get("schema") or ""
+        key = spec.get("property") or ""
+        is_flex = schema.startswith("Flex")
+        plain = not (is_flex or schema.endswith("Template")
+                     or schema.endswith("Column") or schema.startswith("RichMenu"))
+
+        if expected == "字串":
+            # 數字或布林被轉成字串——只有最外層的訊息物件會這樣收
+            lenient = plain and isinstance(value, (int, float, bool))
+        else:
+            # 字串被轉成數字或布林——Flex 以外都收，但字串本身要轉得動
+            lenient = not is_flex and isinstance(value, str)
+            if lenient and expected in ("數字", "整數"):
+                try:
+                    float(value)
+                except ValueError:
+                    lenient = False
+            if lenient and expected == "boolean":
+                lenient = value.lower() in ("true", "false")
+
+        # 有格式約束的欄位就算轉成字串也過不了自己的格式檢查：
+        # 12345 轉成 "12345" 依然不是合法的 HTTPS URL、不是合法色碼、
+        # 也不會是真的 sticker ID
+        if key in HTTPS_ONLY or key in SCHEME_FIELDS or key in COLOR_FIELDS                 or key in COLOR_FIELDS_RGB or key in SIZE_NO_PERCENT                 or key in SIZE_WITH_PERCENT or key in ID_LIKE:
+            lenient = False
+
+        if lenient:
+            self.warn(path, f"應該是{expected}，實際是 {got}；"
+                            f"LINE 會自動轉型收下，但型別對不上通常是程式的問題")
+        else:
+            self.err(path, f"必須是{expected}，實際是 {got}")
 
     def check_any(self, path: str, value, vtype: str) -> None:
         """Dispatch a value by the type name the spec gives it."""
@@ -313,6 +467,10 @@ class Validator:
         self._check_conditional_text(path, obj, schema, doc)
         self._check_exact_action_count(path, obj, schema, doc)
         self._check_column_consistency(path, obj, schema, doc)
+        if union in ("FlexComponent", "FlexContainer"):
+            self._check_flex_shape(path, obj, tag, doc)
+        if union == "Message" and tag == "imagemap":
+            self._check_imagemap_video(path, obj, doc)
         if union == "FlexContainer":
             self._check_flex_container(path, obj, tag, doc)
 
@@ -328,6 +486,10 @@ class Validator:
         self._check_conditional_text(path, obj, schema, doc)
         self._check_exact_action_count(path, obj, schema, doc)
         self._check_column_consistency(path, obj, schema, doc)
+        # bubble.body 的 value_type 是 FlexBox，走的是這條路而不是 check_typed。
+        # 少了這一行，「box 裡放了不該放的元件」在最常見的位置反而檢查不到。
+        if schema in SCHEMA_AS_FLEX_TAG:
+            self._check_flex_shape(path, obj, SCHEMA_AS_FLEX_TAG[schema], doc)
 
     def _check_conditional_text(self, path: str, obj: dict, schema: str, doc: str) -> None:
         rule = TEXT_SHRINKS_WITH_IMAGE.get(schema)
@@ -415,16 +577,34 @@ class Validator:
         for name, spec in props.items():
             if spec.get("required") == "true" and name not in obj:
                 self.err(f"{path}.{name}", f"缺少必填屬性 {name}", doc)
+            elif spec.get("required") == "true" and obj.get(name) is None:
+                # 「有這個 key 但值是 null」跟「沒有這個 key」對 LINE 是同一件事，
+                # 但對「name in obj」不是——漏掉這一行，{"size": null} 就會過關
+                self.err(f"{path}.{name}", f"必填屬性 {name} 不可以是 null", doc)
+        schema_name = next((sp.get("schema", "") for sp in props.values()), "")
+        # 實測：Flex 的容器與元件對多出來的屬性直接回 400，其他地方（訊息物件、
+        # 樣板、action、quickReply item、imagemap）一律收下但那個屬性不會生效。
+        # 「請求會失敗」與「送得出去但沒作用」不該用同一個等級講。
+        strict_unknown = schema_name.startswith("Flex")
         for key, value in obj.items():
             if key not in props:
-                self.warn(f"{path}.{key}", f"未知屬性 {key!r}（可用：{', '.join(sorted(props))}）", doc)
+                msg = f"未知屬性 {key!r}（可用：{', '.join(sorted(props))}）"
+                if strict_unknown:
+                    self.err(f"{path}.{key}", msg + "；Flex 對多餘的屬性會直接退件", doc)
+                else:
+                    self.warn(f"{path}.{key}", msg, doc)
                 continue
             if value is None:
+                # 實測：非 Flex 的選填欄位給 null，LINE 收；Flex 給 null 直接退
+                if strict_unknown:
+                    self.err(f"{path}.{key}",
+                             f"{key} 是 null；Flex 不接受 null，要嘛給值要嘛整個拿掉", doc)
                 continue
             self.check_value(f"{path}.{key}", value, props[key])
             self._check_url(f"{path}.{key}", key, value, doc)
+            self._check_format(f"{path}.{key}", key, value, doc)
 
-        schema = next((s.get("schema", "") for s in props.values()), "")
+        schema = schema_name
         prop, ctx = LABEL_CONTEXT.get(schema) or (
             ("action", "flex-other") if schema.startswith("Flex") else (None, None))
         if ctx:
@@ -432,6 +612,42 @@ class Validator:
             for i, action in enumerate(target if isinstance(target, list) else [target]):
                 suffix = f"[{i}]" if isinstance(target, list) else ""
                 self._check_action_label(f"{path}.{prop}{suffix}", action, ctx)
+                self._check_action_placement(f"{path}.{prop}{suffix}", action, ctx)
+
+    def _check_format(self, path: str, key: str, value, doc: str) -> None:
+        """色碼與尺寸的寫法。schema 只說是 string，格式錯了要靠這裡擋。"""
+        if not isinstance(value, str) or not value:
+            return
+        if key in COLOR_FIELDS_RGB and not COLOR_RGB_RE.match(value):
+            self.err(path, f"色碼要寫成 #RRGGBB（這個欄位不接受 alpha），實際是 {value!r}", doc)
+            return
+        if key in COLOR_FIELDS and not COLOR_RE.match(value):
+            self.err(path, f"色碼要寫成 #RRGGBB 或 #RRGGBBAA，實際是 {value!r}", doc)
+            return
+        pct = key in SIZE_WITH_PERCENT
+        if key in SIZE_NO_PERCENT or pct:
+            ok = (value in SIZE_KEYWORDS or SIZE_PX_RE.match(value)
+                  or (pct and SIZE_PCT_RE.match(value)))
+            if not ok:
+                units = "關鍵字、數字加 px" + ("，或百分比" if pct else "（不接受百分比）")
+                self.err(path,
+                         f"{key} 只能是 {units}；關鍵字：{', '.join(sorted(SIZE_KEYWORDS))}。"
+                         f"實際是 {value!r}", doc or LAYOUT_DOC)
+
+    def _check_imagemap_video(self, path: str, obj: dict, doc: str) -> None:
+        """imagemap 的 video 一旦出現，它底下那幾個欄位就變成必填。
+
+        官方的註腳寫「*1 This property is required if you set a video to play
+        on the imagemap.」——是條件式必填，所以 CSV 裡照實標 false，
+        條件本身只能在看得到 video 存不存在的地方判。
+        """
+        video = obj.get("video")
+        if not isinstance(video, dict):
+            return
+        for field in ("originalContentUrl", "previewImageUrl", "area"):
+            if not video.get(field):
+                self.err(f"{path}.video.{field}",
+                         f"imagemap 設了 video，{field} 就是必填", doc)
 
     def _check_url(self, path: str, key: str, value, doc: str) -> None:
         """網址的 scheme 限制。兩者都只寫在說明散文裡，OpenAPI 只說是 string。"""
@@ -444,6 +660,51 @@ class Validator:
             if scheme not in URI_SCHEMES:
                 self.err(path, f"scheme {scheme!r} 不合法，可用：{', '.join(URI_SCHEMES)}",
                          doc or URI_DOC)
+
+    def _check_flex_shape(self, path: str, obj: dict, tag: str, doc: str) -> None:
+        """Flex 的三條結構規則。這些在 schema 裡看不出來——每個屬性單獨看都合法，
+        錯的是它們的組合，或是這個元件被放在哪裡。"""
+        if tag == "box":
+            allowed = BOX_CHILDREN.get(obj.get("layout") or "")
+            if allowed:
+                for i, child in enumerate(obj.get("contents") or []):
+                    ctype = child.get("type") if isinstance(child, dict) else None
+                    if isinstance(ctype, str) and ctype not in allowed:
+                        self.err(f"{path}.contents[{i}]",
+                                 f"layout={obj['layout']} 的 box 不能放 {ctype}；"
+                                 f"可放：{', '.join(sorted(allowed))}", doc)
+        elif tag == "text":
+            # 「Be sure to set either one of the text property or contents property.」
+            if obj.get("text") is None and obj.get("contents") is None:
+                self.err(f"{path}.text", "text 元件必須有 text 或 contents 其中之一", doc)
+        elif tag == "bubble":
+            if not any(obj.get(b) for b in BUBBLE_BLOCKS):
+                self.err(path,
+                         f"bubble 至少要有一個區塊（{' / '.join(BUBBLE_BLOCKS)}），"
+                         f"否則 LINE 回 400 At least one block must be specified", doc)
+            hero = obj.get("hero")
+            if isinstance(hero, dict) and isinstance(hero.get("type"), str) \
+                    and hero["type"] not in HERO_TYPES:
+                self.err(f"{path}.hero",
+                         f"hero 只能放 {', '.join(sorted(HERO_TYPES))}，實際是 {hero['type']}", doc)
+
+    def _check_action_placement(self, path: str, action, ctx: str) -> None:
+        """有些 action 只能放在特定容器裡，放錯 LINE 會退件。"""
+        if not isinstance(action, dict):
+            return
+        tag = action.get("type")
+        want = ACTION_ONLY_IN.get(tag)
+        if not want or ctx == want:
+            return
+        doc = REG.doc.get(f"Action:{tag}", "")
+        msg = f"{tag} action 只能用在{PLACEMENT_LABEL[want]}裡"
+        # 實測：Flex 裡 LINE 直接退件，樣板訊息裡 LINE 收單但按了不會動。
+        # 前者是「這個請求會失敗」，後者是「送得出去但不會照你想的運作」——
+        # 用同一個等級講這兩件事，只會讓人學會忽略其中一種。
+        if ctx.startswith("flex") or want == "richmenu":
+            self.err(path, msg, doc)
+        else:
+            self.warn(path, msg + "；LINE 會收下這個請求，但使用者點了不會有反應", doc)
 
     def _check_action_label(self, path: str, action, ctx: str) -> None:
         """label 的必填與上限由「action 放在哪裡」決定，不是由 action 型別決定。
@@ -482,6 +743,45 @@ class Validator:
         for i, m in enumerate(arr):
             self.validate_message(m, f"{path}[{i}]")
 
+    def validate_richmenu(self, obj, path: str = "$") -> None:
+        """圖文選單物件。走的是另一支端點（POST /v2/bot/richmenu/validate），
+        規則跟訊息不一樣，所以獨立一個入口。"""
+        self.check_schema(path, obj, "RichMenuRequest")
+        if not isinstance(obj, dict):
+            return
+        size = obj.get("size")
+        if isinstance(size, dict):
+            w, h = size.get("width"), size.get("height")
+            if isinstance(w, int) and isinstance(h, int) and h > 0:
+                r = RICHMENU_IMAGE
+                if not (r["min_width"] <= w <= r["max_width"]):
+                    self.err(f"{path}.size.width",
+                             f"寬度要在 {r['min_width']}–{r['max_width']} 之間，實際 {w}",
+                             RICHMENU_DOC)
+                if h < r["min_height"]:
+                    self.err(f"{path}.size.height",
+                             f"高度至少 {r['min_height']}，實際 {h}", RICHMENU_DOC)
+                if w / h < r["min_ratio"]:
+                    self.err(f"{path}.size",
+                             f"長寬比要 {r['min_ratio']} 以上，實際 {w / h:.2f}"
+                             f"（{w}×{h}）", RICHMENU_DOC)
+        areas = obj.get("areas")
+        if isinstance(areas, list) and isinstance(size, dict):
+            sw, sh = size.get("width"), size.get("height")
+            for i, area in enumerate(areas):
+                b = area.get("bounds") if isinstance(area, dict) else None
+                if not isinstance(b, dict):
+                    continue
+                x, y = b.get("x"), b.get("y")
+                bw, bh = b.get("width"), b.get("height")
+                if not all(isinstance(v, int) for v in (x, y, bw, bh, sw, sh)):
+                    continue
+                if x < 0 or y < 0 or x + bw > sw or y + bh > sh:
+                    # LINE 的驗證端點收下這種，但超出範圍的那塊點了不會有反應
+                    self.warn(f"{path}.areas[{i}].bounds",
+                              f"這一塊超出圖片範圍（{x},{y} {bw}×{bh} vs {sw}×{sh}）；"
+                              f"LINE 不會退件，但超出的部分點了沒反應", RICHMENU_DOC)
+
     def validate_request(self, body, kind: str) -> None:
         shape = REQUEST_SHAPES[kind]
         if not isinstance(body, dict):
@@ -515,6 +815,8 @@ def detect_kind(data) -> str:
             return "message"
         if data.get("type") in ("bubble", "carousel"):
             return "flex"
+        if "chatBarText" in data and "areas" in data:
+            return "richmenu"
         if "type" in data:
             return "message"
     return "message"
@@ -530,6 +832,8 @@ def run(data, kind: str) -> Validator:
         v.check_typed("$", data, "FlexContainer")
     elif kind == "action":
         v.check_typed("$", data, "Action")
+    elif kind == "richmenu":
+        v.validate_richmenu(data)
     else:
         v.validate_message(data)
     return v
@@ -540,7 +844,8 @@ def main() -> int:
     ap.add_argument("file", help="JSON 檔路徑，或 - 讀 stdin")
     ap.add_argument("--as", dest="kind",
                     choices=["auto", "message", "messages", "flex", "action",
-                             "reply", "push", "multicast", "broadcast", "narrowcast"],
+                             "richmenu", "reply", "push", "multicast",
+                             "broadcast", "narrowcast"],
                     default="auto")
     ap.add_argument("--format", choices=["text", "json"], default="text")
     ap.add_argument("--strict", action="store_true", help="把 warning 也視為失敗")

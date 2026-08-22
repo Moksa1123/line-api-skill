@@ -116,8 +116,26 @@ python scripts/search.py "rich menu" --domain all --format json
 - **label**：規格由「action 放在哪」決定，不是由 action 型別決定 ——
   quick reply 必填上限 20、Flex button 必填上限 40、image carousel 選填上限 12。
 
-每一條都拿 `POST /v2/bot/message/validate/push` 對照過：這裡說可以的 LINE 收，
-這裡擋掉的 LINE 也退。`test_line.py --live` 會重跑這個對照。
+也驗圖文選單（`--as richmenu`，走 `/v2/bot/richmenu/validate` 的規則）：
+寬 800–2500、高 ≥250、長寬比 ≥1.45 —— 官方寫的是範圍，不是 Console 上那六種預設尺寸。
+
+**兩個等級的意思是明確的：**
+
+| 等級 | 意思 |
+|---|---|
+| `error` | LINE 會退件（400） |
+| `warning` | LINE 會收，但不會照你想的運作 |
+
+這不是憑感覺分的。從資料集生出 659 則訊息與 41 個圖文選單，逐筆送進 LINE 官方的
+兩支驗證端點對照，700 筆判斷全部一致。幾個反直覺的地方就是這樣挖出來的：
+
+- `text` 的 5000 上限數的是 **UTF-16 單位不是字元** —— 一個 emoji 佔兩個，
+  所以 2501 個 emoji 會被退，用 `len()` 數則會放行。
+- 多出來的屬性在 **Flex 裡是致命的**（400），在訊息物件、樣板、action 上則是收下但沒作用。
+- 字串欄位給數字，訊息層級 LINE 自動轉型，Flex 與圖文選單直接退。
+- `camera` / `location` 放進樣板，LINE 收單但按了不會有反應 —— 所以是 warning 不是 error。
+
+`test_line.py --live` 會重跑這個對照。
 
 ```bash
 python scripts/validate.py flex.json --as flex
