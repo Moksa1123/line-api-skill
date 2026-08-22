@@ -97,9 +97,21 @@ def claims_of(id_token: str) -> dict:
     return json.loads(base64.urlsafe_b64decode(payload))
 
 
+def _save(idt: str) -> None:
+    env = REPO / ".env"
+    lines = env.read_text(encoding="utf-8").splitlines() if env.exists() else []
+    lines = [l for l in lines if not l.startswith("LINE_ID_TOKEN=")]
+    lines.append(f"LINE_ID_TOKEN={idt}")
+    env.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print(f"\n已寫進 {env}（.gitignore 有擋）。")
+    print("接著跑：python line-api/scripts/test_line.py --live")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--port", type=int, default=8765)
+    ap.add_argument("--paste", action="store_true",
+                    help="貼上一個現成的 ID token（LIFF 的 ES256 走這條）")
     ap.add_argument("--print-token", action="store_true",
                     help="把 id_token 印出來（預設只寫進 .env）")
     args = ap.parse_args()
@@ -109,6 +121,20 @@ def main() -> int:
     if not (cid and secret):
         print(__doc__)
         raise SystemExit("缺少 LINE_LOGIN_CHANNEL_ID 或 LINE_LOGIN_CHANNEL_SECRET")
+
+    # LIFF 發出來的 ID token 是 ES256（web 登入流程是 HS256），這條路
+    # 沒辦法從桌機自動跑完——要在 LIFF app 裡呼叫 liff.getIDToken()。
+    # 所以留一個貼上的入口：貼進來先驗過再寫檔，比手動改 .env 保險。
+    if args.paste:
+        print("把 liff.getIDToken() 的結果貼進來（不會顯示），按 Enter：")
+        idt = sys.stdin.readline().strip()
+        if not idt:
+            raise SystemExit("沒有讀到東西")
+        head = json.loads(base64.urlsafe_b64decode(
+            idt.split(".")[0] + "=" * (-len(idt.split(".")[0]) % 4)))
+        print(f"  alg = {head.get('alg')}   kid = {str(head.get('kid'))[:12] or '(無)'}…")
+        _save(idt)
+        return 0
 
     redirect = f"http://localhost:{args.port}/callback"
     state = secrets.token_urlsafe(16)
@@ -193,13 +219,7 @@ def main() -> int:
     print(f"  exp  {c.get('exp')}         （效期 {c.get('exp', 0) - c.get('iat', 0)} 秒）")
     print(f"  name {c.get('name', '(沒有 profile scope)')}")
 
-    env = REPO / ".env"
-    lines = env.read_text(encoding="utf-8").splitlines() if env.exists() else []
-    lines = [l for l in lines if not l.startswith("LINE_ID_TOKEN=")]
-    lines.append(f"LINE_ID_TOKEN={idt}")
-    env.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    print(f"\n已寫進 {env}（.gitignore 有擋）。")
-    print("接著跑：python line-api/scripts/test_line.py --live")
+    _save(idt)
     if args.print_token:
         print(f"\n{idt}")
     return 0
