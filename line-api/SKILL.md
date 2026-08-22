@@ -108,7 +108,16 @@ python scripts/search.py "rich menu" --domain all --format json
 
 ### `scripts/validate.py` — 離線訊息驗證器
 
-檢查型別、必填、未知屬性（typo）、enum、字數/陣列上限、已淘汰元件。
+檢查型別、必填、未知屬性（typo）、enum、字數/陣列上限、已淘汰元件，
+以及兩類只寫在文件散文、OpenAPI 沒有的規則：
+
+- **網址**：標明「Protocol: HTTPS」的欄位必須是 `https://`；`uri` 與 `linkUri`
+  只收 http / https / line / tel 四種 scheme。
+- **label**：規格由「action 放在哪」決定，不是由 action 型別決定 ——
+  quick reply 必填上限 20、Flex button 必填上限 40、image carousel 選填上限 12。
+
+每一條都拿 `POST /v2/bot/message/validate/push` 對照過：這裡說可以的 LINE 收，
+這裡擋掉的 LINE 也退。`test_line.py --live` 會重跑這個對照。
 
 ```bash
 python scripts/validate.py flex.json --as flex

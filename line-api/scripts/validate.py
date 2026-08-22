@@ -14,6 +14,13 @@ What it checks
     * maxLength and maxItems (text 5000, quickReply 13, carousel 12, ...)
     * array cardinality of the request itself (messages ≤ 5, to ≤ 500)
     * deprecated components
+    * https-only URLs and the four allowed uri schemes (http/https/line/tel)
+    * the label rules that depend on where the action sits (quick reply 20,
+      Flex button 40, image carousel 12) rather than on the action type
+
+Every rule here has been checked against LINE's own POST /v2/bot/message/
+validate/push: what this says is fine, LINE accepts; what this rejects,
+LINE rejects too. `test_line.py --live` re-checks that agreement.
 
 Usage
     python scripts/validate.py message.json
@@ -27,6 +34,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -94,6 +102,32 @@ DEPRECATED_TYPES = {
     "filler": "filler 已淘汰，請改用 box 的 margin / offset / padding 排版",
 }
 
+# action 的 label 沒有單一規格：同一個欄位放在不同父物件，必填與否和上限都不同。
+# 這種東西塞不進 CSV 的一欄，只有看得到父物件的驗證器才判得出來。
+# reference/messaging-api.md > Action objects > Specifications of the label
+LABEL_SPEC = {
+    "image_carousel": (False, 12),   # ImageCarouselColumn.action
+    "template":       (True, 20),    # buttons / confirm / carousel
+    "richmenu":       (False, 20),
+    "quickreply":     (True, 20),
+    "flex-button":    (True, 40),
+    "flex-other":     (False, 40),
+}
+LABEL_DOC = "https://developers.line.biz/en/reference/messaging-api/#action-object-label-spec"
+
+# 哪個父物件底下的 action 適用上表的哪一列，以及 action 掛在哪個屬性上
+LABEL_CONTEXT = {
+    "QuickReplyItem":      ("action",  "quickreply"),
+    "ImageCarouselColumn": ("action",  "image_carousel"),
+    "ButtonsTemplate":     ("actions", "template"),
+    "ConfirmTemplate":     ("actions", "template"),
+    "CarouselColumn":      ("actions", "template"),
+    "RichMenuArea":        ("action",  "richmenu"),
+    "FlexButton":          ("action",  "flex-button"),
+}
+
+URI_DOC = "https://developers.line.biz/en/reference/messaging-api/#uri-action"
+
 
 # --------------------------------------------------------------------------
 def _rows(fname: str) -> list[dict]:
@@ -102,6 +136,34 @@ def _rows(fname: str) -> list[dict]:
         return []
     with open(path, encoding="utf-8", newline="") as f:
         return list(csv.DictReader(f))
+
+
+def _fields_whose_doc_says(marker: str) -> set[str]:
+    """哪些欄位的官方說明裡出現這句話。
+
+    「這個網址一定要 https」與「這裡只收這幾種 scheme」都只寫在說明散文裡，
+    沒有對應的結構化欄位。與其手打一份清單（打漏了就是漏檢，打多了就是誤報），
+    不如去問資料：官方在每個 URL 欄位的說明都寫了
+    「Protocol: HTTPS (TLS 1.2 or later)」，照著撈就好。
+    欄位名可能帶前綴（video.originalContentUrl），只取最後一段。
+    """
+    return {r["parameter"].rsplit(".", 1)[-1]
+            for r in _rows("parameters.csv")
+            if marker in (r.get("description") or "")}
+
+
+HTTPS_ONLY = _fields_whose_doc_says("Protocol: HTTPS")
+SCHEME_FIELDS = _fields_whose_doc_says("available schemes are")
+
+# 從同一句話把 scheme 撈出來，不要自己記：
+# 「The available schemes are `http`, `https`, `line`, and `tel`.」
+URI_SCHEMES = sorted({
+    s for r in _rows("parameters.csv")
+    if "available schemes are" in (r.get("description") or "")
+    for s in re.findall(r"available schemes are (.+?)\.",
+                        r["description"])[:1]
+    for s in re.findall(r"\b(https?|line|tel|mailto)\b", s)
+}) or ["http", "https", "line", "tel"]
 
 
 class Registry:
@@ -337,15 +399,17 @@ class Validator:
 
         counts = {len(c.get("actions") or []) for c in cols}
         if len(counts) > 1:
-            self.warn(f"{path}.columns",
-                      f"各欄的 action 數量不一致（{sorted(counts)}），LINE 要求所有欄位一致",
-                      doc)
+            # 實測：LINE 對這個回 400「The use of image, title and the number of
+            # actions should be consistent for all columns.」——是退件不是提醒
+            self.err(f"{path}.columns",
+                     f"各欄的 action 數量不一致（{sorted(counts)}），LINE 要求所有欄位一致",
+                     doc)
         for field, label in (("thumbnailImageUrl", "圖片"), ("title", "標題")):
             present = {bool(c.get(field)) for c in cols}
             if len(present) > 1:
-                self.warn(f"{path}.columns",
-                          f"有些欄有{label}、有些沒有；LINE 要求所有欄位一致（{field}）",
-                          doc)
+                self.err(f"{path}.columns",
+                         f"有些欄有{label}、有些沒有；LINE 要求所有欄位一致（{field}）",
+                         doc)
 
     def _check_props(self, path: str, obj: dict, props: dict, doc: str) -> None:
         for name, spec in props.items():
@@ -358,6 +422,49 @@ class Validator:
             if value is None:
                 continue
             self.check_value(f"{path}.{key}", value, props[key])
+            self._check_url(f"{path}.{key}", key, value, doc)
+
+        schema = next((s.get("schema", "") for s in props.values()), "")
+        prop, ctx = LABEL_CONTEXT.get(schema) or (
+            ("action", "flex-other") if schema.startswith("Flex") else (None, None))
+        if ctx:
+            target = obj.get(prop)
+            for i, action in enumerate(target if isinstance(target, list) else [target]):
+                suffix = f"[{i}]" if isinstance(target, list) else ""
+                self._check_action_label(f"{path}.{prop}{suffix}", action, ctx)
+
+    def _check_url(self, path: str, key: str, value, doc: str) -> None:
+        """網址的 scheme 限制。兩者都只寫在說明散文裡，OpenAPI 只說是 string。"""
+        if not isinstance(value, str) or not value:
+            return
+        if key in HTTPS_ONLY and not value.lower().startswith("https://"):
+            self.err(path, f"必須是 https:// 的網址（官方標明 Protocol: HTTPS），實際是 {value[:40]!r}", doc)
+        elif key in SCHEME_FIELDS:
+            scheme = value.split(":", 1)[0].lower()
+            if scheme not in URI_SCHEMES:
+                self.err(path, f"scheme {scheme!r} 不合法，可用：{', '.join(URI_SCHEMES)}",
+                         doc or URI_DOC)
+
+    def _check_action_label(self, path: str, action, ctx: str) -> None:
+        """label 的必填與上限由「action 放在哪裡」決定，不是由 action 型別決定。
+
+        同一個 postback action：放 quick reply 是必填、上限 20；放 Flex button
+        是必填、上限 40；放 image carousel 是選填、上限 12。CSV 一欄裝不下，
+        只有看得到父物件的地方判得出來。
+        """
+        if not isinstance(action, dict):
+            return
+        required, limit = LABEL_SPEC[ctx]
+        label = action.get("label")
+        if label is None:
+            tag = action.get("type")
+            spec = (REG.unions.get("Action", {}).get(tag) or {}).get("label") or {}
+            # CSV 已經標必填的（camera、location…）就讓 _check_props 去講，別報兩次
+            if required and spec.get("required") != "true":
+                self.err(f"{path}.label", f"放在這裡的 action 必須有 label", LABEL_DOC)
+        elif isinstance(label, str) and len(label) > limit:
+            self.err(f"{path}.label",
+                     f"label 長度 {len(label)} 超過上限 {limit}（這個位置的上限）", LABEL_DOC)
 
     # ------------------------------------------------------------- entries
     def validate_message(self, obj, path: str = "$") -> None:

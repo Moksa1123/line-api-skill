@@ -528,7 +528,7 @@ def merge_from_docs(schema_rows: list[dict], param_rows: list[dict]) -> list[dic
                r.get("parameter", ""))
         by_heading.setdefault(key, r)
 
-    filled = {"max_length": 0, "enum": 0, "default": 0}
+    filled = {"max_length": 0, "enum": 0, "default": 0, "required": 0}
     for row in schema_rows:
         schema = row.get("schema", "")
         path = SCHEMA_HEADINGS.get(schema)
@@ -558,9 +558,18 @@ def merge_from_docs(schema_rows: list[dict], param_rows: list[dict]) -> list[dic
             row["default"] = doc["default"]
             filled["default"] += 1
 
+        # OpenAPI 對 action 幾乎什麼都不標必填——PostbackAction 連 data 都是
+        # optional，可是實際送出去 LINE 會回「must be specified」。必填寫在
+        # reference 的參數區塊裡（props: required），這裡把它補回來。
+        # 只認 props 恰好是 required 的：「See description」「*1」這類註記
+        # 代表條件式必填，硬套會變成誤擋。
+        if row.get("required") != "true" and doc.get("props", "").strip() == "required":
+            row["required"] = "true"
+            filled["required"] += 1
+
     if any(filled.values()):
-        print("  (from docs: {max_length} maxima, {enum} enums, {default} defaults)"
-              .format(**filled))
+        print("  (from docs: {max_length} maxima, {enum} enums, {default} defaults, "
+              "{required} required flags)".format(**filled))
     return schema_rows
 
 

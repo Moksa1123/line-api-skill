@@ -254,6 +254,80 @@ def t_liff_versions():
             f"{len(before)} 個可在 init 前呼叫")
 
 
+@check("validate: 六個曾經放行、但 LINE 會退件的寫法")
+def t_validate_false_accepts():
+    """每一條都是拿 POST /v2/bot/message/validate/push 打出來的差異。
+
+    離線驗證器原本放行、LINE 實際回 400 的六種寫法。上限值也都對著官方
+    驗證器逐一試過邊界（40 過 41 退、20 過 21 退、12 過 13 退），
+    所以這裡的數字不是抄來的，是量出來的。
+    """
+    img = "https://example.com/a.jpg"
+
+    def errs(msg):
+        return [p for p in val.run([msg], "messages").problems if p.level == "error"]
+
+    def fbtn(action):
+        return {"type": "flex", "altText": "a", "contents": {
+            "type": "bubble", "body": {"type": "box", "layout": "vertical",
+                                       "contents": [{"type": "button", "action": action}]}}}
+
+    def qr(action):
+        return {"type": "text", "text": "h", "quickReply": {
+            "items": [{"type": "action", "action": action}]}}
+
+    cases = [
+        # (說明, 訊息, 應該要被擋嗎)
+        ("postback 缺 data", qr({"type": "postback", "label": "a"}), True),
+        ("postback 有 data", qr({"type": "postback", "label": "a", "data": "k=v"}), False),
+
+        ("內容 URL 用 http", {"type": "image", "originalContentUrl": "http://x.com/a.jpg",
+                              "previewImageUrl": "http://x.com/a.jpg"}, True),
+        ("sender iconUrl 用 http",
+         {"type": "text", "text": "h", "sender": {"name": "B", "iconUrl": "http://x.com/a.jpg"}}, True),
+        ("內容 URL 用 https", {"type": "image", "originalContentUrl": img,
+                               "previewImageUrl": img}, False),
+
+        ("uri action 用 ftp", fbtn({"type": "uri", "label": "a", "uri": "ftp://x"}), True),
+        ("uri action 用 tel", fbtn({"type": "uri", "label": "a", "uri": "tel:0212345678"}), False),
+        ("uri action 用 line://", fbtn({"type": "uri", "label": "a", "uri": "line://ti/p/@x"}), False),
+
+        # label 的上限與必填由「放在哪」決定，不是由 action 型別決定
+        ("quickReply label 21", qr({"type": "message", "label": "x" * 21, "text": "a"}), True),
+        ("quickReply label 20", qr({"type": "message", "label": "x" * 20, "text": "a"}), False),
+        ("flex button label 41", fbtn({"type": "message", "label": "x" * 41, "text": "a"}), True),
+        ("flex button label 40", fbtn({"type": "message", "label": "x" * 40, "text": "a"}), False),
+        ("flex button 缺 label",
+         fbtn({"type": "richmenuswitch", "richMenuAliasId": "a1", "data": "k=v"}), True),
+        ("flex 非 button 的 action 不必有 label", {"type": "flex", "altText": "a", "contents": {
+            "type": "bubble", "body": {"type": "box", "layout": "vertical", "contents": [
+                {"type": "image", "url": img,
+                 "action": {"type": "uri", "uri": "https://x.com"}}]}}}, False),
+        ("image_carousel label 13", {"type": "template", "altText": "a", "template": {
+            "type": "image_carousel", "columns": [
+                {"imageUrl": img,
+                 "action": {"type": "message", "label": "x" * 13, "text": "a"}}]}}, True),
+        ("image_carousel label 12", {"type": "template", "altText": "a", "template": {
+            "type": "image_carousel", "columns": [
+                {"imageUrl": img,
+                 "action": {"type": "message", "label": "x" * 12, "text": "a"}}]}}, False),
+
+        # 輪播各欄不一致 LINE 是回 400，不是提醒
+        ("輪播各欄動作數不一致", {"type": "template", "altText": "a", "template": {
+            "type": "carousel", "columns": [
+                {"text": "a", "actions": [{"type": "message", "label": "a", "text": "a"}]},
+                {"text": "b", "actions": [{"type": "message", "label": "b", "text": "b"},
+                                          {"type": "message", "label": "c", "text": "c"}]}]}}, True),
+    ]
+    wrong = []
+    for name, msg, should_fail in cases:
+        got = bool(errs(msg))
+        if got != should_fail:
+            wrong.append(f"{name}：預期{'擋' if should_fail else '放行'}，實際{'擋' if got else '放行'}")
+    assert not wrong, "; ".join(wrong)
+    return f"{len(cases)} 個與 LINE 官方驗證器對照過的案例全部一致"
+
+
 @check("review: 對自家正確範例不得有任何誤報")
 def t_review_clean():
     import review
@@ -1171,7 +1245,58 @@ def live_tests() -> None:
         assert not [p for p in offline.problems if p.level == "error"], \
             "離線驗證就沒過，先修好訊息"
         client.validate_push(messages)   # raises on rejection
-        return "離線驗證與 LINE 官方驗證結果一致"
+
+        # 兩邊逐筆對照。只證明「我們說可以的 LINE 收」還不夠——
+        # 「我們說不行的 LINE 也真的退」才代表規則沒有寫過頭。
+        # 六個 FALSE-ACCEPT 就是這樣挖出來的（見 t_validate_false_accepts）。
+        img = "https://example.com/a.jpg"
+
+        def fbtn(action):
+            return {"type": "flex", "altText": "a", "contents": {
+                "type": "bubble", "body": {"type": "box", "layout": "vertical",
+                                           "contents": [{"type": "button", "action": action}]}}}
+
+        def qr(action):
+            return {"type": "text", "text": "h", "quickReply": {
+                "items": [{"type": "action", "action": action}]}}
+
+        corpus = [
+            ("postback 缺 data", qr({"type": "postback", "label": "a"})),
+            ("postback 完整", qr({"type": "postback", "label": "a", "data": "k=v"})),
+            ("內容 URL 用 http", {"type": "image", "originalContentUrl": "http://x.com/a.jpg",
+                                  "previewImageUrl": "http://x.com/a.jpg"}),
+            ("內容 URL 用 https", {"type": "image", "originalContentUrl": img,
+                                   "previewImageUrl": img}),
+            ("uri 用 ftp", fbtn({"type": "uri", "label": "a", "uri": "ftp://x"})),
+            ("uri 用 tel", fbtn({"type": "uri", "label": "a", "uri": "tel:0212345678"})),
+            ("quickReply label 21", qr({"type": "message", "label": "x" * 21, "text": "a"})),
+            ("quickReply label 20", qr({"type": "message", "label": "x" * 20, "text": "a"})),
+            ("flex button label 41", fbtn({"type": "message", "label": "x" * 41, "text": "a"})),
+            ("flex button label 40", fbtn({"type": "message", "label": "x" * 40, "text": "a"})),
+            ("flex button 缺 label",
+             fbtn({"type": "richmenuswitch", "richMenuAliasId": "a1", "data": "k=v"})),
+            ("輪播各欄不一致", {"type": "template", "altText": "a", "template": {
+                "type": "carousel", "columns": [
+                    {"text": "a", "actions": [{"type": "message", "label": "a", "text": "a"}]},
+                    {"text": "b", "actions": [
+                        {"type": "message", "label": "b", "text": "b"},
+                        {"type": "message", "label": "c", "text": "c"}]}]}}),
+            ("sticker", {"type": "sticker", "packageId": "446", "stickerId": "1988"}),
+        ]
+        disagree = []
+        for name, msg in corpus:
+            ours_ok = not [p for p in val.run([msg], "messages").problems
+                           if p.level == "error"]
+            try:
+                client.validate_push([msg])
+                line_ok = True
+            except lineapi.LineApiError:
+                line_ok = False
+            if ours_ok != line_ok:
+                side = "我們放行但 LINE 退件" if ours_ok else "我們擋了但 LINE 收"
+                disagree.append(f"{name}（{side}）")
+        assert not disagree, "與 LINE 官方驗證器判斷不一致：" + "; ".join(disagree)
+        return f"{len(corpus)} 個案例與 LINE 官方驗證器逐筆一致"
 
     channel_id = os.environ.get("LINE_CHANNEL_ID")
     channel_secret = os.environ.get("LINE_CHANNEL_SECRET")
