@@ -169,7 +169,7 @@ python scripts/review.py ./src --min-severity error   # 只看必須修的
 
 | rule | 等級 | 抓什麼 |
 |---|---|---|
-| `deprecated` | error | 用到已停止服務的 API（LINE Notify、LINE Things…） |
+| `deprecated` | error / warning | 用到已停止服務的 API（LINE Notify…）。分不出是在用它還是在擋它的寫法（`/^line:\/\//` 這種樣式）只給 warning |
 | `wrong-host` | error | 內容類端點打到 `api.line.me` 而不是 `api-data.line.me` |
 | `hardcoded-secret` | error | channel secret / access token 寫死在原始碼 |
 | `signature-body` | error | 拿反序列化後再 dump 的 JSON 算簽章（空白一差就驗不過） |

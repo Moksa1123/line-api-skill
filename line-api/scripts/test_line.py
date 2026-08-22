@@ -368,13 +368,21 @@ app.post('/webhook/:key', async (req, reply) => {
     # 6. coverage 報告會把整份 .ts 內嵌進 .ts.html，掃到等於重複審查
     assert "coverage" in review.SKIP_DIRS and "htmlcov" in review.SKIP_DIRS
 
+    # 7. 為了叫別人不要用而提到 line://，不是在用它
+    reject = ("if (/^line:\\/\\//.test(uri)) "
+              "issues.push({ message: '用了已淘汰的 line://，請改成 https://line.me/R/ 開頭' })\n")
+    deps = [f for f in review.review_text(Path("check.ts"), reject, known, data_host)
+            if f.rule == "deprecated"]
+    assert len(deps) == 1 and deps[0].line == 1, \
+        f"應該只認出 regex 裡那一個 line://，實際 {[(f.line) for f in deps]}"
+
     # 反面：真的在驗簽卻用 == 比，還是要抓
     weak = '''
 const expected = createHmac('sha256', SECRET).update(raw).digest('base64')
 if (expected !== req.headers['x-line-signature']) return reply.code(400).send()
 '''
     assert "signature-compare" in rules_for("weak.ts", weak), "真的用 == 比卻沒抓到"
-    return "6 類誤報都不再發生，真問題照樣抓得到"
+    return "7 類誤報都不再發生，真問題照樣抓得到"
 
 
 @check("dataset: 行動 SDK（iOS / Android）的型別清單有進資料集")

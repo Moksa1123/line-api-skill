@@ -78,6 +78,12 @@ def code_mask(text: str, suffix: str) -> str:
 
     while i < n:
         c = text[i]
+        # 跳脫序列整組跳過。JS 的 regex literal 結尾長這樣：/^line:\/\//
+        # 一個字元一個字元走的話，最後的 \/ 加收尾的 / 會被讀成 `//` 行註解，
+        # 從那裡到行尾全部被清掉——包含後面真正該檢查的程式碼
+        if c == "\\":
+            i += 2
+            continue
         # --- 字串：整段跳過，不做任何處理 ---
         if c in "\"'`":
             if suffix == ".py" and text[i:i + 3] in ('"""', "'''"):
@@ -198,15 +204,23 @@ def match_endpoint(path: str, templates):
 
 
 DEPRECATED_TOKENS = [
-    # (在程式碼裡長什麼樣, deprecations.csv 的 item)
-    (r"notify-api\.line\.me", "LINE Notify"),
-    (r"\bliff\.scanCode\s*\(", "liff.scanCode()"),
-    (r"\bliff\.getLanguage\s*\(", "liff.getLanguage()"),
-    # JS 的 regex literal 會寫成 /^line:\/\//，反斜線要一起吃掉才找得到
-    (r"line:(?:\\)?/(?:\\)?/", "line:// URL scheme"),
-    (r'"type"\s*:\s*"filler"', "Flex filler component"),
-    (r"'type'\s*:\s*'filler'", "Flex filler component"),
-    (r"liff/edge/1/sdk\.js", "LIFF v1"),
+    # (在程式碼裡長什麼樣, deprecations.csv 的 item, 等級, 補充說明)
+    (r"notify-api\.line\.me", "LINE Notify", "error", ""),
+    (r"\bliff\.scanCode\s*\(", "liff.scanCode()", "error", ""),
+    (r"\bliff\.getLanguage\s*\(", "liff.getLanguage()", "error", ""),
+    # 兩種寫法要分開看待，而且都不能連「叫別人不要用 line://」的訊息一起抓
+    # （那種句子後面接的是標點或空白，所以底下兩條都要求後面有東西）。
+    #
+    # `line://ti/p/...`：真的在指一個網址，明確是在用它
+    (r"line://[A-Za-z0-9]", "line:// URL scheme", "error", ""),
+    # `/^line:\/\//`：一個「關於 line:// 的樣式」。放進白名單是接受它、
+    # 放進 if 是擋掉它，兩者長得一模一樣，正規式分不出來——所以只提醒，
+    # 不斷定。用 error 講一件分不出對錯的事，下次真的錯了也沒人看
+    (r"line:\\/\\/", "line:// URL scheme", "warning",
+     "這是一個比對 line:// 的樣式；請確認是在擋它，而不是把它放進白名單"),
+    (r'"type"\s*:\s*"filler"', "Flex filler component", "error", ""),
+    (r"'type'\s*:\s*'filler'", "Flex filler component", "error", ""),
+    (r"liff/edge/1/sdk\.js", "LIFF v1", "error", ""),
 ]
 
 SECRET_PATTERNS = [
@@ -276,13 +290,14 @@ def review_text(path: Path, text: str, known, data_host, project=None) -> list[F
 
     # ---- 1. 已停用 / 已淘汰 -------------------------------------------
     # 測試檔會為了斷言「這個值要被擋下來」而寫進已淘汰的值，那不是在用它
-    for pattern, item in ([] if is_test else DEPRECATED_TOKENS):
+    for pattern, item, sev, note in ([] if is_test else DEPRECATED_TOKENS):
         for m in re.finditer(pattern, text):
             ln = text[:m.start()].count("\n") + 1
             info = dep_rows.get(item, {})
-            add("error", "deprecated", ln,
-                f"用到已{'停止服務' if info.get('status') == 'discontinued' else '淘汰'}的"
-                f" {item}"
+            add(sev, "deprecated", ln,
+                (f"{note}：{item}" if note else
+                 f"用到已{'停止服務' if info.get('status') == 'discontinued' else '淘汰'}的"
+                 f" {item}")
                 + (f"（{info['effective_date']} 起）" if info.get("effective_date") else ""),
                 f"改用 {info.get('replacement')}" if info.get("replacement") else "",
                 info.get("doc_url", ""))
