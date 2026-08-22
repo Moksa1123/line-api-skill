@@ -38,6 +38,7 @@ python scripts/search.py "<關鍵字>" --domain all        # 不確定時全域�
 | 該讀哪一頁官方指南 | `search.py "圖文選單怎麼切換" --domain guide` |
 | 官方 FAQ 有沒有答過 | `search.py "429" --domain faq` |
 | 加好友連結怎麼寫 | `search.py "加好友" --domain url_scheme` |
+| **既有程式碼哪裡不對** | `review.py app.py` |
 | 這個名詞是什麼 | `search.py "provider" --domain term` |
 | 這個功能還能用嗎 | `search.py "notify" --domain deprecation` |
 | iOS/Android SDK 型別 | `search.py "LoginManager" --domain sdk_api` |
@@ -302,7 +303,39 @@ python scripts/search.py "LINE 通知訊息" --domain product
 
 ---
 
-## 10. 除錯速查
+## 10. 審既有的程式碼
+
+接手別人的 LINE 整合、或使用者問「我這樣寫對不對」時，先用資料集審一遍，
+不要憑印象猜。`review.py` 會逐條比對官方規格：
+
+```bash
+python scripts/review.py ./src
+python scripts/review.py app.py --min-severity error    # 只看必須修的
+python scripts/review.py ./src --format json            # 給 CI 接
+```
+
+實際輸出長這樣：
+
+```
+❌ [signature-body] app.py:14
+     用序列化後的 JSON 算簽章，空白或欄位順序一變就驗不過
+     建議：拿原始 bytes 算（Flask: request.get_data()｜Express: express.raw()）
+     依據：https://developers.line.biz/en/docs/messaging-api/verify-webhook-signature/
+
+❌ [wrong-host] app.py:29
+     /v2/bot/message/{}/content 是內容類端點，必須用 api-data.line.me
+     建議：把主機改成 https://api-data.line.me
+
+⚠️  [message-json] app.py:21
+     內嵌的 訊息 $.quickreply：未知屬性 'quickreply'（可用：emojis, quickReply, ...）
+```
+
+沒問題就一筆都不報。判定不了的（例如主機放在變數裡）只會給 `info`，
+不會硬說它是錯的。完整規則表在 [SKILL.md](SKILL.md#scriptsreviewpy--既有程式碼健檢)。
+
+---
+
+## 11. 除錯速查
 
 ```bash
 python scripts/search.py "Invalid reply token" --domain error

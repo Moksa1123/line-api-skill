@@ -98,6 +98,28 @@ python scripts/lineapi.py info
 ⚠️  $.template.columns                  칼럼별 action 개수가 일치하지 않음
 ```
 
+### 이미 작성된 코드 점검
+
+기존 구현을 리뷰어에 넘기면 같은 데이터셋으로 대조합니다 —— 이 엔드포인트가
+실제로 존재하는지, 호스트가 맞는지, 서명을 원본 body로 계산하고 상수 시간으로
+비교하는지, 메시지 JSON이 유효한지, 그 API가 아직 살아 있는지.
+
+```bash
+python scripts/review.py ./src
+python scripts/review.py app.py --min-severity error   # 반드시 고쳐야 할 것만
+python scripts/review.py ./src --format json           # CI 연동용
+```
+
+```
+❌ [signature-body] app.py:14   재직렬화한 JSON으로 서명을 계산함
+   → 원본 바이트를 사용 (Flask: request.get_data() | Express: express.raw())
+❌ [wrong-host]      app.py:29   /v2/bot/message/{}/content 는 api-data.line.me
+⚠️  [message-json]    app.py:21   알 수 없는 속성 'quickreply' (quickReply 아닌가요?)
+```
+
+9개 규칙, 각각 수정 방법과 공식 문서 링크가 함께 나옵니다. 문제가 없으면 아무것도
+보고하지 않습니다 —— 이 저장소의 예제에 대해 0건임을 테스트가 보장합니다.
+
 ## 다루는 범위
 
 | 영역 | 찾을 수 있는 것 |
@@ -124,7 +146,8 @@ python scripts/lineapi.py info
 | `validate.py` | 메시지 / Flex 오프라인 검증: 타입, 필수, 오타, enum, 상한 |
 | `signature.py` | webhook 서명, 채널 액세스 토큰(순수 Python RS256 JWT 구현 포함) |
 | `lineapi.py` | 의존성 없는 Messaging API 클라이언트. 호스트를 자동 분기 |
-| `test_line.py` | 오프라인 43개 + 라이브 6개 테스트 |
+| `review.py` | 기존 코드 점검: 종료된 API, 잘못된 호스트, 서명 처리, 엔드포인트 오타, 메시지 JSON |
+| `test_line.py` | 오프라인 45개 + 라이브 6개 테스트 |
 
 ## 데이터를 만드는 방법
 

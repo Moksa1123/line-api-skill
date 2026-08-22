@@ -99,6 +99,29 @@ python scripts/lineapi.py info
 ⚠️  $.template.columns                  カラム間で action の数が揃っていません
 ```
 
+### 既存コードの点検
+
+すでにある実装にレビューアを向けると、同じデータセットと突き合わせて確認します
+——そのエンドポイントは実在するか、ホストは正しいか、署名は生の body で計算し
+定数時間で比較しているか、メッセージ JSON は妥当か、その API はまだ生きているか。
+
+```bash
+python scripts/review.py ./src
+python scripts/review.py app.py --min-severity error   # 直すべきものだけ
+python scripts/review.py ./src --format json           # CI 向け
+```
+
+```
+❌ [signature-body] app.py:14   再シリアライズした JSON で署名を計算している
+   → 生のバイト列を使う（Flask: request.get_data()｜Express: express.raw()）
+❌ [wrong-host]      app.py:29   /v2/bot/message/{}/content は api-data.line.me
+⚠️  [message-json]    app.py:21   不明なプロパティ 'quickreply'（quickReply では？）
+```
+
+9 つのルール。それぞれに修正方法と公式ドキュメントへのリンクが付きます。
+問題がなければ何も出しません —— 本リポジトリのサンプルに対して 0 件であることを
+テストが保証しています。
+
 ## カバー範囲
 
 | 領域 | 調べられること |
@@ -126,7 +149,8 @@ python scripts/lineapi.py info
 | `validate.py` | メッセージ / Flex のオフライン検証：型、必須、タイポ、enum、上限 |
 | `signature.py` | webhook 署名、チャネルアクセストークン（純 Python の RS256 JWT 実装込み） |
 | `lineapi.py` | 依存ゼロの Messaging API クライアント。ホストを自動で振り分け |
-| `test_line.py` | オフライン 43 項目 + ライブ 6 項目 |
+| `review.py` | 既存コードの点検：提供終了 API、ホスト誤り、署名の扱い、エンドポイントのタイポ、メッセージ JSON |
+| `test_line.py` | オフライン 45 項目 + ライブ 6 項目 |
 
 ## データの作り方
 

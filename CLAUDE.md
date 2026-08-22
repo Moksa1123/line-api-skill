@@ -101,12 +101,13 @@ python tools/audit_coverage.py      # A/B/C/E 應為 0（Template 基底除外�
 python tools/check_docs.py          # 文件數字過期會 exit 1，--fix 可自動更正
 
 # 測試
-python line-api/scripts/test_line.py            # 離線 43 項
-python line-api/scripts/test_line.py --live     # 加 4 項實打 LINE API
+python line-api/scripts/test_line.py            # 離線 45 項
+python line-api/scripts/test_line.py --live     # 加 6 項實打 LINE API
 
 # 技能本身的工具
 python line-api/scripts/search.py "<query>" [--domain <domain>]
 python line-api/scripts/validate.py <file.json> [--as flex|push|reply|...]
+python line-api/scripts/review.py <file-or-dir> [--min-severity error]
 python line-api/scripts/signature.py verify --secret <s> --body-file b.json --signature <sig>
 python line-api/scripts/lineapi.py info
 ```
@@ -129,6 +130,8 @@ python line-api/scripts/lineapi.py info
 - 只寫在文件散文裡的 enum 與預設值（imageAspectRatio、imageSize…）有進資料集
 - camelCase 與點號識別字可用子詞查到（查 multicast 要找得到 MulticastRequest.to）
 - webhook 逐欄位表涵蓋所有事件，且共同屬性型別正確
+- review.py 對自家 `examples/` 零誤報，且七類問題（拼錯的端點、錯的主機、
+  寫死的憑證、簽章三種寫法、已停服 API、訊息 JSON 錯字）一個都不漏
 
 新增功能請一併補測試。
 

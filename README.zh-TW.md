@@ -95,6 +95,28 @@ python scripts/lineapi.py info
 ⚠️  $.template.columns                  各欄的 action 數量不一致
 ```
 
+### 審既有的程式碼
+
+把 reviewer 指向已經寫好的整合，它會拿同一份資料集去比對：端點存不存在、
+主機對不對、簽章是不是用原始 body 且常數時間比對、訊息 JSON 有沒有錯字、
+用到的 API 是不是已經停服。
+
+```bash
+python scripts/review.py ./src
+python scripts/review.py app.py --min-severity error   # 只看必須修的
+python scripts/review.py ./src --format json           # 給 CI 接
+```
+
+```
+❌ [signature-body] app.py:14   用序列化後的 JSON 算簽章，空白一變就驗不過
+   → 拿原始 bytes 算（Flask: request.get_data()｜Express: express.raw()）
+❌ [wrong-host]      app.py:29   /v2/bot/message/{}/content 必須用 api-data.line.me
+⚠️  [message-json]    app.py:21   未知屬性 'quickreply'（是不是想寫 quickReply？）
+```
+
+九條規則，每一條都附修法與官方出處。程式碼沒問題就一筆都不報 ——
+本倉庫自家範例的期望輸出是零筆，這件事有測試守著。
+
 ## 涵蓋範圍
 
 | 領域 | 查得到什麼 |
@@ -121,7 +143,8 @@ python scripts/lineapi.py info
 | `validate.py` | 離線驗證訊息 / Flex：型別、必填、錯字、enum、上限、已淘汰元件 |
 | `signature.py` | webhook 簽章；channel access token（含純 Python 實作的 RS256 JWT） |
 | `lineapi.py` | 零依賴 Messaging API client，自動判斷該打哪個主機 |
-| `test_line.py` | 43 項離線測試 + 6 項線上測試 |
+| `review.py` | 審既有程式碼：已停服 API、主機打錯、簽章寫法、端點拼錯、訊息 JSON 錯字 |
+| `test_line.py` | 45 項離線測試 + 6 項線上測試 |
 
 ## 資料怎麼來的
 

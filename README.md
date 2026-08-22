@@ -100,6 +100,29 @@ The validator points at the exact path:
 ⚠️  $.template.columns                  columns have inconsistent action counts
 ```
 
+### Auditing code you already have
+
+Point the reviewer at an existing integration and it checks the code against the
+same dataset — is this endpoint real, is the host right, is the signature computed
+over the raw body and compared in constant time, is this message JSON valid, is this
+API still alive:
+
+```bash
+python scripts/review.py ./src
+python scripts/review.py app.py --min-severity error   # only what must be fixed
+python scripts/review.py ./src --format json           # for CI
+```
+
+```
+❌ [signature-body] app.py:14   signature computed over re-serialized JSON
+   → use the raw bytes (Flask: request.get_data() | Express: express.raw())
+❌ [wrong-host]      app.py:29   /v2/bot/message/{}/content must use api-data.line.me
+⚠️  [message-json]    app.py:21   unknown property 'quickreply' (did you mean quickReply?)
+```
+
+Nine rules, each with a fix and a link to the official page it comes from. Clean code
+reports nothing — a test asserts zero findings across this repo's own examples.
+
 ## What's Covered
 
 | Area | What you can look up |
@@ -127,7 +150,8 @@ never recommends a dead API.
 | `validate.py` | Offline message/Flex validation — types, required, typos, enums, caps |
 | `signature.py` | Webhook signature; channel access tokens incl. a pure-Python RS256 JWT |
 | `lineapi.py` | Zero-dependency Messaging API client; routes `api-data.line.me` for you |
-| `test_line.py` | 43 offline tests + 6 live tests |
+| `review.py` | Audits code you already have: dead APIs, wrong host, signature handling, typo'd endpoints, bad message JSON |
+| `test_line.py` | 45 offline tests + 6 live tests |
 
 ## How the Data Is Built
 

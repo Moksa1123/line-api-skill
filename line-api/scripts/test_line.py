@@ -254,6 +254,55 @@ def t_liff_versions():
             f"{len(before)} 個可在 init 前呼叫")
 
 
+@check("review: 對自家正確範例不得有任何誤報")
+def t_review_clean():
+    import review
+    known, data_host = review.endpoint_index()
+    ex = HERE.parent / "examples"
+    noisy = []
+    for f in sorted(ex.rglob("*")):
+        if f.suffix not in review.CODE_EXT:
+            continue
+        found = review.review_text(f, f.read_text(encoding="utf-8"), known, data_host)
+        noisy += [f"{f.name}:{x.line} [{x.rule}] {x.message[:50]}" for x in found]
+    assert not noisy, "自家範例被誤報：" + "; ".join(noisy[:4])
+    return "6 個範例檔零誤報"
+
+
+@check("review: 該抓的問題一個都不能漏")
+def t_review_catches():
+    import review
+    known, data_host = review.endpoint_index()
+    bad = '''
+import hmac, hashlib, base64, json, requests
+from flask import request
+CHANNEL_SECRET = "0123456789abcdef0123456789abcdef"
+def cb():
+    body = request.get_json()
+    sig = base64.b64encode(hmac.new(CHANNEL_SECRET.encode(),
+          json.dumps(body).encode(), hashlib.sha256).digest()).decode()
+    if sig != request.headers.get("x-line-signature"):
+        return "", 400
+    for e in body["events"]:
+        msg = {"type": "text", "text": "hi", "quickreply": {}}
+        requests.post("https://api.line.me/v2/bot/message/reply",
+                      json={"replyToken": e["replyToken"], "messages": [msg]})
+    requests.get("https://api.line.me/v2/bot/message/1/content")
+    requests.get("https://api.line.me/v2/bot/profiel/U1")
+    requests.post("https://notify-api.line.me/api/notify")
+'''
+    rules = {f.rule for f in review.review_text(Path("bad.py"), bad, known, data_host)}
+    for want in ("hardcoded-secret",      # 寫死的 channel secret
+                 "signature-body",        # 用序列化過的 JSON 算簽章
+                 "signature-compare",     # 沒有常數時間比較
+                 "wrong-host",            # content 端點打到 api.line.me
+                 "unknown-endpoint",      # profiel 拼錯
+                 "deprecated",            # LINE Notify 已終止
+                 "message-json"):         # quickreply 拼錯
+        assert want in rules, f"沒抓到 {want}（實際抓到 {sorted(rules)}）"
+    return f"{len(rules)} 類問題全部抓到"
+
+
 @check("dataset: 行動 SDK（iOS / Android）的型別清單有進資料集")
 def t_sdk_api():
     sdk = rows("sdk-api.csv")

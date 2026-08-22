@@ -48,6 +48,18 @@ python scripts/validate.py body.json --as push
 python scripts/lineapi.py validate-push --json m.json  # LINE 官方驗證端點
 ```
 
+**要改既有的 LINE 程式碼、或使用者問「我這樣寫對不對」時，先審一次：**
+
+```bash
+python scripts/review.py app.py            # 單一檔案
+python scripts/review.py ./src             # 整個目錄
+```
+
+它會照資料集比對這份程式碼：端點是否存在、內容類端點有沒有打錯主機、
+簽章是不是用原始 body 且常數時間比對、內嵌的訊息 JSON 有沒有錯字、
+有沒有用到已停止服務的 API。**動手改之前先看它報什麼**，
+不要憑印象斷定使用者的程式碼哪裡有問題。
+
 ---
 
 ## 25 個搜尋域
@@ -141,6 +153,34 @@ python scripts/lineapi.py richmenu-list
 python scripts/lineapi.py content 325708 --out photo.jpg
 python scripts/lineapi.py raw GET /v2/bot/followers/ids
 ```
+
+### `scripts/review.py` — 既有程式碼健檢
+
+拿資料集去審別人（或自己）寫好的 LINE 程式碼，判斷是不是官方做法。
+支援 `.py` / `.js` / `.ts` / `.php` / `.rb` / `.go` / `.java` / `.kt` / `.cs` / `.swift`。
+
+```bash
+python scripts/review.py app.py
+python scripts/review.py ./src --format json     # 給程式接的輸出
+python scripts/review.py ./src --min-severity error   # 只看必須修的
+```
+
+檢查項目：
+
+| rule | 等級 | 抓什麼 |
+|---|---|---|
+| `deprecated` | error | 用到已停止服務的 API（LINE Notify、LINE Things…） |
+| `wrong-host` | error | 內容類端點打到 `api.line.me` 而不是 `api-data.line.me` |
+| `hardcoded-secret` | error | channel secret / access token 寫死在原始碼 |
+| `signature-body` | error | 拿反序列化後再 dump 的 JSON 算簽章（空白一差就驗不過） |
+| `signature-compare` | warning | 簽章用 `==` 比，不是常數時間比較 |
+| `signature-missing` | error | 有 webhook 端點但完全沒驗簽章 |
+| `unknown-endpoint` | warning | 路徑不在官方端點清單裡（多半是拼錯） |
+| `message-json` | warning | 內嵌的訊息 / Flex JSON 直接丟給 validate.py 驗 |
+| `idempotency` | info | 沒用 `webhookEventId` 去重，LINE 重送會重複處理 |
+
+每一筆都附建議與官方文件連結。找不到問題就什麼都不報 ——
+自家 `examples/` 底下 6 個範例檔的期望輸出是零筆，這件事有測試守著。
 
 ### `scripts/test_line.py` — 自我測試
 
