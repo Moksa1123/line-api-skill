@@ -19,6 +19,8 @@ LINE Login 的 ID token 驗證沒有——因為要有一個真的 ID token，�
   1. Basic settings → OpenID Connect → Apply
      沒有這個就不會回 id_token，只會回 access_token。
   2. LINE Login → Callback URL → 加一行 http://localhost:8765/callback
+     那個 port 被別的程式佔住的話，用 --port 換一個，
+     Console 那邊也多加一行對應的（一個 channel 可以設多個 callback）。
 
 然後把那個 channel 的 ID 與 secret 放進 .env：
 
@@ -37,7 +39,9 @@ import base64
 import json
 import os
 import secrets
+import socket
 import sys
+import time
 import urllib.parse
 import urllib.request
 import webbrowser
@@ -104,18 +108,45 @@ def main() -> int:
         "scope": "openid profile",
     })
 
+    # 先把 port 綁起來再開瀏覽器。反過來的話，使用者已經登入完了才發現
+    # 沒人接得住轉回來的授權碼——而授權碼只能用一次。
+    try:
+        server = HTTPServer(("localhost", args.port), Catch)
+    except OSError as e:
+        free = []
+        for cand in (8080, 8088, 9090, 12345, 23456, 3456, 4567):
+            probe = socket.socket()
+            try:
+                probe.bind(("localhost", cand))
+                free.append(cand)
+            except OSError:
+                pass
+            finally:
+                probe.close()
+        hint = "".join(
+            f"  python tools/get_id_token.py --port {c}\n"
+            f"      → Callback URL 加 http://localhost:{c}/callback\n"
+            for c in free[:3])
+        raise SystemExit(
+            f"綁不上 localhost:{args.port}（{e}）。\n"
+            f"這個 port 被別的程式佔著。改用別的，並在 Console 的 Callback URL\n"
+            f"多加一行（LINE 允許一個 channel 設多個 callback）：\n\n" + hint)
+
     print("在瀏覽器完成登入。沒有自動開啟的話手動貼上：\n")
     print(f"  {url}\n")
     try:
         webbrowser.open(url)
     except Exception:
         pass
-
-    server = HTTPServer(("localhost", args.port), Catch)
-    server.timeout = 300
-    # 瀏覽器可能先來要 favicon，所以要收到帶參數的那一次才停
-    while not _result:
+    server.timeout = 20
+    # 瀏覽器可能先來要 favicon，所以要收到帶參數的那一次才停。
+    # handle_request() 逾時會直接返回，沒有這個上限就會空轉到天荒地老
+    deadline = time.time() + 300
+    while not _result and time.time() < deadline:
         server.handle_request()
+    if not _result:
+        raise SystemExit("等了 5 分鐘沒有等到瀏覽器轉回來。"
+                         "確認 Callback URL 有加 " + redirect)
 
     if "code" not in _result:
         raise SystemExit(f"沒有拿到授權碼：{_result}")
