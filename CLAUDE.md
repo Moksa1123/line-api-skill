@@ -100,8 +100,14 @@ python tools/check_links.py --md
 python tools/audit_coverage.py      # A/B/C/E 應為 0（Template 基底除外）
 python tools/check_docs.py          # 文件數字過期會 exit 1，--fix 可自動更正
 
+# 對外部真值的驗證（需要憑證／網路）
+python tools/check_endpoints.py     # 121 條路徑是否存在。一律送 PATCH——
+                                    # 沒有任何端點支援它，所以永遠不會執行到
+                                    # 真的操作。真路徑回 405、假路徑回 404
+python tools/check_liff_sdk.py      # liff-api.csv 對照實際發佈的 SDK
+
 # 測試
-python line-api/scripts/test_line.py            # 離線 50 項
+python line-api/scripts/test_line.py            # 離線 52 項
 python line-api/scripts/test_line.py --live     # 加 6 項實打 LINE API
 
 # 技能本身的工具
@@ -132,6 +138,11 @@ python line-api/scripts/lineapi.py info
 - webhook 逐欄位表涵蓋所有事件，且共同屬性型別正確
 - review.py 對自家 `examples/` 零誤報，且七類問題（拼錯的端點、錯的主機、
   寫死的憑證、簽章三種寫法、已停服 API、訊息 JSON 錯字）一個都不漏
+- 驗證器與 LINE 官方驗證端點的判斷一致（實測 700 筆生成語料校準過的
+  32 條規則：UTF-16 字數、Flex 對未知屬性與 null 的嚴格度、型別轉換的
+  方向性、色碼與尺寸格式、action 放置限制、圖文選單尺寸範圍）
+- 官方文件裡 13 種 webhook 事件的範例一個都不能被誤判
+- 搜尋抽樣召回率不得低於 97%，以及 12 個自然說法的查詢要命中
 
 新增功能請一併補測試。
 

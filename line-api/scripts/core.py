@@ -387,6 +387,21 @@ def primary_boost(query: str, row: dict, cfg: dict) -> float:
         qt = [t for t in q.split() if t]
         if qt and all(t in primary for t in qt):
             boost += 1.5
+    # 查詢字串剛好就是某個識別欄位的完整值——那一列講的就是這個東西。
+    # primary 只看 search_cols[0]，而屬性型的域（message / flex /
+    # webhook_field / response）的第一欄是 type 或 operation_id，
+    # 於是查屬性名完全拿不到加權：查 source 會被「描述裡提到 source」
+    # 的列蓋過去，查 flex 排第一的是 separator。
+    # 只認「沒有空白的完整值」，避免長描述剛好等於查詢時亂加分。
+    if q and " " not in q:
+        for col in cfg["search_cols"]:
+            if col in ("description", "note", "purpose"):
+                continue          # 散文欄位剛好等於查詢是巧合，不是身分
+            v = _norm(row.get(col, ""))
+            if v == q:
+                boost += 4.0
+                break
+
     # prefer the more specific (shorter) primary field among equals
     boost += max(0.0, 1.0 - len(primary) / 120.0)
     return boost

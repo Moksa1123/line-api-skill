@@ -150,7 +150,7 @@ python scripts/review.py ./src --format json           # 給 CI 接
 | `signature.py` | webhook 簽章；channel access token（含純 Python 實作的 RS256 JWT） |
 | `lineapi.py` | 零依賴 Messaging API client，自動判斷該打哪個主機 |
 | `review.py` | 審既有程式碼：已停服 API、主機打錯、簽章寫法、端點拼錯、訊息 JSON 錯字 |
-| `test_line.py` | 50 項離線測試 + 6 項線上測試 |
+| `test_line.py` | 52 項離線測試 + 6 項線上測試 |
 
 ## 資料怎麼來的
 
@@ -162,7 +162,7 @@ https://developers.line.biz/llms.txt        github.com/line/line-openapi
 line-api/data/*.csv    ← 交叉驗證：文件端點 ⊇ OpenAPI 端點
 ```
 
-四道獨立把關，每一道都實際抓到過真的錯誤：
+六道獨立把關，每一道都實際抓到過真的錯誤：
 
 | 把關 | 檢查什麼 |
 |---|---|
@@ -170,6 +170,8 @@ line-api/data/*.csv    ← 交叉驗證：文件端點 ⊇ OpenAPI 端點
 | `audit_coverage.py` | 文件寫過的欄位是否都進了資料集 |
 | `check_links.py` | 每條文件連結是否有效（會識破 SPA 的假 200） |
 | `check_docs.py` | README 裡的數字是否與實際資料一致 |
+| `check_endpoints.py` | 121 條路徑是否存在 —— 一律送 PATCH，沒有端點支援它，永遠執行不到真的操作 |
+| `check_liff_sdk.py` | 記錄的 LIFF API 是否都在實際發佈的 SDK 裡 |
 
 抓下來的頁面放在 `.docs-cache/`，**已 git 忽略、絕不發佈** —— 那是 LY Corporation 的內容。
 本倉庫只發佈萃取後的資料集與自撰的說明。

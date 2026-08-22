@@ -567,6 +567,96 @@ OFFICIAL_WEBHOOK_SAMPLES = {
     }
 
 
+@check("search: 資料集裡的東西查得回來（抽樣召回率）")
+def t_search_recall():
+    """拿每一列自己的識別欄位當查詢，看它回不回得來。
+
+    手寫幾十組期望值只會固化寫的人的假設，而且查不回來的資料等於不存在，
+    是最容易默默壞掉又沒人發現的一種。全資料集 3500 列跑過一次是
+    99.03% 召回、96.83% 第一名命中；這裡抽樣跑，門檻設在 97%，
+    掉下去就是搜尋或資料出了事。
+
+    剩下那不到 1% 是「同一個字串本來就有多個合理答案」——查 source
+    回傳 Source 物件的欄位、查 video 回傳影片訊息的欄位，都是對的。
+    """
+    probes = {
+        "endpoint": ("title", ["method", "path"]),
+        "parameter": ("parameter", ["endpoint", "parameter"]),
+        "message": ("property", ["type", "property"]),
+        "flex": ("property", ["type", "property"]),
+        "action": ("property", ["type", "property"]),
+        "webhook": ("event", ["event"]),
+        "response": ("property", ["operation_id", "property"]),
+        "guide": ("title", ["doc_url"]),
+        "faq": ("question", ["question"]),
+        "term": ("term", ["term"]),
+        "url_scheme": ("scheme", ["scheme"]),
+        "sdk_api": ("name", ["platform", "name"]),
+        "limit": ("field", ["schema", "field"]),
+    }
+    hit = total = 0
+    weak = []
+    for domain, (qcol, idcols) in probes.items():
+        rows, _ = core.load_csv(domain)
+        if not rows:
+            continue
+        out_cols = core.CSV_CONFIG[domain]["output_cols"]
+        idcols = [c for c in idcols if c in out_cols] or [qcol]
+        counts = {}
+        for r in rows:
+            counts[(r.get(qcol) or "").strip()] = counts.get((r.get(qcol) or "").strip(), 0) + 1
+        step = max(1, len(rows) // 12)
+        for row in rows[::step]:
+            q = (row.get(qcol) or "").strip()
+            if not q:
+                continue
+            total += 1
+            hits = core.search(q, domain=domain, max_results=5)
+            if counts[q] == 1:
+                want = tuple((row.get(c) or "") for c in idcols)
+                ok = want in [tuple((h.get(c) or "") for c in idcols) for h in hits]
+            else:
+                # 同名多列：回傳任一個同名的都算對，因為查詢本身沒有唯一解
+                ok = q in [(h.get(qcol) or "").strip() for h in hits]
+            if ok:
+                hit += 1
+            else:
+                weak.append(f"[{domain}] {q[:40]!r}")
+    rate = hit / total * 100
+    assert rate >= 97.0, f"召回率掉到 {rate:.1f}%（{total} 次查詢）：" + "; ".join(weak[:5])
+    return f"{total} 次查詢，召回率 {rate:.1f}%"
+
+
+@check("search: 自然說法要問得到對的東西")
+def t_search_intent():
+    """人不會用欄位名稱發問。這些是逐一人工確認過答案正確的查詢——
+    中文、英文、口語都有，每一條都對應到一個具體的錯誤答案風險。"""
+    cases = [
+        # (查詢, 域, 命中判斷函式的說明, 檢查)
+        ("send push message", "endpoint", lambda h: h["path"] == "/v2/bot/message/push"),
+        ("圖文選單", "richmenu", lambda h: True),
+        ("輪播", "message", lambda h: "carousel" in (h.get("type") or "")),
+        ("chatBarText", "richmenu", lambda h: h["property"] == "chatBarText"),
+        ("quick reply", "message", lambda h: "uick" in str(h)),
+        ("aspectMode", "flex", lambda h: h["property"] == "aspectMode"),
+        ("postback", "webhook", lambda h: h["event"] == "postback"),
+        ("scanCodeV2", "liff", lambda h: "scanCodeV2" in (h.get("name") or "")),
+        ("加好友", "url_scheme", lambda h: True),
+        ("簽章驗證失敗", "troubleshoot", lambda h: True),
+        ("429", "error", lambda h: "429" in (h.get("code_or_message") or "")),
+        ("get bot info", "response", lambda h: h["operation_id"] == "getBotInfo"),
+    ]
+    bad = []
+    for query, domain, ok in cases:
+        hits = core.search(query, domain=domain, max_results=5)
+        if not hits:
+            bad.append(f"{query!r} 在 {domain} 查不到任何東西")
+        elif not any(ok(h) for h in hits):
+            bad.append(f"{query!r} 前五名沒有對的答案（得到 {hits[0]}）")
+    assert not bad, "; ".join(bad)
+    return f"{len(cases)} 個自然查詢都命中"
+
+
 @check("validate: 官方文件裡的 webhook 事件範例一個都不能被誤判")
 def t_validate_webhook():
     """13 個事件的官方範例逐字照抄，加上四種壞掉的 payload。

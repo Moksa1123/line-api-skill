@@ -153,7 +153,7 @@ python scripts/review.py ./src --format json           # CI 연동용
 | `signature.py` | webhook 서명, 채널 액세스 토큰(순수 Python RS256 JWT 구현 포함) |
 | `lineapi.py` | 의존성 없는 Messaging API 클라이언트. 호스트를 자동 분기 |
 | `review.py` | 기존 코드 점검: 종료된 API, 잘못된 호스트, 서명 처리, 엔드포인트 오타, 메시지 JSON |
-| `test_line.py` | 오프라인 50개 + 라이브 6개 테스트 |
+| `test_line.py` | 오프라인 52개 + 라이브 6개 테스트 |
 
 ## 데이터를 만드는 방법
 
@@ -165,7 +165,7 @@ https://developers.line.biz/llms.txt        github.com/line/line-openapi
 line-api/data/*.csv    ← 교차 검증: 문서의 엔드포인트 ⊇ OpenAPI의 엔드포인트
 ```
 
-네 개의 독립된 검사. 모두 실제로 오류를 잡아낸 적이 있습니다:
+여섯 개의 독립된 검사. 모두 실제로 오류를 잡아낸 적이 있습니다:
 
 | 검사 | 확인하는 것 |
 |---|---|
@@ -173,6 +173,8 @@ line-api/data/*.csv    ← 교차 검증: 문서의 엔드포인트 ⊇ OpenAPI�
 | `audit_coverage.py` | 문서에 있는 필드가 모두 데이터셋에 들어갔는지 |
 | `check_links.py` | 모든 문서 URL이 유효한지 (SPA의 가짜 200도 탐지) |
 | `check_docs.py` | README의 숫자가 실제 데이터와 일치하는지 |
+| `check_endpoints.py` | 121개 경로가 실재하는지 —— 어떤 엔드포인트도 지원하지 않는 PATCH로 탐지하므로 실제 작업은 절대 실행되지 않습니다 |
+| `check_liff_sdk.py` | 기록된 LIFF API가 배포된 SDK에 실재하는지 |
 
 수집한 페이지는 `.docs-cache/`에 있으며 **git에서 제외되고 공개되지 않습니다**
 —— 그 내용은 LY Corporation의 것입니다. 이 저장소가 공개하는 것은 거기서 도출한

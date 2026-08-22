@@ -158,7 +158,7 @@ never recommends a dead API.
 | `signature.py` | Webhook signature; channel access tokens incl. a pure-Python RS256 JWT |
 | `lineapi.py` | Zero-dependency Messaging API client; routes `api-data.line.me` for you |
 | `review.py` | Audits code you already have: dead APIs, wrong host, signature handling, typo'd endpoints, bad message JSON |
-| `test_line.py` | 50 offline tests + 6 live tests |
+| `test_line.py` | 52 offline tests + 6 live tests |
 
 ## How the Data Is Built
 
@@ -170,7 +170,7 @@ https://developers.line.biz/llms.txt        github.com/line/line-openapi
 line-api/data/*.csv    ← cross-checked: docs endpoints ⊇ OpenAPI endpoints
 ```
 
-Four independent guards, each of which has caught real mistakes:
+Six independent guards, each of which has caught real mistakes:
 
 | Guard | Checks |
 |---|---|
@@ -178,6 +178,8 @@ Four independent guards, each of which has caught real mistakes:
 | `audit_coverage.py` | every documented field made it into the dataset |
 | `check_links.py` | every doc URL resolves (detects the SPA's fake 200s) |
 | `check_docs.py` | the numbers in this README match the actual data |
+| `check_endpoints.py` | all 121 endpoint paths exist — probed with PATCH, which no endpoint supports, so no real operation ever runs |
+| `check_liff_sdk.py` | every documented LIFF API exists in the shipped SDK |
 
 The scraped pages live in `.docs-cache/`, which is **git-ignored and never
 published** — that content belongs to LY Corporation. This repository ships only the

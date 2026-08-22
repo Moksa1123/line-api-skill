@@ -156,7 +156,7 @@ python scripts/review.py ./src --format json           # CI 向け
 | `signature.py` | webhook 署名、チャネルアクセストークン（純 Python の RS256 JWT 実装込み） |
 | `lineapi.py` | 依存ゼロの Messaging API クライアント。ホストを自動で振り分け |
 | `review.py` | 既存コードの点検：提供終了 API、ホスト誤り、署名の扱い、エンドポイントのタイポ、メッセージ JSON |
-| `test_line.py` | オフライン 50 項目 + ライブ 6 項目 |
+| `test_line.py` | オフライン 52 項目 + ライブ 6 項目 |
 
 ## データの作り方
 
@@ -168,7 +168,7 @@ https://developers.line.biz/llms.txt        github.com/line/line-openapi
 line-api/data/*.csv    ← 相互検証：ドキュメントのエンドポイント ⊇ OpenAPI のエンドポイント
 ```
 
-4 つの独立した検査。いずれも実際に誤りを検出した実績があります：
+6 つの独立した検査。いずれも実際に誤りを検出した実績があります：
 
 | 検査 | 内容 |
 |---|---|
@@ -176,6 +176,8 @@ line-api/data/*.csv    ← 相互検証：ドキュメントのエンドポイ�
 | `audit_coverage.py` | ドキュメントに書かれた項目がすべてデータセットに入ったか |
 | `check_links.py` | 全ドキュメント URL が有効か（SPA の偽 200 も検出） |
 | `check_docs.py` | README の数値が実データと一致しているか |
+| `check_endpoints.py` | 121 のパスが実在するか —— どの端点も対応しない PATCH で探るので、実際の操作は決して走りません |
+| `check_liff_sdk.py` | 記録した LIFF API が配信中の SDK に実在するか |
 
 取得したページは `.docs-cache/` に置かれ、**git 管理外・非公開**です
 —— その内容は LY Corporation に帰属します。本リポジトリが公開するのは、
