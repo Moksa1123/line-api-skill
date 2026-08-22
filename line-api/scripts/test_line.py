@@ -36,6 +36,9 @@ import os
 import re
 import sys
 import traceback
+import urllib.error
+import urllib.parse
+import urllib.request
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -2081,8 +2084,31 @@ def live_tests() -> None:
         return (f"alg={alg}，我們的驗簽與 LINE 一致，"
                 f"回傳 {len(theirs)} 個欄位資料集全都有記")
 
+    @check("live: 讀得懂 LINE 真實的 JWKS（ES256 的 ID token 要用它驗）")
+    def t_jwks_live():
+        """ES256 的簽章數學有 RFC 6979 的向量把關，但「讀不讀得懂 LINE 給的
+        金鑰」是另一回事——JWKS 的欄位長怎樣、base64url 有沒有 padding、
+        座標是不是大端序，任何一項理解錯了都會在正式環境才爆。
+
+        所以真的去抓一次，把每一把 P-256 公鑰代進曲線方程式
+        y² = x³ + ax + b (mod p) 驗算。過得了代表我們解出來的座標是對的。
+        """
+        keys = sig._fetch_jwks()
+        assert keys, "JWKS 是空的"
+        p256 = [k for k in keys if k.get("crv") == "P-256"]
+        assert p256, f"沒有 P-256 金鑰（拿到 {[k.get('crv') for k in keys[:3]]}）"
+        # P-256 的 b 常數
+        b = 0x5ac635d8aa3a93e7b3ebbd55769886bc651d06b0cc53b0f63bce3c3e27d2604b
+        for k in p256:
+            assert k.get("alg") == "ES256" and k.get("kid"), k
+            x, y = sig._jwk_int(k, "x"), sig._jwk_int(k, "y")
+            lhs = y * y % sig.P256_P
+            rhs = (x * x * x + sig.P256_A * x + b) % sig.P256_P
+            assert lhs == rhs, f"kid={k['kid'][:12]} 的座標不在 P-256 曲線上"
+        return f"{len(p256)} 把 P-256 金鑰，座標全部通過曲線方程式"
+
     for fn in (t_info, t_quota, t_webhook, t_validate_live, t_stateless, t_jwt_live,
-               t_id_token_live):
+               t_id_token_live, t_jwks_live):
         fn()
 
 

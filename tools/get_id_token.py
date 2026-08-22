@@ -64,12 +64,25 @@ _result: dict = {}
 
 
 class Catch(BaseHTTPRequestHandler):
+    """只收 LINE 轉回來的那一次。
+
+    localhost 上什麼都可能來敲門——瀏覽器要 favicon、別的程式在輪詢
+    （測試機上就有東西一直送 ?v=4.1 過來）。只要是帶參數的請求就收下的話，
+    會把那些當成授權回呼，然後說「沒有拿到授權碼」。
+    所以路徑要對，而且必須帶 code 或 error。
+    """
+
     def do_GET(self):                                   # noqa: N802
-        q = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
-        _result.update({k: v[0] for k, v in q.items()})
-        body = ("完成，可以關掉這個分頁了。" if "code" in q
-                else f"沒有拿到授權碼：{q.get('error_description', q)}")
-        self.send_response(200)
+        parsed = urllib.parse.urlparse(self.path)
+        q = urllib.parse.parse_qs(parsed.query)
+        mine = parsed.path.rstrip("/") == "/callback" and ("code" in q or "error" in q)
+        if mine:
+            _result.update({k: v[0] for k, v in q.items()})
+            body = ("完成，可以關掉這個分頁了。" if "code" in q
+                    else f"授權沒有成功：{q.get('error_description', q)}")
+        else:
+            body = "這不是授權回呼，忽略。"
+        self.send_response(200 if mine else 404)
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.end_headers()
         self.wfile.write(f"<meta charset=utf-8><h2>{body}</h2>".encode())
