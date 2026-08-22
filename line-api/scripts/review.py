@@ -44,8 +44,12 @@ SKIP_DIRS = {"node_modules", ".git", "vendor", "dist", "build", "__pycache__",
              "coverage", "htmlcov", ".turbo", ".nuxt", ".output", "out",
              "storybook-static", ".svelte-kit", ".pytest_cache", ".mypy_cache"}
 
-TEST_FILE = re.compile(r"(?i)(^|[/\\.])(tests?|__tests__|spec|specs|e2e|fixtures?)"
-                       r"([/\\.]|$)|\.(test|spec)\.[a-z]+$")
+TEST_FILE = re.compile(
+    r"(?i)"
+    r"(^|[/\\.])(tests?|__tests__|spec|specs|e2e|fixtures?)([/\\.]|$)"  # tests/ __tests__/
+    r"|\.(test|spec)\.[a-z]+$"                                          # foo.test.ts
+    r"|(^|[/\\])test_[^/\\]*$"                                          # pytest: test_foo.py
+    r"|_test\.[a-z]+$")                                                 # Go: foo_test.go
 
 
 def is_test_file(path: Path) -> bool:
@@ -140,6 +144,11 @@ SEVERITY_ORDER = {"error": 0, "warning": 1, "info": 2}
 # 這兩條講的是「專案有沒有做這件事」，不是「這一行寫錯了」，所以只報一次
 PROJECT_RULES = {"signature-missing", "idempotency"}
 
+# 測試檔本來就會寫進「壞的」值來斷言它們會被擋下來：已淘汰的 scheme、
+# 少一個必填欄位的訊息 JSON、假的 channel secret。那不是在用它們。
+# 其餘規則照常——測試裡把端點拼錯，那還是拼錯
+TEST_EXEMPT_RULES = {"deprecated", "message-json", "hardcoded-secret"}
+
 
 def rows(name: str) -> list[dict]:
     path = DATA / name
@@ -213,10 +222,13 @@ DEPRECATED_TOKENS = [
     #
     # `line://ti/p/...`：真的在指一個網址，明確是在用它
     (r"line://[A-Za-z0-9]", "line:// URL scheme", "error", ""),
-    # `/^line:\/\//`：一個「關於 line:// 的樣式」。放進白名單是接受它、
-    # 放進 if 是擋掉它，兩者長得一模一樣，正規式分不出來——所以只提醒，
-    # 不斷定。用 error 講一件分不出對錯的事，下次真的錯了也沒人看
-    (r"line:\\/\\/", "line:// URL scheme", "warning",
+    # `/^line:\/\//` 或 `/^(https:|tel:|line:|mailto:)/`：一個「關於 line: 的
+    # 樣式」。放進白名單是接受它、放進 if 是擋掉它，兩者長得一模一樣，
+    # 正規式分不出來——所以只提醒，不斷定。用 error 講一件分不出對錯的事，
+    # 下次真的錯了也沒人看。
+    # 前面必須是 ^ ( 或 |，才確定是在比對 scheme：散文裡的「不要用 line://」
+    # 前面是空白或標點，而 scheme 白名單一定長在這三個字元後面
+    (r"[|^(]line:", "line:// URL scheme", "warning",
      "這是一個比對 line:// 的樣式；請確認是在擋它，而不是把它放進白名單"),
     (r'"type"\s*:\s*"filler"', "Flex filler component", "error", ""),
     (r"'type'\s*:\s*'filler'", "Flex filler component", "error", ""),
@@ -286,11 +298,12 @@ def review_text(path: Path, text: str, known, data_host, project=None) -> list[F
     dep_rows = {d["item"]: d for d in rows("deprecations.csv")}
 
     def add(sev, rule, ln, msg, fix="", doc=""):
+        if is_test and rule in TEST_EXEMPT_RULES:
+            return
         out.append(Finding(sev, rule, rel, ln, msg, fix, doc))
 
     # ---- 1. 已停用 / 已淘汰 -------------------------------------------
-    # 測試檔會為了斷言「這個值要被擋下來」而寫進已淘汰的值，那不是在用它
-    for pattern, item, sev, note in ([] if is_test else DEPRECATED_TOKENS):
+    for pattern, item, sev, note in DEPRECATED_TOKENS:
         for m in re.finditer(pattern, text):
             ln = text[:m.start()].count("\n") + 1
             info = dep_rows.get(item, {})

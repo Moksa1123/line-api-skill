@@ -188,8 +188,10 @@ python scripts/review.py ./src --min-severity error   # 只看必須修的
 - **`signature-missing` 與 `idempotency` 是專案層級的。** 分層寫的專案會把驗簽放進
   `signature.ts`、去重放進 `webhook.ts`；逐檔判斷會對著每一個沒寫的檔案各報一次，
   包含正在做這件事的那一支。這兩條只報一次，而且全專案都沒做才報。
-- **測試檔不套 `deprecated`。** 測試會刻意寫進已淘汰的值來斷言「這個要被擋下來」，
-  那不是在用它。
+- **測試檔不套 `deprecated` / `message-json` / `hardcoded-secret`。** 測試會刻意寫進
+  已淘汰的值、少一個必填欄位的 JSON、假的 channel secret，來斷言它們會被擋下來，
+  那不是在用它們。認得四種命名慣例：`foo.test.ts`、`tests/`、`test_foo.py`、`foo_test.go`。
+  其餘規則照常 —— 測試裡把端點拼錯，那還是拼錯。
 
 零誤報這件事有兩個測試守著：自家 `examples/` 6 個檔要零筆，
 以及上面三種寫法都不得觸發。
