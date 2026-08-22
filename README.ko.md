@@ -9,14 +9,14 @@ AI 어시스턴트가 기억이 아니라 명세를 근거로 답하게 됩니�
 <p>
   <img src="https://img.shields.io/badge/endpoints-121-success?style=flat-square" alt="121 endpoints">
   <img src="https://img.shields.io/badge/fields-1584-blue?style=flat-square" alt="1584 fields">
-  <img src="https://img.shields.io/badge/dataset-3675%20rows-orange?style=flat-square" alt="3675 rows">
+  <img src="https://img.shields.io/badge/dataset-3898%20rows-orange?style=flat-square" alt="3898 rows">
   <img src="https://img.shields.io/badge/platforms-8-9cf?style=flat-square" alt="8 platforms">
   <img src="https://img.shields.io/badge/python-3.9%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.9+">
   <img src="https://img.shields.io/badge/dependencies-0-brightgreen?style=flat-square" alt="zero dependencies">
 </p>
 
 ```
-121개 엔드포인트 · 1,584개 요청/응답 필드 · 295개 응답 필드
+121개 엔드포인트 · 1,584개 요청/응답 필드 · 518개 응답 필드
 233개 오류 코드 · 247개 webhook 필드 · 136개 Flex 컴포넌트 · 44개 URL 스킴
 58개 버전에 걸친 35개 LIFF API · 80개 모바일 SDK 타입 · 92개 공식 FAQ
 ```
@@ -153,7 +153,7 @@ python scripts/review.py ./src --format json           # CI 연동용
 | `signature.py` | webhook 서명, 채널 액세스 토큰(순수 Python RS256 JWT 구현 포함) |
 | `lineapi.py` | 의존성 없는 Messaging API 클라이언트. 호스트를 자동 분기 |
 | `review.py` | 기존 코드 점검: 종료된 API, 잘못된 호스트, 서명 처리, 엔드포인트 오타, 메시지 JSON |
-| `test_line.py` | 오프라인 49개 + 라이브 6개 테스트 |
+| `test_line.py` | 오프라인 50개 + 라이브 6개 테스트 |
 
 ## 데이터를 만드는 방법
 

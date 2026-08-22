@@ -7,7 +7,7 @@ user-invocable: true
 # LINE Platform 開發技能
 
 > 資料全部由 [`line/line-openapi`](https://github.com/line/line-openapi) 官方 OpenAPI 規格
-> 與 https://developers.line.biz 官方文件自動萃取，共 **3675 筆**。
+> 與 https://developers.line.biz 官方文件自動萃取，共 **3898 筆**。
 > 每一筆都附官方文件連結，且連結經 `tools/check_links.py` 實際驗證過。
 
 ## 何時使用
@@ -115,6 +115,15 @@ python scripts/search.py "rich menu" --domain all --format json
   只收 http / https / line / tel 四種 scheme。
 - **label**：規格由「action 放在哪」決定，不是由 action 型別決定 ——
   quick reply 必填上限 20、Flex button 必填上限 40、image carousel 選填上限 12。
+
+**`--as webhook` 是唯一方向相反的模式**：驗的是收到的東西，用途是確認
+handler 對欄位的假設站不站得住。收訊端的「必填」意思不一樣——規格說 LINE 會送，
+不代表你一定收得到（官方自己的 follow 與 message 範例就沒有 `follow` 與 `quoteToken`），
+所以那裡只提醒「讀取前先判斷」，不報錯。
+
+```bash
+python scripts/validate.py event.json --as webhook
+```
 
 也驗圖文選單（`--as richmenu`，走 `/v2/bot/richmenu/validate` 的規則）：
 寬 800–2500、高 ≥250、長寬比 ≥1.45 —— 官方寫的是範圍，不是 Console 上那六種預設尺寸。

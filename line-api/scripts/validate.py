@@ -62,13 +62,24 @@ UNIONS = {
     "FlexComponent": ("flex-components.csv", "flex-component"),
     "FlexContainer": ("flex-components.csv", "flex-container"),
     "FlexBoxBackground": ("flex-components.csv", "flex-background"),
+    # webhook 收到的東西。以前只當資料放著，沒有任何地方會去驗它——
+    # 可是寫 bot 最常出錯的就是「以為某個欄位一定存在」
+    "Event": ("webhook-properties.csv", "event"),
+    "MessageContent": ("webhook-properties.csv", "message-content"),
+    "Source": ("webhook-properties.csv", "source"),
+    "Mentionee": ("webhook-properties.csv", "mentionee"),
+    "MembershipContent": ("webhook-properties.csv", "membership-content"),
+    "ModuleContent": ("webhook-properties.csv", "module-content"),
 }
 # plain named object schemas
 NAMED_FILES = [
     ("message-objects.csv", "message-part"),
     ("flex-components.csv", "flex-style"),
     ("richmenu.csv", "richmenu"),
+    ("webhook-properties.csv", "webhook-object"),
 ]
+
+WEBHOOK_FILE = "webhook-properties.csv"
 
 PRIMITIVES = {"string", "integer", "number", "boolean", "object", "array", ""}
 
@@ -273,6 +284,11 @@ class Registry:
         # Needed because a property's value_type names the concrete schema
         # ("body": FlexBox) while the union table is keyed by the type tag.
         self.by_schema: dict[str, dict] = {}
+        # webhook 側自成一個命名空間。Emoji 在兩邊都存在但不是同一個東西：
+        # 送出時只有 index/productId/emojiId，收到時多一個 length。
+        # 混在同一張表裡，送出的 emoji 就會被要求要有 length——
+        # 這是加了 webhook 驗證之後才浮出來的，靠自家範例的零誤報測試擋下。
+        self.by_schema_wh: dict[str, dict] = {}
 
         for union, (fname, group) in UNIONS.items():
             table: dict[str, dict] = {}
@@ -280,7 +296,8 @@ class Registry:
                 if row.get("group") != group:
                     continue
                 table.setdefault(row["type"], {})[row["property"]] = row
-                self.by_schema.setdefault(row["schema"], {})[row["property"]] = row
+                schemas = self.by_schema_wh if fname == WEBHOOK_FILE else self.by_schema
+                schemas.setdefault(row["schema"], {})[row["property"]] = row
                 self.doc[f"{union}:{row['type']}"] = row.get("doc_url", "")
                 self.doc[row["schema"]] = row.get("doc_url", "")
             self.unions[union] = table
@@ -290,7 +307,8 @@ class Registry:
                 if row.get("group") != group:
                     continue
                 self.named.setdefault(row["schema"], {})[row["property"]] = row
-                self.by_schema.setdefault(row["schema"], {})[row["property"]] = row
+                table = self.by_schema_wh if fname == WEBHOOK_FILE else self.by_schema
+                table.setdefault(row["schema"], {})[row["property"]] = row
                 self.doc[row["schema"]] = row.get("doc_url", "")
 
     def union_types(self, union: str) -> list[str]:
@@ -320,6 +338,9 @@ class Problem:
 class Validator:
     def __init__(self) -> None:
         self.problems: list[Problem] = []
+        # 現在驗的是「收到的 webhook」還是「要送出去的東西」。
+        # 兩側有同名但不同定義的 schema（Emoji），查表時要分得開
+        self.webhook = False
 
     def err(self, path: str, msg: str, doc: str = "") -> None:
         self.problems.append(Problem("error", path, msg, doc))
@@ -347,7 +368,7 @@ class Validator:
         if vtype in UNIONS:
             self.check_typed(path, value, vtype)
             return
-        if vtype in REG.by_schema:
+        if self._schema(vtype) is not None:
             self.check_schema(path, value, vtype)
             return
 
@@ -435,11 +456,18 @@ class Validator:
         else:
             self.err(path, f"必須是{expected}，實際是 {got}")
 
+    def _schema(self, name: str):
+        """依目前驗的是哪一側取 schema。webhook 優先查 webhook 那張表，
+        查不到再退回共用的——大部分名稱兩邊本來就不重疊。"""
+        if self.webhook:
+            return REG.by_schema_wh.get(name) or REG.by_schema.get(name)
+        return REG.by_schema.get(name)
+
     def check_any(self, path: str, value, vtype: str) -> None:
         """Dispatch a value by the type name the spec gives it."""
         if vtype in UNIONS:
             self.check_typed(path, value, vtype)
-        elif vtype in REG.by_schema:
+        elif self._schema(vtype) is not None:
             self.check_schema(path, value, vtype)
         elif vtype == "string" and not isinstance(value, str):
             self.err(path, f"必須是字串，實際是 {type(value).__name__}")
@@ -475,7 +503,7 @@ class Validator:
             self._check_flex_container(path, obj, tag, doc)
 
     def check_schema(self, path: str, obj, schema: str) -> None:
-        props = REG.by_schema.get(schema)
+        props = self._schema(schema)
         if props is None:
             return
         if not isinstance(obj, dict):
@@ -576,7 +604,17 @@ class Validator:
     def _check_props(self, path: str, obj: dict, props: dict, doc: str) -> None:
         for name, spec in props.items():
             if spec.get("required") == "true" and name not in obj:
-                self.err(f"{path}.{name}", f"缺少必填屬性 {name}", doc)
+                if self.webhook:
+                    # 收訊端的「必填」意思不一樣：規格說 LINE 會送，不代表
+                    # 你一定收得到。官方自己的 follow 與 message 範例就沒有
+                    # follow 和 quoteToken——舊版本、舊事件都可能缺。
+                    # 對著實際收到的 payload 報 error 只會讓人關掉這個檢查；
+                    # 真正該提醒的是「不要假設它一定存在」。
+                    self.warn(f"{path}.{name}",
+                              f"規格說會有 {name}，但官方自己的範例就沒有；"
+                              f"讀取前先判斷，不要直接取用", doc)
+                else:
+                    self.err(f"{path}.{name}", f"缺少必填屬性 {name}", doc)
             elif spec.get("required") == "true" and obj.get(name) is None:
                 # 「有這個 key 但值是 null」跟「沒有這個 key」對 LINE 是同一件事，
                 # 但對「name in obj」不是——漏掉這一行，{"size": null} 就會過關
@@ -743,6 +781,26 @@ class Validator:
         for i, m in enumerate(arr):
             self.validate_message(m, f"{path}[{i}]")
 
+    def validate_webhook(self, body, path: str = "$") -> None:
+        """LINE 送進來的 webhook 請求主體，或單一事件。
+
+        方向跟其他模式相反：這裡驗的是「收到的東西」，用途是確認
+        handler 對欄位的假設站不站得住——replyToken 不是每種事件都有，
+        source.userId 在群組裡可能不存在，postback.params 只有特定 action
+        才會出現。這些踩到就是 KeyError，而且只在正式環境踩得到。
+        """
+        self.webhook = True
+        if isinstance(body, dict) and "events" in body:
+            self.check_schema(path, body, "CallbackRequest")
+            events = body.get("events")
+            if not isinstance(events, list):
+                self.err(f"{path}.events", "events 必須是陣列")
+                return
+            for i, ev in enumerate(events):
+                self.check_typed(f"{path}.events[{i}]", ev, "Event")
+            return
+        self.check_typed(path, body, "Event")
+
     def validate_richmenu(self, obj, path: str = "$") -> None:
         """圖文選單物件。走的是另一支端點（POST /v2/bot/richmenu/validate），
         規則跟訊息不一樣，所以獨立一個入口。"""
@@ -817,6 +875,10 @@ def detect_kind(data) -> str:
             return "flex"
         if "chatBarText" in data and "areas" in data:
             return "richmenu"
+        if "destination" in data and "events" in data:
+            return "webhook"
+        if "timestamp" in data and "source" in data and "type" in data:
+            return "webhook"
         if "type" in data:
             return "message"
     return "message"
@@ -834,6 +896,8 @@ def run(data, kind: str) -> Validator:
         v.check_typed("$", data, "Action")
     elif kind == "richmenu":
         v.validate_richmenu(data)
+    elif kind == "webhook":
+        v.validate_webhook(data)
     else:
         v.validate_message(data)
     return v
@@ -844,7 +908,7 @@ def main() -> int:
     ap.add_argument("file", help="JSON 檔路徑，或 - 讀 stdin")
     ap.add_argument("--as", dest="kind",
                     choices=["auto", "message", "messages", "flex", "action",
-                             "richmenu", "reply", "push", "multicast",
+                             "richmenu", "webhook", "reply", "push", "multicast",
                              "broadcast", "narrowcast"],
                     default="auto")
     ap.add_argument("--format", choices=["text", "json"], default="text")

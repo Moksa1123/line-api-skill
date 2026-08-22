@@ -101,7 +101,7 @@ python tools/audit_coverage.py      # A/B/C/E 應為 0（Template 基底除外�
 python tools/check_docs.py          # 文件數字過期會 exit 1，--fix 可自動更正
 
 # 測試
-python line-api/scripts/test_line.py            # 離線 49 項
+python line-api/scripts/test_line.py            # 離線 50 項
 python line-api/scripts/test_line.py --live     # 加 6 項實打 LINE API
 
 # 技能本身的工具

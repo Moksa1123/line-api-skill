@@ -9,14 +9,14 @@ AI assistant answers from the spec instead of from memory.
 <p>
   <img src="https://img.shields.io/badge/endpoints-121-success?style=flat-square" alt="121 endpoints">
   <img src="https://img.shields.io/badge/fields-1584-blue?style=flat-square" alt="1584 fields">
-  <img src="https://img.shields.io/badge/dataset-3675%20rows-orange?style=flat-square" alt="3675 rows">
+  <img src="https://img.shields.io/badge/dataset-3898%20rows-orange?style=flat-square" alt="3898 rows">
   <img src="https://img.shields.io/badge/platforms-8-9cf?style=flat-square" alt="8 platforms">
   <img src="https://img.shields.io/badge/python-3.9%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.9+">
   <img src="https://img.shields.io/badge/dependencies-0-brightgreen?style=flat-square" alt="zero dependencies">
 </p>
 
 ```
-121 endpoints · 1,584 request/response fields · 295 response fields
+121 endpoints · 1,584 request/response fields · 518 response fields
 233 error codes · 247 webhook fields · 136 Flex components · 44 URL schemes
 35 LIFF APIs across 58 SDK versions · 80 mobile SDK types · 92 official FAQs
 ```
@@ -158,7 +158,7 @@ never recommends a dead API.
 | `signature.py` | Webhook signature; channel access tokens incl. a pure-Python RS256 JWT |
 | `lineapi.py` | Zero-dependency Messaging API client; routes `api-data.line.me` for you |
 | `review.py` | Audits code you already have: dead APIs, wrong host, signature handling, typo'd endpoints, bad message JSON |
-| `test_line.py` | 49 offline tests + 6 live tests |
+| `test_line.py` | 50 offline tests + 6 live tests |
 
 ## How the Data Is Built
 

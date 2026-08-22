@@ -990,20 +990,54 @@ def build_responses(specs) -> list[dict]:
                             "doc_url": ext, "source": "openapi",
                         })
                         continue
-                    for pname, prop in info["properties"].items():
-                        rows.append({
-                            "operation_id": op.get("operationId", ""),
-                            "method": method.upper(), "host": host, "path": path,
-                            "status": str(status), "schema": name, "property": pname,
-                            "value_type": type_of(schemas, prop),
-                            "required": "true" if pname in info["required"] else "false",
-                            "enum": enum_of(prop),
-                            "max_length": max_of(prop),
-                            "description": one_line(
-                                prop.get("description") if isinstance(prop, dict) else ""),
-                            "doc_url": ext, "source": "openapi",
-                        })
+                    base = {
+                        "operation_id": op.get("operationId", ""),
+                        "method": method.upper(), "host": host, "path": path,
+                        "status": str(status), "schema": name,
+                        "doc_url": ext, "source": "openapi",
+                    }
+                    rows.extend(flatten_response(schemas, info, base))
     return rows
+
+
+def flatten_response(schemas: dict, info: dict, base: dict,
+                     prefix: str = "", seen: tuple = (), depth: int = 0) -> list[dict]:
+    """把回應 schema 攤平，物件與陣列裡的物件都要往下展開。
+
+    原本只攤第一層，於是 getRichMenuList 只查得到一個 `richmenus`，
+    裡面那 15 個欄位（richMenuId、size、areas、bounds、action…）完全查不到；
+    getMessageEvent 的統計數字全部住在 `overview` 底下，也一樣看不見。
+    這是拿真實 API 回應比對 responses.csv 時發現的。
+
+    seen 擋掉遞迴（Flex 那類自我巢狀的 schema），depth 上限避免爆炸。
+    """
+    out = []
+    for pname, prop in info["properties"].items():
+        vtype = type_of(schemas, prop)
+        path_name = f"{prefix}{pname}"
+        out.append({
+            **base, "property": path_name, "value_type": vtype,
+            "required": "true" if pname in info["required"] else "false",
+            "enum": enum_of(prop), "max_length": max_of(prop),
+            "description": one_line(
+                prop.get("description") if isinstance(prop, dict) else ""),
+        })
+        if depth >= 3:
+            continue
+        # 陣列取其元素型別，物件直接展開
+        inner = vtype[len("array<"):-1] if vtype.startswith("array<") else vtype
+        if inner in ("string", "integer", "number", "boolean", "object", "") or inner in seen:
+            continue
+        child = schemas.get(inner)
+        if not isinstance(child, dict):
+            continue
+        cinfo = resolve(schemas, child)
+        if not cinfo["properties"]:
+            continue
+        out += flatten_response(schemas, cinfo, base,
+                                prefix=f"{path_name}.", seen=seen + (inner,),
+                                depth=depth + 1)
+    return out
 
 
 WEBHOOK_DOC = "https://developers.line.biz/en/reference/messaging-api/#webhook-event-objects"

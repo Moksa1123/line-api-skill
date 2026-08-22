@@ -8,14 +8,14 @@
 <p>
   <img src="https://img.shields.io/badge/endpoints-121-success?style=flat-square" alt="121 endpoints">
   <img src="https://img.shields.io/badge/fields-1584-blue?style=flat-square" alt="1584 fields">
-  <img src="https://img.shields.io/badge/dataset-3675%20rows-orange?style=flat-square" alt="3675 rows">
+  <img src="https://img.shields.io/badge/dataset-3898%20rows-orange?style=flat-square" alt="3898 rows">
   <img src="https://img.shields.io/badge/platforms-8-9cf?style=flat-square" alt="8 platforms">
   <img src="https://img.shields.io/badge/python-3.9%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.9+">
   <img src="https://img.shields.io/badge/dependencies-0-brightgreen?style=flat-square" alt="zero dependencies">
 </p>
 
 ```
-121 個端點 · 1,584 個請求/回應欄位 · 295 個回應欄位
+121 個端點 · 1,584 個請求/回應欄位 · 518 個回應欄位
 233 筆錯誤碼 · 247 個 webhook 欄位 · 136 個 Flex 元件 · 44 個 URL scheme
 35 個 LIFF API 橫跨 58 個版本 · 80 個行動 SDK 型別 · 92 題官方 FAQ
 ```
@@ -150,7 +150,7 @@ python scripts/review.py ./src --format json           # 給 CI 接
 | `signature.py` | webhook 簽章；channel access token（含純 Python 實作的 RS256 JWT） |
 | `lineapi.py` | 零依賴 Messaging API client，自動判斷該打哪個主機 |
 | `review.py` | 審既有程式碼：已停服 API、主機打錯、簽章寫法、端點拼錯、訊息 JSON 錯字 |
-| `test_line.py` | 49 項離線測試 + 6 項線上測試 |
+| `test_line.py` | 50 項離線測試 + 6 項線上測試 |
 
 ## 資料怎麼來的
 

@@ -328,6 +328,293 @@ def t_validate_false_accepts():
     return f"{len(cases)} 個與 LINE 官方驗證器對照過的案例全部一致"
 
 
+# 官方文件 reference/messaging-api.md 的 webhook 事件範例，逐字照抄。
+# 技能會被複製到別人的環境，測試不能依賴 .docs-cache，所以嵌在這裡。
+OFFICIAL_WEBHOOK_SAMPLES = {
+        "message/text": {
+            "type": "message",
+            "message": {
+                "type": "text",
+                "id": "14353798921116",
+                "text": "Hello, world"
+            },
+            "timestamp": 1625665242211,
+            "source": {
+                "type": "user",
+                "userId": "U80696558e1aa831..."
+            },
+            "replyToken": "757913772c4646b784d4b7ce46d12671",
+            "mode": "active",
+            "webhookEventId": "01FZ74A0TDDPYRVKNK77XKC3ZR",
+            "deliveryContext": {
+                "isRedelivery": False
+            }
+        },
+        "follow": {
+            "type": "follow",
+            "timestamp": 1625665242214,
+            "source": {
+                "type": "user",
+                "userId": "Ufc729a925b3abef..."
+            },
+            "replyToken": "bb173f4d9cf64aed9d408ab4e36339ad",
+            "mode": "active",
+            "webhookEventId": "01FZ74ASS536FW97EX38NKCZQK",
+            "deliveryContext": {
+                "isRedelivery": False
+            }
+        },
+        "unfollow": {
+            "type": "unfollow",
+            "timestamp": 1625665242215,
+            "source": {
+                "type": "user",
+                "userId": "Ubbd4f124aee5113..."
+            },
+            "mode": "active",
+            "webhookEventId": "01FZ74B5Y0F4TNKA5SCAVKPEDM",
+            "deliveryContext": {
+                "isRedelivery": False
+            }
+        },
+        "join": {
+            "replyToken": "nHuyWiB7yP5Zw52FIkcQobQuGDXCTA",
+            "type": "join",
+            "mode": "active",
+            "timestamp": 1462629479859,
+            "source": {
+                "type": "group",
+                "groupId": "C4af4980629..."
+            },
+            "webhookEventId": "01FZ74A0TDDPYRVKNK77XKC3ZR",
+            "deliveryContext": {
+                "isRedelivery": False
+            }
+        },
+        "memberJoined": {
+            "replyToken": "0f3779fba3b349968c5d07db31eabf65",
+            "type": "memberJoined",
+            "mode": "active",
+            "timestamp": 1462629479859,
+            "source": {
+                "type": "group",
+                "groupId": "C4af4980629..."
+            },
+            "webhookEventId": "01FZ74A0TDDPYRVKNK77XKC3ZR",
+            "deliveryContext": {
+                "isRedelivery": False
+            },
+            "joined": {
+                "members": [
+                    {
+                        "type": "user",
+                        "userId": "U4af4980629..."
+                    },
+                    {
+                        "type": "user",
+                        "userId": "U91eeaf62d9..."
+                    }
+                ]
+            }
+        },
+        "unsend": {
+            "type": "unsend",
+            "mode": "active",
+            "timestamp": 1462629479859,
+            "source": {
+                "type": "group",
+                "groupId": "Ca56f94637c...",
+                "userId": "U4af4980629..."
+            },
+            "webhookEventId": "01FZ74A0TDDPYRVKNK77XKC3ZR",
+            "deliveryContext": {
+                "isRedelivery": False
+            },
+            "unsend": {
+                "messageId": "325708"
+            }
+        },
+        "videoPlayComplete": {
+            "replyToken": "nHuyWiB7yP5Zw52FIkcQobQuGDXCTA",
+            "type": "videoPlayComplete",
+            "mode": "active",
+            "timestamp": 1462629479859,
+            "source": {
+                "type": "user",
+                "userId": "U4af4980629..."
+            },
+            "webhookEventId": "01FZ74A0TDDPYRVKNK77XKC3ZR",
+            "deliveryContext": {
+                "isRedelivery": False
+            },
+            "videoPlayComplete": {
+                "trackingId": "track-id"
+            }
+        },
+        "beacon": {
+            "replyToken": "nHuyWiB7yP5Zw52FIkcQobQuGDXCTA",
+            "type": "beacon",
+            "mode": "active",
+            "timestamp": 1462629479859,
+            "source": {
+                "type": "user",
+                "userId": "U4af4980629..."
+            },
+            "webhookEventId": "01FZ74A0TDDPYRVKNK77XKC3ZR",
+            "deliveryContext": {
+                "isRedelivery": False
+            },
+            "beacon": {
+                "hwid": "d41d8cd98f",
+                "type": "enter"
+            }
+        },
+        "accountLink": {
+            "replyToken": "b60d432864f44d079f6d8efe86cf404b",
+            "type": "accountLink",
+            "mode": "active",
+            "source": {
+                "userId": "U91eeaf62d...",
+                "type": "user"
+            },
+            "timestamp": 1513669370317,
+            "webhookEventId": "01FZ74A0TDDPYRVKNK77XKC3ZR",
+            "deliveryContext": {
+                "isRedelivery": False
+            },
+            "link": {
+                "result": "ok",
+                "nonce": "xxxxxxxxxxxxxxx"
+            }
+        },
+        "membership": {
+            "type": "membership",
+            "source": {
+                "type": "user",
+                "userId": "U4af4980629..."
+            },
+            "replyToken": "nHuyWiB7yP5Zw52FIkcQobQuGDXCTA",
+            "membership": {
+                "type": "joined",
+                "membershipId": 3189
+            },
+            "timestamp": 1462629479859,
+            "mode": "active",
+            "webhookEventId": "01FZ74A0TDDPYRVKNK77XKC3ZR",
+            "deliveryContext": {
+                "isRedelivery": False
+            }
+        },
+        "messageEdited": {
+            "type": "messageEdited",
+            "replyToken": "950e63e8f46542ab89f645b4c2a1180a",
+            "message": {
+                "type": "text",
+                "id": "610830548529053697",
+                "quoteToken": "XyiyoB3R1BA...",
+                "text": "Edited message"
+            },
+            "webhookEventId": "01KPW6071XGPXPAF4XCN96XEAN",
+            "deliveryContext": {
+                "isRedelivery": False
+            },
+            "timestamp": 1776914799524,
+            "source": {
+                "type": "group",
+                "groupId": "Ca56f94637c...",
+                "userId": "U4af4980629..."
+            },
+            "mode": "active"
+        },
+        "leave": {
+            "type": "leave",
+            "mode": "active",
+            "timestamp": 1462629479859,
+            "source": {
+                "type": "group",
+                "groupId": "C4af4980629..."
+            },
+            "webhookEventId": "01FZ74A0TDDPYRVKNK77XKC3ZR",
+            "deliveryContext": {
+                "isRedelivery": False
+            }
+        },
+        "memberLeft": {
+            "type": "memberLeft",
+            "mode": "active",
+            "timestamp": 1462629479960,
+            "source": {
+                "type": "group",
+                "groupId": "C4af4980629..."
+            },
+            "webhookEventId": "01FZ74A0TDDPYRVKNK77XKC3ZR",
+            "deliveryContext": {
+                "isRedelivery": False
+            },
+            "left": {
+                "members": [
+                    {
+                        "type": "user",
+                        "userId": "U4af4980629..."
+                    },
+                    {
+                        "type": "user",
+                        "userId": "U91eeaf62d9..."
+                    }
+                ]
+            }
+        }
+    }
+
+
+@check("validate: 官方文件裡的 webhook 事件範例一個都不能被誤判")
+def t_validate_webhook():
+    """13 個事件的官方範例逐字照抄，加上四種壞掉的 payload。
+
+    webhook 是唯一「方向相反」的驗證：驗的是收到的東西。這裡最容易錯的
+    假設是「規格說必填就一定收得到」——官方自己的 follow 與 message 範例
+    就沒有 follow 和 quoteToken，所以收訊端的必填只給 warning，
+    寫成「讀取前先判斷」，不是報錯。
+
+    範例取自 reference/messaging-api.md 的 JSON 區塊，一字未改。
+    """
+    official = OFFICIAL_WEBHOOK_SAMPLES
+    noisy = []
+    for name, ev in official.items():
+        errs = [p for p in val.run(ev, "webhook").problems if p.level == "error"]
+        if errs:
+            noisy.append(f"{name}: {errs[0].path} {errs[0].message[:50]}")
+    assert not noisy, "官方範例被誤判：" + "; ".join(noisy)
+
+    def base(**kw):
+        ev = {"type": "message", "timestamp": 1, "mode": "active",
+              "webhookEventId": "01F", "deliveryContext": {"isRedelivery": False},
+              "source": {"type": "user", "userId": "U1"}, "replyToken": "r",
+              "message": {"id": "1", "type": "text", "text": "h"}}
+        ev.update(kw)
+        return ev
+
+    def errs(ev):
+        return [p for p in val.run(ev, "webhook").problems if p.level == "error"]
+
+    assert errs(base(type="nope")), "不存在的事件型別要抓到"
+    assert errs(base(source={"type": "zzz"})), "不存在的 source 型別要抓到"
+    assert errs(base(message={"id": "1", "type": "zzz"})), "不存在的訊息型別要抓到"
+    # 拼錯的屬性在 webhook 上是警告：LINE 之後加新欄位時不該讓人整批變紅
+    typo = val.run(base(replytoken="r"), "webhook").problems
+    assert any(p.level == "warning" and "replytoken" in p.message for p in typo),         "拼錯的屬性至少要提醒"
+
+    # 收訊端的必填只提醒不報錯——這正是官方範例會缺的那些
+    lean = val.run({"type": "follow", "timestamp": 1, "mode": "active",
+                    "webhookEventId": "01F",
+                    "deliveryContext": {"isRedelivery": False},
+                    "source": {"type": "user", "userId": "U1"},
+                    "replyToken": "r"}, "webhook").problems
+    assert not [p for p in lean if p.level == "error"], "缺 follow 不該是錯誤"
+    assert any(p.level == "warning" for p in lean), "缺 follow 要提醒"
+    return f"{len(official)} 個官方範例零誤判，4 種壞 payload 全抓到"
+
+
 @check("validate: 對照 LINE 官方驗證器量出來的 13 條規則")
 def t_validate_measured_rules():
     """這些規則的數字與等級全部是實測的，不是從文件抄的。

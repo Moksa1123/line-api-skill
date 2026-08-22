@@ -9,14 +9,14 @@ AI アシスタントが記憶ではなく仕様に基づいて答えるよう�
 <p>
   <img src="https://img.shields.io/badge/endpoints-121-success?style=flat-square" alt="121 endpoints">
   <img src="https://img.shields.io/badge/fields-1584-blue?style=flat-square" alt="1584 fields">
-  <img src="https://img.shields.io/badge/dataset-3675%20rows-orange?style=flat-square" alt="3675 rows">
+  <img src="https://img.shields.io/badge/dataset-3898%20rows-orange?style=flat-square" alt="3898 rows">
   <img src="https://img.shields.io/badge/platforms-8-9cf?style=flat-square" alt="8 platforms">
   <img src="https://img.shields.io/badge/python-3.9%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.9+">
   <img src="https://img.shields.io/badge/dependencies-0-brightgreen?style=flat-square" alt="zero dependencies">
 </p>
 
 ```
-121 エンドポイント · 1,584 のリクエスト/レスポンス項目 · 295 のレスポンス項目
+121 エンドポイント · 1,584 のリクエスト/レスポンス項目 · 518 のレスポンス項目
 233 のエラーコード · 247 の webhook 項目 · 136 の Flex コンポーネント · 44 の URL スキーム
 58 バージョンにわたる 35 の LIFF API · 80 のモバイル SDK 型 · 92 件の公式 FAQ
 ```
@@ -156,7 +156,7 @@ python scripts/review.py ./src --format json           # CI 向け
 | `signature.py` | webhook 署名、チャネルアクセストークン（純 Python の RS256 JWT 実装込み） |
 | `lineapi.py` | 依存ゼロの Messaging API クライアント。ホストを自動で振り分け |
 | `review.py` | 既存コードの点検：提供終了 API、ホスト誤り、署名の扱い、エンドポイントのタイポ、メッセージ JSON |
-| `test_line.py` | オフライン 49 項目 + ライブ 6 項目 |
+| `test_line.py` | オフライン 50 項目 + ライブ 6 項目 |
 
 ## データの作り方
 
