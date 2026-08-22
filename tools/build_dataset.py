@@ -1301,6 +1301,11 @@ def build_errors() -> list[dict]:
                 kind = "error-message"
             elif low.startswith("error response"):
                 kind = "endpoint-error"
+            # LIFF 把 SDK 的錯誤碼表放在「Error details」底下，不是上面那三種
+            # 標題，所以 INIT_FAILED / INVALID_CONFIG / UNAUTHORIZED 這些
+            # 最常遇到的 LIFF 錯誤，一個都沒進資料集
+            elif low.startswith("error detail") or low.startswith("details of the error"):
+                kind = "error-detail"
             if kind:
                 table, nxt = md_tables(lines, i + 1)
                 for cells in table[1:] if table else []:
@@ -1519,6 +1524,12 @@ def main() -> int:
     write_csv("faq.csv",
               ["question", "product", "tags", "doc_url"],
               build_faq())
+
+    import _guide_specs
+    write_csv("guide-specs.csv",
+              ["product", "page", "page_title", "section", "item",
+               "attribute", "value", "doc_url"],
+              _guide_specs.build(DOCS, HEAD_RE, fence_mask, anchor))
 
     write_csv("guides.csv",
               ["product", "page", "title", "sections", "section_count", "doc_url"],

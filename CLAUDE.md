@@ -45,6 +45,7 @@ tools/               ← 只在這個 repo 用，不隨技能安裝
 | `webhook-properties.csv` | `webhook.yml` 全部聯集與具名物件 | ❌ |
 | `responses.csv` | OpenAPI 各 operation 的 2xx 回應 schema | ❌ |
 | `guides.csv` | `docs/**/*.md` 的標題與各節標題 | ❌ |
+| `guide-specs.csv` | `docs/**/*.md` 的表格攤成（項目, 屬性, 值） | ❌ 改 `tools/_guide_specs.py` |
 | `liff-versions.csv` | LIFF release notes 的版本、日期、API | ❌ |
 | `faq.csv` | `faq.md` 的題目、標籤與 HTML 錨點 | ❌ |
 | `sdk-api.csv` | jazzy / javadoc 索引頁的型別清單 | ❌ |
@@ -107,7 +108,7 @@ python tools/check_endpoints.py     # 121 條路徑是否存在。一律送 PATC
 python tools/check_liff_sdk.py      # liff-api.csv 對照實際發佈的 SDK
 
 # 測試
-python line-api/scripts/test_line.py            # 離線 52 項
+python line-api/scripts/test_line.py            # 離線 53 項
 python line-api/scripts/test_line.py --live     # 加 6 項實打 LINE API
 
 # 技能本身的工具

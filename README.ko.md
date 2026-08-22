@@ -9,7 +9,7 @@ AI 어시스턴트가 기억이 아니라 명세를 근거로 답하게 됩니�
 <p>
   <img src="https://img.shields.io/badge/endpoints-121-success?style=flat-square" alt="121 endpoints">
   <img src="https://img.shields.io/badge/fields-1584-blue?style=flat-square" alt="1584 fields">
-  <img src="https://img.shields.io/badge/dataset-3898%20rows-orange?style=flat-square" alt="3898 rows">
+  <img src="https://img.shields.io/badge/dataset-6877%20rows-orange?style=flat-square" alt="6877 rows">
   <img src="https://img.shields.io/badge/platforms-8-9cf?style=flat-square" alt="8 platforms">
   <img src="https://img.shields.io/badge/python-3.9%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.9+">
   <img src="https://img.shields.io/badge/dependencies-0-brightgreen?style=flat-square" alt="zero dependencies">
@@ -136,8 +136,8 @@ python scripts/review.py ./src --format json           # CI 연동용
 | 리치 메뉴 | 객체 구조, 이미지 사양, 별칭, 사용자별 연결 |
 | Webhook | 20개 이벤트, 타입이 있는 247개 필드, 서명 검증 |
 | LINE Login | OAuth 2.0 + OIDC, 스코프, ID 토큰 검증 |
-| LIFF | 35개 API, 도입 버전, 트리 셰이킹 모듈 |
-| LINE MINI App | 인증/미인증 차이, 서비스 메시지, 인앱 결제 |
+| LIFF | 35개 API(모두 배포된 SDK에 실재함을 확인), 도입 버전, 트리 셰이킹 모듈, 브라우저별 기능 대조표 |
+| LINE MINI App | 추출된 1,188개 사양 —— 인증/미인증 기능 대조표, 서비스 메시지 글자 수 제한, 인앱 결제, 커스텀 경로, 아이콘 규격 |
 | URL 스킴 | 44개 스킴과, 자주 걸리는 세 가지 플랫폼 제약 |
 | 모바일 SDK | iOS / Android 80개 타입, 공식 레퍼런스 링크 포함 |
 
@@ -153,7 +153,7 @@ python scripts/review.py ./src --format json           # CI 연동용
 | `signature.py` | webhook 서명, 채널 액세스 토큰(순수 Python RS256 JWT 구현 포함) |
 | `lineapi.py` | 의존성 없는 Messaging API 클라이언트. 호스트를 자동 분기 |
 | `review.py` | 기존 코드 점검: 종료된 API, 잘못된 호스트, 서명 처리, 엔드포인트 오타, 메시지 JSON |
-| `test_line.py` | 오프라인 52개 + 라이브 6개 테스트 |
+| `test_line.py` | 오프라인 53개 + 라이브 6개 테스트 |
 
 ## 데이터를 만드는 방법
 

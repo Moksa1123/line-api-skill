@@ -9,7 +9,7 @@ AI アシスタントが記憶ではなく仕様に基づいて答えるよう�
 <p>
   <img src="https://img.shields.io/badge/endpoints-121-success?style=flat-square" alt="121 endpoints">
   <img src="https://img.shields.io/badge/fields-1584-blue?style=flat-square" alt="1584 fields">
-  <img src="https://img.shields.io/badge/dataset-3898%20rows-orange?style=flat-square" alt="3898 rows">
+  <img src="https://img.shields.io/badge/dataset-6877%20rows-orange?style=flat-square" alt="6877 rows">
   <img src="https://img.shields.io/badge/platforms-8-9cf?style=flat-square" alt="8 platforms">
   <img src="https://img.shields.io/badge/python-3.9%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.9+">
   <img src="https://img.shields.io/badge/dependencies-0-brightgreen?style=flat-square" alt="zero dependencies">
@@ -138,8 +138,8 @@ python scripts/review.py ./src --format json           # CI 向け
 | リッチメニュー | オブジェクト構造、画像仕様、エイリアス、ユーザー個別リンク |
 | Webhook | 20 イベント、型付き 247 項目、署名検証 |
 | LINE Login | OAuth 2.0 + OIDC、スコープ、ID トークン検証 |
-| LIFF | 35 API、導入バージョン、Tree-shaking 対応モジュール |
-| LINE MINI App | 認証済み／未認証の違い、サービスメッセージ、アプリ内課金 |
+| LIFF | 35 API（すべて配信中の SDK に実在することを確認）、導入バージョン、Tree-shaking 対応モジュール、ブラウザ別の機能対応表 |
+| LINE MINI App | 抽出した 1,188 件の仕様 —— 認証済み／未認証の機能対応表、サービスメッセージの文字数上限、アプリ内課金、カスタムパス、アイコン仕様 |
 | URL スキーム | 44 スキームと、よく踏む 3 つのプラットフォーム制限 |
 | モバイル SDK | iOS / Android の 80 型、公式リファレンスへのリンク付き |
 
@@ -156,7 +156,7 @@ python scripts/review.py ./src --format json           # CI 向け
 | `signature.py` | webhook 署名、チャネルアクセストークン（純 Python の RS256 JWT 実装込み） |
 | `lineapi.py` | 依存ゼロの Messaging API クライアント。ホストを自動で振り分け |
 | `review.py` | 既存コードの点検：提供終了 API、ホスト誤り、署名の扱い、エンドポイントのタイポ、メッセージ JSON |
-| `test_line.py` | オフライン 52 項目 + ライブ 6 項目 |
+| `test_line.py` | オフライン 53 項目 + ライブ 6 項目 |
 
 ## データの作り方
 

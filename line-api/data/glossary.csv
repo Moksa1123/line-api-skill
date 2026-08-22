@@ -124,3 +124,34 @@ webhook 事件,webhook event,
 抽獎,lottery,
 折扣,discount,
 回饋,cashback,
+站內購買,in-app purchase IAP,MINI App 的站內購買
+內購,in-app purchase IAP,
+自訂路徑,custom path,MINI App 的自訂網址路徑
+桌面捷徑,add to home screen shortcut,
+加到主畫面,add to home screen,
+已驗證,verified,已通過審核的 MINI App
+未驗證,unverified,
+審核,review submission,
+送審,submit review,
+分享訊息,share messages share target picker,
+分享目標選擇器,share target picker,
+圖示,icon,
+字數上限,maximum number of characters limit,
+字元數,number of characters,
+橫向,landscape,MINI App 的橫向顯示
+直向,portrait,
+快速填入,quick fill,MINI App 的個資快速填入
+通道同意,channel consent simplification,
+外部瀏覽器,external browser,
+內建瀏覽器,in-app browser LINE browser,
+小程式,mini app LINE MINI App,台灣也常直接說 MINI App
+迷你應用,mini app LINE MINI App,
+模組,module,LIFF 可搖樹匯入的模組
+外掛,plugin,LIFF plugin
+暫時關閉,minimize minimizing LIFF browser,
+效能規範,performance guidelines,
+有效期,expires valid for validity period,
+效期,expires valid for,
+幾則,how many up to maximum,
+範本,template,MINI App 的服務訊息範本
+通知權杖,service notification token,

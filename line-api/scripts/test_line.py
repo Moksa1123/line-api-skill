@@ -627,6 +627,54 @@ def t_search_recall():
     return f"{total} 次查詢，召回率 {rate:.1f}%"
 
 
+@check("search: LIFF 與 MINI App 的規格查得到（規格寫在指南的表格裡，不在 reference）")
+def t_guide_specs():
+    """LIFF 與 LINE MINI App 的規則大半不在 reference 的參數區塊裡，
+    而在指南頁的表格：服務訊息的字數上限、未驗證 MINI App 不能用哪些功能、
+    站內購買的商品編號格式。以前整個資料集只有這些頁面的標題，
+    問「自訂路徑」會完全查不到東西。
+
+    每一條都指名一個具體事實，而不是「有回傳結果就算過」——
+    回錯答案跟沒有答案一樣糟。
+    """
+    def find(query, want, domain="guide_spec"):
+        hits = core.search(query, domain=domain, max_results=8)
+        blob = " | ".join(
+            f"{h.get('item','')} {h.get('attribute','')} {h.get('value','')}"
+            for h in hits)
+        return want.lower() in blob.lower(), blob[:110]
+
+    cases = [
+        # (查詢, 前八名裡必須出現的字串)
+        ("service message maximum characters detailed", "50"),
+        ("服務訊息 字數上限", "soft limit"),
+        ("custom path unverified", "custom path"),
+        ("自訂路徑", "custom path"),
+        ("share target picker LIFF browser", "share target picker"),
+        ("in-app purchase product id", "iap_"),
+        ("站內購買", "iap"),
+        ("add to home screen", "shortcut"),
+        # 有些關鍵數字只寫在內文句子裡，表格萃取看不到
+        ("service notification token expires", "31,536,000"),
+        ("service message templates per channel", "20"),
+    ]
+    bad = []
+    for query, want in cases:
+        ok, blob = find(query, want)
+        if not ok:
+            bad.append(f"{query!r} 前八名沒有 {want!r}（得到 {blob}）")
+    assert not bad, "; ".join(bad)
+
+    # 這個域本身要有足夠的量，不然是解析器壞了而不是查詢寫錯
+    rows, _ = core.load_csv("guide_spec")
+    assert len(rows) >= 2000, f"指南規格只有 {len(rows)} 筆"
+    mini = [r for r in rows if r.get("product") == "line-mini-app"]
+    liff = [r for r in rows if r.get("product") == "liff"]
+    assert len(mini) >= 800, f"MINI App 只有 {len(mini)} 筆"
+    assert len(liff) >= 150, f"LIFF 只有 {len(liff)} 筆"
+    return f"{len(rows)} 筆（MINI App {len(mini)}、LIFF {len(liff)}），{len(cases)} 個查詢全命中"
+
+
 @check("search: 自然說法要問得到對的東西")
 def t_search_intent():
     """人不會用欄位名稱發問。這些是逐一人工確認過答案正確的查詢——

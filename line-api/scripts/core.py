@@ -131,6 +131,13 @@ CSV_CONFIG: Dict[str, dict] = {
                         "description", "doc_url"],
         "label": "API 回應欄位",
     },
+    "guide_spec": {
+        "file": "guide-specs.csv",
+        "search_cols": ["item", "attribute", "section", "page_title", "value", "product"],
+        "output_cols": ["product", "page_title", "section", "item", "attribute",
+                        "value", "doc_url"],
+        "label": "指南頁規格（表格萃取）",
+    },
     "guide": {
         "file": "guides.csv",
         "search_cols": ["title", "sections", "page", "product"],
@@ -237,6 +244,14 @@ CSV_CONFIG: Dict[str, dict] = {
 # domain auto-detection
 # --------------------------------------------------------------------------
 DOMAIN_KEYWORDS: Dict[str, List[str]] = {
+    # 指南頁的規格：LIFF 與 MINI App 的規則大半寫在指南的表格裡，
+    # 不在 reference 的參數區塊，所以要獨立一個域才查得到
+    "guide_spec": ["mini app", "miniapp", "mini-app", "service message", "服務訊息",
+                   "icon", "圖示", "custom path", "自訂路徑", "in-app purchase",
+                   "站內購買", "quick fill", "share message", "分享訊息",
+                   "home screen", "桌面捷徑", "permanent link", "永久連結",
+                   "verified", "已驗證", "unverified", "未驗證", "landscape",
+                   "審核", "review", "consent", "同意"],
     "endpoint": ["endpoint", "api", "url", "reply", "push", "multicast", "broadcast",
                  "narrowcast", "端點", "路徑", "呼叫"],
     "parameter": ["parameter", "property", "field", "參數", "欄位", "屬性", "request body"],
