@@ -174,6 +174,19 @@ python scripts/signature.py stateless --channel-id 1234 --channel-secret <secret
 python scripts/signature.py token --jwk private.key --channel-id 1234 --kid <kid>   # v2.1，最長 30 天
 ```
 
+驗 LINE Login / LIFF 的 ID token（純標準函式庫，兩種簽法都做）：
+
+```python
+from signature import verify_id_token
+claims = verify_id_token(id_token, channel_id, channel_secret=secret)
+```
+
+LINE 的 ID token 有兩種簽法：web 登入流程是 **HS256**（用 channel secret），
+LIFF 與原生 App 是 **ES256**（用 JWKS 公鑰、ECDSA P-256）。最常見的錯誤是
+「只 base64 解開就相信裡面的 `sub`」—— 那等於沒有驗證，任何人都能自己編一個。
+這裡把驗簽與 `iss` / `aud` / `exp` / `nonce` 全部做完，不過就丟例外。
+```
+
 RS256 JWT 以純標準函式庫實作（不需要 PyJWT / cryptography），
 並會擋掉超過 30 分鐘的 assertion 與超過 30 天的 token_exp。
 

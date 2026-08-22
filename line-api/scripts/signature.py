@@ -123,6 +123,137 @@ def rs256_verify(message: bytes, signature: bytes, jwk: dict) -> bool:
     return hmac.compare_digest(recovered, _emsa_pkcs1_v15(message, k))
 
 
+# --------------------------------------------------------------------------
+# ID token 驗證（LINE Login / LIFF）
+# --------------------------------------------------------------------------
+# LINE 的 ID token 有兩種簽法，用哪一種取決於 token 是怎麼來的：
+#
+#   HS256   web 登入流程。用 channel secret 當 HMAC 金鑰。
+#   ES256   LIFF app、原生 App、LINE SDK。用 JWKS 裡對應 kid 的公鑰，
+#           ECDSA over P-256。
+#
+# docs/line-login/verify-id-token.md：
+#   | ES256 | Element in the JWK document that contains the kid property |
+#   | HS256 | Channel secret |
+#
+# 最常見的錯誤是「只 base64 解開就相信裡面的 sub」——那等於沒有驗證，
+# 任何人都可以自己編一個。所以這裡把驗簽做完整，兩種演算法都實作，
+# 一樣不依賴任何套件。
+
+JWKS_URL = "https://api.line.me/oauth2/v2.1/certs"
+LINE_ISSUER = "https://access.line.me"
+
+# NIST P-256（secp256r1）。ES256 就是在這條曲線上做 ECDSA。
+P256_P = 0xffffffff00000001000000000000000000000000ffffffffffffffffffffffff
+P256_A = P256_P - 3
+P256_N = 0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551
+P256_GX = 0x6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296
+P256_GY = 0x4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5
+
+
+def _p256_add(p1, p2):
+    """P-256 上的點加法。None 代表無窮遠點。"""
+    if p1 is None:
+        return p2
+    if p2 is None:
+        return p1
+    x1, y1 = p1
+    x2, y2 = p2
+    if x1 == x2 and (y1 + y2) % P256_P == 0:
+        return None
+    if p1 == p2:
+        lam = (3 * x1 * x1 + P256_A) * pow(2 * y1, -1, P256_P) % P256_P
+    else:
+        lam = (y2 - y1) * pow(x2 - x1, -1, P256_P) % P256_P
+    x3 = (lam * lam - x1 - x2) % P256_P
+    return (x3, (lam * (x1 - x3) - y1) % P256_P)
+
+
+def _p256_mul(k: int, point):
+    """純量乘法。double-and-add，這裡只用來驗簽（公開資料），不需要防側通道。"""
+    result = None
+    addend = point
+    while k:
+        if k & 1:
+            result = _p256_add(result, addend)
+        addend = _p256_add(addend, addend)
+        k >>= 1
+    return result
+
+
+def es256_verify(message: bytes, signature: bytes, jwk: dict) -> bool:
+    """ECDSA P-256 + SHA-256。signature 是 JWS 格式的 r||s，各 32 bytes。"""
+    if len(signature) != 64:
+        return False
+    r = int.from_bytes(signature[:32], "big")
+    s = int.from_bytes(signature[32:], "big")
+    if not (1 <= r < P256_N and 1 <= s < P256_N):
+        return False
+    qx, qy = _jwk_int(jwk, "x"), _jwk_int(jwk, "y")
+    z = int.from_bytes(hashlib.sha256(message).digest(), "big")
+    w = pow(s, -1, P256_N)
+    u1, u2 = z * w % P256_N, r * w % P256_N
+    point = _p256_add(_p256_mul(u1, (P256_GX, P256_GY)), _p256_mul(u2, (qx, qy)))
+    if point is None:
+        return False
+    return point[0] % P256_N == r
+
+
+def _fetch_jwks(url: str = JWKS_URL) -> list[dict]:
+    with urllib.request.urlopen(url, timeout=15) as r:
+        return json.loads(r.read()).get("keys", [])
+
+
+def verify_id_token(id_token: str, channel_id: str,
+                    channel_secret: str | None = None,
+                    nonce: str | None = None,
+                    now: int | None = None) -> dict:
+    """驗完簽章與 claim，回傳 payload。任何一項不過就丟 ValueError。
+
+    照 OpenID Connect Core 的 ID Token Validation 做：驗簽、iss、aud、exp，
+    有帶 nonce 就一起比對。LINE 的 verify 端點也做同一件事，但那要多打一次
+    API；自己驗才是正確做法，而且離線就能做。
+    """
+    parts = id_token.split(".")
+    if len(parts) != 3:
+        raise ValueError("不是合法的 JWT（應該有三段）")
+    header = json.loads(b64url_decode(parts[0]))
+    payload = json.loads(b64url_decode(parts[1]))
+    sig = b64url_decode(parts[2])
+    signing_input = f"{parts[0]}.{parts[1]}".encode("ascii")
+
+    alg = header.get("alg")
+    if alg == "HS256":
+        if not channel_secret:
+            raise ValueError("HS256 的 ID token 要用 channel secret 驗，但沒有提供")
+        expected = hmac.new(channel_secret.encode("utf-8"),
+                            signing_input, hashlib.sha256).digest()
+        if not hmac.compare_digest(expected, sig):
+            raise ValueError("簽章不符（HS256）")
+    elif alg == "ES256":
+        kid = header.get("kid")
+        key = next((k for k in _fetch_jwks() if k.get("kid") == kid), None)
+        if key is None:
+            raise ValueError(f"JWKS 裡找不到 kid={kid}")
+        if not es256_verify(signing_input, sig, key):
+            raise ValueError("簽章不符（ES256）")
+    else:
+        raise ValueError(f"不支援的 alg：{alg!r}（LINE 只會用 HS256 或 ES256）")
+
+    if payload.get("iss") != LINE_ISSUER:
+        raise ValueError(f"iss 不對：{payload.get('iss')!r}")
+    aud = payload.get("aud")
+    aud_list = aud if isinstance(aud, list) else [aud]
+    if str(channel_id) not in [str(a) for a in aud_list]:
+        raise ValueError(f"aud 不是這個 channel：{aud!r}")
+    now = now if now is not None else int(time.time())
+    if int(payload.get("exp", 0)) <= now:
+        raise ValueError("ID token 已過期")
+    if nonce is not None and payload.get("nonce") != nonce:
+        raise ValueError("nonce 對不上，可能是重放攻擊")
+    return payload
+
+
 def make_jwt(jwk: dict, channel_id: str, kid: str | None = None,
              token_exp: int = MAX_TOKEN_EXP, jwt_lifetime: int = MAX_JWT_LIFETIME,
              now: int | None = None) -> str:

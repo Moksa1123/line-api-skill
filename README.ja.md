@@ -153,10 +153,10 @@ python scripts/review.py ./src --format json           # CI 向け
 |---|---|
 | `search.py` | 25 ドメインを BM25 検索。中国語クエリは英語用語に自動展開 |
 | `validate.py` | メッセージ / Flex / リッチメニューのオフライン検証：型、必須、タイポ、enum、上限、色とサイズの書式、URL スキーム |
-| `signature.py` | webhook 署名、チャネルアクセストークン（純 Python の RS256 JWT 実装込み） |
+| `signature.py` | webhook 署名、チャネルアクセストークン（純 Python の RS256 JWT）、ID トークン検証（HS256 と ES256 の両方） |
 | `lineapi.py` | 依存ゼロの Messaging API クライアント。ホストを自動で振り分け |
 | `review.py` | 既存コードの点検：提供終了 API、ホスト誤り、署名の扱い、エンドポイントのタイポ、メッセージ JSON |
-| `test_line.py` | オフライン 55 項目 + ライブ 6 項目 |
+| `test_line.py` | オフライン 56 項目 + ライブ 6 項目 |
 
 ## データの作り方
 

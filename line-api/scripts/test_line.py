@@ -675,6 +675,74 @@ def t_guide_specs():
     return f"{len(rows)} 筆（MINI App {len(mini)}、LIFF {len(liff)}），{len(cases)} 個查詢全命中"
 
 
+@check("signature: ID token 驗簽（HS256 與 ES256 兩種 LINE 都會用）")
+def t_id_token():
+    """LINE 的 ID token 有兩種簽法，取決於 token 怎麼來的：
+    web 登入流程是 HS256（channel secret），LIFF 與原生 App 是 ES256
+    （JWKS 公鑰、ECDSA P-256）。
+
+    最常見的錯誤是「只 base64 解開就相信裡面的 sub」——那等於沒有驗證，
+    任何人都能自己編一個 payload。所以兩種都要能真的驗。
+
+    ES256 的數學用 RFC 6979 A.2.5 的官方測試向量檢查，不是拿自己的實作
+    跟自己比對——那樣兩邊一起錯也看不出來。
+    """
+    # --- ES256：權威測試向量 ---
+    def b64u_int(i):
+        return base64.urlsafe_b64encode(i.to_bytes(32, "big")).rstrip(b"=").decode()
+
+    ux = 0x60FED4BA255A9D31C961EB74C6356D68C049B8923B61FA6CE669622E60F29FB6
+    uy = 0x7903FE1008B8BC99A41AE9E95628BC64F2F1B20C2D7E9F5177A3C294D4462299
+    r = 0xEFD48B2AACB6A8FD1140DD9CD45E81D69D2C877B56AAF991C34D0EA84EAF3716
+    s_ = 0xF7CB1C942D657C41D436C7A1B6E29F65F3E900DBB9AFF4064DC4AB2F843ACDA8
+    jwk = {"kty": "EC", "crv": "P-256", "x": b64u_int(ux), "y": b64u_int(uy)}
+    good = r.to_bytes(32, "big") + s_.to_bytes(32, "big")
+    assert sig.es256_verify(b"sample", good, jwk), "RFC 6979 的向量應該要通過"
+    flipped = bytearray(good)
+    flipped[0] ^= 1
+    assert not sig.es256_verify(b"sample", bytes(flipped), jwk), "竄改簽章要失敗"
+    assert not sig.es256_verify(b"sampld", good, jwk), "換訊息要失敗"
+    assert not sig.es256_verify(b"sample", good[:63], jwk), "長度不對要失敗"
+
+    # --- HS256：自己組一個 ID token 走完整條驗證 ---
+    secret = "test-channel-secret"
+    cid = "1234567890"
+    now = 1_700_000_000
+
+    def make(payload, key=secret):
+        head = sig.b64url(json.dumps({"alg": "HS256", "typ": "JWT"}).encode())
+        body = sig.b64url(json.dumps(payload).encode())
+        mac = hmac.new(key.encode(), f"{head}.{body}".encode(), hashlib.sha256).digest()
+        return f"{head}.{body}.{sig.b64url(mac)}"
+
+    base = {"iss": "https://access.line.me", "sub": "U1", "aud": cid,
+            "exp": now + 3600, "iat": now, "name": "Tester"}
+    ok = sig.verify_id_token(make(base), cid, channel_secret=secret, now=now)
+    assert ok["sub"] == "U1"
+
+    def rejects(token, **kw):
+        try:
+            sig.verify_id_token(token, kw.pop("cid", cid),
+                                channel_secret=kw.pop("secret", secret),
+                                now=now, **kw)
+        except ValueError:
+            return True
+        return False
+
+    assert rejects(make(base, key="wrong-secret")), "簽章錯要擋"
+    assert rejects(make({**base, "iss": "https://evil.example"})), "iss 不對要擋"
+    assert rejects(make({**base, "aud": "9999999999"})), "aud 不是這個 channel 要擋"
+    assert rejects(make({**base, "exp": now - 1})), "過期要擋"
+    assert rejects(make({**base, "nonce": "aaa"}), nonce="bbb"), "nonce 對不上要擋"
+    # 沒帶 secret 就驗不了 HS256，不能默默放行
+    assert rejects(make(base), secret=None), "缺 channel secret 不該通過"
+    # 「alg: none」這種經典攻擊
+    none_head = sig.b64url(json.dumps({"alg": "none"}).encode())
+    none_body = sig.b64url(json.dumps(base).encode())
+    assert rejects(f"{none_head}.{none_body}."), "alg=none 要擋"
+    return "ES256 過 RFC 6979 向量；HS256 七種偽造全部擋下"
+
+
 @check("dataset: LIFF 功能需要的 LINE App 版本（跟 SDK 版本是兩回事）")
 def t_liff_availability():
     """liff-api.csv 的 introduced_in 是「這個 API 從哪一版 LIFF SDK 開始有」，
@@ -1953,7 +2021,68 @@ def live_tests() -> None:
         # 這是唯一能證明本專案自己實作的 RS256 簽章與 LINE 伺服器相容的檢查
         return f"LINE 接受了本專案簽出的 JWT，token 效期 {result.get('expires_in')} 秒"
 
-    for fn in (t_info, t_quota, t_webhook, t_validate_live, t_stateless, t_jwt_live):
+    @check("live: 自己驗一個真的 ID token，並與 LINE 的 verify 端點對答案")
+    def t_id_token_live():
+        """ID token 是唯一沒辦法單方面取得的東西——它得由使用者實際登入
+        一次才會產生。用 tools/get_id_token.py 跑完 LINE Login 之後，
+        這一項才會啟用。
+
+        驗兩件事：
+          1. 我們純標準函式庫的驗簽，判斷跟 LINE 官方的 verify 端點一致
+          2. responses.csv 記的 ID token 欄位，跟實際回傳的一致
+        """
+        idt = os.environ.get("LINE_ID_TOKEN")
+        login_id = os.environ.get("LINE_LOGIN_CHANNEL_ID")
+        login_secret = os.environ.get("LINE_LOGIN_CHANNEL_SECRET")
+        if not (idt and login_id):
+            raise _Skip("需要 LINE_ID_TOKEN 與 LINE_LOGIN_CHANNEL_ID"
+                        "（跑 python tools/get_id_token.py）")
+
+        header = json.loads(sig.b64url_decode(idt.split(".")[0]))
+        alg = header.get("alg")
+
+        # 1. 我們自己驗
+        try:
+            mine = sig.verify_id_token(idt, login_id, channel_secret=login_secret)
+            mine_ok, mine_err = True, ""
+        except ValueError as e:
+            mine_ok, mine_err, mine = False, str(e), {}
+
+        # 2. LINE 官方驗
+        body = urllib.parse.urlencode({"id_token": idt, "client_id": login_id}).encode()
+        req = urllib.request.Request(
+            "https://api.line.me/oauth2/v2.1/verify", data=body,
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            method="POST")
+        try:
+            with urllib.request.urlopen(req, timeout=20) as r:
+                theirs = json.loads(r.read())
+            line_ok = True
+        except urllib.error.HTTPError as e:
+            detail = e.read().decode("utf-8", "replace")[:120]
+            theirs, line_ok = {}, False
+            if "expired" in detail.lower():
+                raise _Skip("這個 ID token 已過期，重跑 tools/get_id_token.py")
+
+        assert mine_ok == line_ok, (
+            f"跟 LINE 的判斷不一致：我們{'通過' if mine_ok else '擋下'}"
+            f"（{mine_err}），LINE {'通過' if line_ok else '擋下'}")
+        assert line_ok, "LINE 說這個 token 無效"
+
+        # 兩邊解出來的身分必須是同一個人
+        for field in ("sub", "aud", "iss", "exp"):
+            assert str(mine.get(field)) == str(theirs.get(field)),                 f"{field} 解出來不一樣"
+
+        # 3. responses.csv 記的欄位對不對
+        claimed = {r["property"] for r in rows("responses.csv")
+                   if "Verify ID token" in r["operation_id"]}
+        missing = sorted(set(theirs) - claimed)
+        assert not missing, f"實際回傳有、資料集沒記的欄位：{missing}"
+        return (f"alg={alg}，我們的驗簽與 LINE 一致，"
+                f"回傳 {len(theirs)} 個欄位資料集全都有記")
+
+    for fn in (t_info, t_quota, t_webhook, t_validate_live, t_stateless, t_jwt_live,
+               t_id_token_live):
         fn()
 
 

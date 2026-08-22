@@ -108,9 +108,11 @@ python tools/check_endpoints.py     # 121 條路徑是否存在。一律送 PATC
                                     # 沒有任何端點支援它，所以永遠不會執行到
                                     # 真的操作。真路徑回 405、假路徑回 404
 python tools/check_liff_sdk.py      # liff-api.csv 對照實際發佈的 SDK
+python tools/get_id_token.py        # 跑一次 LINE Login 取得 ID token 寫進 .env，
+                                    # 解鎖 live 的 ID token 驗簽對照
 
 # 測試
-python line-api/scripts/test_line.py            # 離線 55 項
+python line-api/scripts/test_line.py            # 離線 56 項
 python line-api/scripts/test_line.py --live     # 加 6 項實打 LINE API
 
 # 技能本身的工具

@@ -147,10 +147,10 @@ python scripts/review.py ./src --format json           # 給 CI 接
 |---|---|
 | `search.py` | BM25 搜尋 25 個資料域；中文查詢會自動補上英文術語 |
 | `validate.py` | 離線驗證訊息 / Flex / 圖文選單：型別、必填、錯字、enum、上限、色碼與尺寸格式、網址 scheme |
-| `signature.py` | webhook 簽章；channel access token（含純 Python 實作的 RS256 JWT） |
+| `signature.py` | webhook 簽章；channel access token（純 Python RS256 JWT）；ID token 驗簽（HS256 與 ES256 兩種） |
 | `lineapi.py` | 零依賴 Messaging API client，自動判斷該打哪個主機 |
 | `review.py` | 審既有程式碼：已停服 API、主機打錯、簽章寫法、端點拼錯、訊息 JSON 錯字 |
-| `test_line.py` | 55 項離線測試 + 6 項線上測試 |
+| `test_line.py` | 56 項離線測試 + 6 項線上測試 |
 
 ## 資料怎麼來的
 

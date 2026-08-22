@@ -150,10 +150,10 @@ python scripts/review.py ./src --format json           # CI 연동용
 |---|---|
 | `search.py` | 25개 도메인 BM25 검색. 중국어 질의는 영어 용어로 자동 확장 |
 | `validate.py` | 메시지 / Flex / 리치 메뉴 오프라인 검증: 타입, 필수, 오타, enum, 상한, 색상·크기 형식, URL 스킴 |
-| `signature.py` | webhook 서명, 채널 액세스 토큰(순수 Python RS256 JWT 구현 포함) |
+| `signature.py` | webhook 서명, 채널 액세스 토큰(순수 Python RS256 JWT), ID 토큰 검증(HS256·ES256 모두) |
 | `lineapi.py` | 의존성 없는 Messaging API 클라이언트. 호스트를 자동 분기 |
 | `review.py` | 기존 코드 점검: 종료된 API, 잘못된 호스트, 서명 처리, 엔드포인트 오타, 메시지 JSON |
-| `test_line.py` | 오프라인 55개 + 라이브 6개 테스트 |
+| `test_line.py` | 오프라인 56개 + 라이브 6개 테스트 |
 
 ## 데이터를 만드는 방법
 
