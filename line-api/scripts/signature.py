@@ -12,6 +12,22 @@ Standard library only. Two jobs LINE integrations get wrong most often:
      you). RSA PKCS#1 v1.5 signing is implemented here directly, so no
      third-party crypto package is needed.
 
+這裡的每一段密碼學都是自己實作的，所以每一段的驗證方式也記在這裡。
+「有實作」跟「證明過它是對的」是兩件事：
+
+    HMAC-SHA256 webhook 簽章   與獨立實作對答案（test_line.py 離線）
+    RS256 簽章 PKCS#1 v1.5     LINE 接受了本專案簽出的 JWT 並發了 token
+                               （--live，這是唯一能證明相容的方式）
+    HS256 ID token 驗簽        判斷與 LINE 的 /oauth2/v2.1/verify 一致
+                               （--live，用真的 ID token 對照過）
+    ES256 驗簽數學             RFC 6979 A.2.5 的官方測試向量
+    ES256 金鑰解析             LINE 真實 JWKS 的 20 把 P-256 公鑰，
+                               座標全部代進曲線方程式驗算過（--live）
+    ES256 端到端               **沒有驗過**。要一個 LIFF 發出來的 ES256
+                               token 才做得到，而那需要一個載入 LIFF SDK
+                               的 LIFF app。三個組件各自都驗過了，串接
+                               的六行沒有實測——用在正式環境前請自己測一次。
+
 CLI
     python scripts/signature.py verify --secret <channel secret> --body-file body.json --signature <sig>
     python scripts/signature.py sign   --secret <channel secret> --body '{"events":[]}'

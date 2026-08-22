@@ -185,6 +185,11 @@ LINE 的 ID token 有兩種簽法：web 登入流程是 **HS256**（用 channel 
 LIFF 與原生 App 是 **ES256**（用 JWKS 公鑰、ECDSA P-256）。最常見的錯誤是
 「只 base64 解開就相信裡面的 `sub`」—— 那等於沒有驗證，任何人都能自己編一個。
 這裡把驗簽與 `iss` / `aud` / `exp` / `nonce` 全部做完，不過就丟例外。
+
+`HS256` 那條已經拿真的 ID token 跟 LINE 的 `/oauth2/v2.1/verify` 對照過，
+兩邊判斷一致。`ES256` 的簽章數學過 RFC 6979 的官方向量、金鑰解析拿 LINE
+真實 JWKS 的 20 把公鑰驗算過，但**端到端沒有實測**（需要 LIFF 發出來的
+token）—— 用在正式環境前請自己測一次。
 ```
 
 RS256 JWT 以純標準函式庫實作（不需要 PyJWT / cryptography），
