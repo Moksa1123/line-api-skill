@@ -38,9 +38,101 @@ DATA = HERE.parent / "data"
 CODE_EXT = {".py", ".js", ".mjs", ".cjs", ".ts", ".tsx", ".jsx", ".php",
             ".java", ".kt", ".go", ".rb", ".cs", ".swift", ".html", ".vue"}
 SKIP_DIRS = {"node_modules", ".git", "vendor", "dist", "build", "__pycache__",
-             ".venv", "venv", ".next", "target"}
+             ".venv", "venv", ".next", "target",
+             # 產生物。coverage 報告會把整份 .ts 內嵌進 .ts.html，
+             # 掃到就等於把同一份程式碼審兩次，而且第二次沒有上下文
+             "coverage", "htmlcov", ".turbo", ".nuxt", ".output", "out",
+             "storybook-static", ".svelte-kit", ".pytest_cache", ".mypy_cache"}
+
+TEST_FILE = re.compile(r"(?i)(^|[/\\.])(tests?|__tests__|spec|specs|e2e|fixtures?)"
+                       r"([/\\.]|$)|\.(test|spec)\.[a-z]+$")
+
+
+def is_test_file(path: Path) -> bool:
+    """測試檔會刻意寫進假憑證與已淘汰的值來斷言行為，判準要放寬。"""
+    return bool(TEST_FILE.search(str(path).replace("\\", "/")))
+
+
+HASH_COMMENT_EXT = {".py", ".rb", ".php", ".sh", ".yml", ".yaml"}
+
+
+def code_mask(text: str, suffix: str) -> str:
+    """把註解換成等長空白，字串內容保留。
+
+    寫得最用心的程式碼最容易被誤判：解釋「為什麼不能拿 JSON.stringify 算簽章」
+    的那段 docblock，本身就含有 `JSON.stringify` 與 `x-line-signature`。
+    用原文比對等於在罰寫註解的人。長度與換行都保持不變，行號才不會跑掉。
+
+    字串留著 —— 端點、訊息 JSON、寫死的憑證本來就住在字串裡。
+    """
+    out = list(text)
+    n = len(text)
+    i = 0
+    hash_ok = suffix in HASH_COMMENT_EXT
+    html_ok = suffix in (".html", ".vue")
+
+    def blank(start: int, end: int) -> None:
+        for j in range(start, min(end, n)):
+            if out[j] != "\n":
+                out[j] = " "
+
+    while i < n:
+        c = text[i]
+        # --- 字串：整段跳過，不做任何處理 ---
+        if c in "\"'`":
+            if suffix == ".py" and text[i:i + 3] in ('"""', "'''"):
+                # docstring 當註解看：它多半是散文，而散文最會提到反例
+                quote, j = text[i:i + 3], i + 3
+                while j < n and text[j:j + 3] != quote:
+                    j += 2 if text[j] == "\\" else 1
+                blank(i, j + 3)
+                i = j + 3
+                continue
+            quote, j = c, i + 1
+            while j < n:
+                if text[j] == "\\":
+                    j += 2
+                    continue
+                if text[j] == quote:
+                    break
+                if text[j] == "\n" and quote != "`":
+                    break        # 一般字串不跨行，八成是引號沒配對，別吃掉整份檔案
+                j += 1
+            i = j + 1
+            continue
+        # --- 註解 ---
+        if c == "/" and i + 1 < n:
+            if text[i + 1] == "/":
+                j = text.find("\n", i)
+                j = n if j < 0 else j
+                blank(i, j)
+                i = j
+                continue
+            if text[i + 1] == "*":
+                j = text.find("*/", i + 2)
+                j = n if j < 0 else j + 2
+                blank(i, j)
+                i = j
+                continue
+        if hash_ok and c == "#":
+            j = text.find("\n", i)
+            j = n if j < 0 else j
+            blank(i, j)
+            i = j
+            continue
+        if html_ok and text.startswith("<!--", i):
+            j = text.find("-->", i)
+            j = n if j < 0 else j + 3
+            blank(i, j)
+            i = j
+            continue
+        i += 1
+    return "".join(out)
 
 SEVERITY_ORDER = {"error": 0, "warning": 1, "info": 2}
+
+# 這兩條講的是「專案有沒有做這件事」，不是「這一行寫錯了」，所以只報一次
+PROJECT_RULES = {"signature-missing", "idempotency"}
 
 
 def rows(name: str) -> list[dict]:
@@ -110,7 +202,8 @@ DEPRECATED_TOKENS = [
     (r"notify-api\.line\.me", "LINE Notify"),
     (r"\bliff\.scanCode\s*\(", "liff.scanCode()"),
     (r"\bliff\.getLanguage\s*\(", "liff.getLanguage()"),
-    (r"line://", "line:// URL scheme"),
+    # JS 的 regex literal 會寫成 /^line:\/\//，反斜線要一起吃掉才找得到
+    (r"line:(?:\\)?/(?:\\)?/", "line:// URL scheme"),
     (r'"type"\s*:\s*"filler"', "Flex filler component"),
     (r"'type'\s*:\s*'filler'", "Flex filler component"),
     (r"liff/edge/1/sdk\.js", "LIFF v1"),
@@ -127,11 +220,54 @@ SECRET_PATTERNS = [
 MESSAGE_TYPES = ("text", "flex", "template", "image", "video", "audio",
                  "location", "sticker", "imagemap")
 
+HMAC_CALL = (r"(?i)\b(hmac\.new|createHmac|hash_hmac|HmacSHA256"
+             r"|Mac\.getInstance|hmac\.New|HMACSHA256)\b")
+
+# 「算了 HMAC」還不等於「在驗簽」——測試檔算 HMAC 是為了產生要送出去的
+# 標頭，那裡面根本沒有比對。要看到真的拿它去比，才輪得到比對方式這件事
+SIG_COMPARE = (r"(?i)(\b\w*(?:sig|signature|expected|digest)\w*\s*[!=]==?"
+               r"|[!=]==?\s*\w*(?:sig|signature|expected|digest)\w*)")
+
+# 收 webhook 的入口：既要有 HTTP handler，也要有 LINE 的事件特徵。
+# 只看檔名或「有 webhook 這個字」的話，行銷首頁和清 log 的排程都會被當成接收端。
+HTTP_HANDLER = (r"(?i)(@app\.(?:route|post)|app\.post|router\.post|fastify\.post"
+                r"|\.post\s*\(|def\s+callback|http\.HandleFunc|@PostMapping"
+                r"|func\s+\w*[Ww]ebhook|serve_?http|addEventListener\s*\(\s*['\"]fetch)")
+LINE_EVENT = r"(replyToken|webhookEventId|destination)"
+
+
+def looks_like_receiver(text: str) -> bool:
+    return bool(re.search(HTTP_HANDLER, text) and re.search(LINE_EVENT, text))
+
+
+def project_facts(files: dict) -> dict:
+    """整個專案層級的事實。
+
+    驗簽與去重是「專案有沒有做」，不是「這個檔案有沒有做」。分層寫的專案
+    會把驗簽放進 signature.ts、去重放進 webhook.ts，逐檔判斷就會對著
+    每一個沒寫的檔案各報一次 —— 包含正在做這件事的那一支。
+    """
+    verifies = dedups = False
+    for masked in files.values():
+        if re.search(HMAC_CALL, masked) and re.search(r"(?i)x[-_]line[-_]signature", masked):
+            verifies = True
+        # 官方 SDK 的 middleware 自己驗簽，看不到 createHmac
+        if re.search(r"(?i)(line\.middleware|WebhookParser|linebot\.WebhookHandler"
+                     r"|SignatureValidator|@line/bot-sdk)", masked):
+            verifies = True
+        if re.search(r"webhookEventId", masked):
+            dedups = True
+    return {"verifies": verifies, "dedups": dedups}
+
 
 # --------------------------------------------------------------------------
-def review_text(path: Path, text: str, known, data_host) -> list[Finding]:
+def review_text(path: Path, text: str, known, data_host, project=None) -> list[Finding]:
     out: list[Finding] = []
-    lines = text.splitlines()
+    lines = text.splitlines()          # 顯示用，保留原文
+    text = code_mask(text, path.suffix)  # 判斷用，註解已清空且長度不變
+    # 單檔模式沒有專案視野，只能拿這一份檔案當全部
+    project = project if project is not None else project_facts({str(path): text})
+    is_test = is_test_file(path)
     rel = str(path)
     dep_rows = {d["item"]: d for d in rows("deprecations.csv")}
 
@@ -139,7 +275,8 @@ def review_text(path: Path, text: str, known, data_host) -> list[Finding]:
         out.append(Finding(sev, rule, rel, ln, msg, fix, doc))
 
     # ---- 1. 已停用 / 已淘汰 -------------------------------------------
-    for pattern, item in DEPRECATED_TOKENS:
+    # 測試檔會為了斷言「這個值要被擋下來」而寫進已淘汰的值，那不是在用它
+    for pattern, item in ([] if is_test else DEPRECATED_TOKENS):
         for m in re.finditer(pattern, text):
             ln = text[:m.start()].count("\n") + 1
             info = dep_rows.get(item, {})
@@ -151,8 +288,11 @@ def review_text(path: Path, text: str, known, data_host) -> list[Finding]:
                 info.get("doc_url", ""))
 
     # ---- 2. 端點與主機 -------------------------------------------------
+    # `${encodeURIComponent(id)}` 裡有括號，字元集吃不下就會在 `(` 斷掉，
+    # 斷出來的殘骸既對不上任何端點（假警報），也讓後面的 /content 消失（真漏報）
     for m in re.finditer(r"""(?P<host>https://api(?:-data)?\.line\.me)?"""
-                         r"""(?P<path>/v2/bot/[A-Za-z0-9{}$/._+'"\-]*)""", text):
+                         r"""(?P<path>/v2/bot/(?:\$\{[^{}]*(?:\([^()]*\))?[^{}]*\}"""
+                         r"""|[A-Za-z0-9{}$/._+'"\-])*)""", text):
         raw = m.group("path")
         # 去掉字串結尾殘留的引號
         raw = raw.rstrip("\"'")
@@ -182,6 +322,7 @@ def review_text(path: Path, text: str, known, data_host) -> list[Finding]:
     # ---- 3. webhook 簽章 -----------------------------------------------
     # PHP 讀標頭時會變成 HTTP_X_LINE_SIGNATURE，用連字號比對會漏掉
     has_sig = re.search(r"(?i)x[-_]line[-_]signature", text)
+    computes_hmac = re.search(HMAC_CALL, text)
     if has_sig:
         # 用 parse 過的 JSON 再序列化來算簽章 —— 永遠對不上
         # 序列化必須出現在 hmac 這一次呼叫的「參數裡面」才算數。
@@ -208,24 +349,29 @@ def review_text(path: Path, text: str, known, data_host) -> list[Finding]:
                 "簽章似乎是用序列化過的 JSON 算的；必須用原始 request body bytes",
                 "Flask: request.get_data()｜Express: express.raw()｜PHP: php://input",
                 "https://developers.line.biz/en/docs/messaging-api/verify-webhook-signature/")
-        if not re.search(r"(?i)(compare_digest|timingSafeEqual|hash_equals|MessageDigest\.isEqual)",
-                         text):
-            ln = text[:has_sig.start()].count("\n") + 1
+        # 只有「真的在算 HMAC」的檔案才談得上比對方式。
+        # 原本只要檔案提到 x-line-signature 就報，於是 pino 的遮蔽欄位清單
+        # 和把驗簽委派出去的路由檔全中招，真正驗簽的那一支反而沒事。
+        if computes_hmac and re.search(SIG_COMPARE, text) and not re.search(
+                r"(?i)(compare_digest|timingSafeEqual|hash_equals|MessageDigest\.isEqual)", text):
+            ln = text[:computes_hmac.start()].count("\n") + 1
             add("warning", "signature-compare", ln,
                 "簽章比對似乎沒有用常數時間比較，容易被時間差攻擊",
                 "Python: hmac.compare_digest｜Node: crypto.timingSafeEqual｜PHP: hash_equals",
                 "https://developers.line.biz/en/docs/messaging-api/verify-webhook-signature/")
-    elif re.search(r"(?i)(webhook|/callback)", text) and re.search(r"events", text):
+    elif not project.get("verifies") and looks_like_receiver(text):
         add("error", "signature-missing", 1,
-            "看起來是 webhook 接收端，但沒有驗證 x-line-signature",
+            "看起來是 webhook 接收端，但整個專案都沒有驗證 x-line-signature",
             "LINE 不公開來源 IP，簽章是唯一的驗證手段",
             "https://developers.line.biz/en/docs/messaging-api/verify-webhook-signature/")
 
     # ---- 4. 冪等與先回 200 ---------------------------------------------
-    if re.search(r"replyToken", text) and not re.search(r"webhookEventId", text) \
-            and re.search(r"(?i)(webhook|/callback)", text):
+    # 去重通常寫在獨立的一支（events 表、Redis），跟收 webhook 的路由不同檔。
+    # 逐檔判斷會對著每一個碰到 replyToken 的檔案各喊一次，包含正在做去重的那支。
+    if not project.get("dedups") and re.search(r"replyToken", text) \
+            and looks_like_receiver(text):
         add("info", "idempotency", 1,
-            "沒看到用 webhookEventId 去重；LINE 沒收到 200 會重送同一筆事件",
+            "整個專案都沒看到用 webhookEventId 去重；LINE 沒收到 200 會重送同一筆事件",
             "把 webhookEventId 寫進 Redis/DB 的 unique index 做冪等",
             "https://developers.line.biz/en/docs/messaging-api/receiving-messages/")
 
@@ -341,8 +487,10 @@ def main() -> int:
         raise SystemExit(f"找不到 {target}")
 
     known, data_host = endpoint_index()
-    findings: list[Finding] = []
     files = collect(target)
+
+    # 第一趟：讀檔並遮掉註解，順便算出專案層級的事實（有沒有驗簽、有沒有去重）
+    sources: dict[Path, str] = {}
     for path in files:
         try:
             text = path.read_text(encoding="utf-8", errors="replace")
@@ -350,7 +498,24 @@ def main() -> int:
             continue
         if "line" not in text.lower():
             continue
-        findings.extend(review_text(path, text, known, data_host))
+        sources[path] = text
+    project = project_facts({str(p): code_mask(t, p.suffix) for p, t in sources.items()})
+
+    # 第二趟：逐檔套規則
+    findings: list[Finding] = []
+    for path, text in sources.items():
+        findings.extend(review_text(path, text, known, data_host, project))
+
+    # 專案層級的問題只講一次。同一件事在 40 個檔案各喊一遍，等於沒講
+    seen_once = set()
+    kept = []
+    for f in findings:
+        if f.rule in PROJECT_RULES:
+            if f.rule in seen_once:
+                continue
+            seen_once.add(f.rule)
+        kept.append(f)
+    findings = kept
 
     cap = SEVERITY_ORDER[args.min_severity]
     findings = [f for f in findings if SEVERITY_ORDER[f.severity] <= cap]

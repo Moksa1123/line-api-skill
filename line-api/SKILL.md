@@ -173,14 +173,26 @@ python scripts/review.py ./src --min-severity error   # 只看必須修的
 | `wrong-host` | error | 內容類端點打到 `api.line.me` 而不是 `api-data.line.me` |
 | `hardcoded-secret` | error | channel secret / access token 寫死在原始碼 |
 | `signature-body` | error | 拿反序列化後再 dump 的 JSON 算簽章（空白一差就驗不過） |
-| `signature-compare` | warning | 簽章用 `==` 比，不是常數時間比較 |
-| `signature-missing` | error | 有 webhook 端點但完全沒驗簽章 |
+| `signature-compare` | warning | 真的在驗簽，卻用 `==` 比而不是常數時間比較 |
+| `signature-missing` | error | 有 webhook 端點，但整個專案都沒驗簽章 |
 | `unknown-endpoint` | warning | 路徑不在官方端點清單裡（多半是拼錯） |
 | `message-json` | warning | 內嵌的訊息 / Flex JSON 直接丟給 validate.py 驗 |
 | `idempotency` | info | 沒用 `webhookEventId` 去重，LINE 重送會重複處理 |
 
-每一筆都附建議與官方文件連結。找不到問題就什麼都不報 ——
-自家 `examples/` 底下 6 個範例檔的期望輸出是零筆，這件事有測試守著。
+每一筆都附建議與官方文件連結。找不到問題就什麼都不報。
+
+判斷時的三個分寸，都是拿真實專案掃出來才調對的：
+
+- **註解不算程式碼。** 解釋「為什麼不能用 JSON.stringify 算簽章」的那段 docblock，
+  本身就含有 `JSON.stringify` 與 `x-line-signature`。用原文比對等於在罰寫註解的人。
+- **`signature-missing` 與 `idempotency` 是專案層級的。** 分層寫的專案會把驗簽放進
+  `signature.ts`、去重放進 `webhook.ts`；逐檔判斷會對著每一個沒寫的檔案各報一次，
+  包含正在做這件事的那一支。這兩條只報一次，而且全專案都沒做才報。
+- **測試檔不套 `deprecated`。** 測試會刻意寫進已淘汰的值來斷言「這個要被擋下來」，
+  那不是在用它。
+
+零誤報這件事有兩個測試守著：自家 `examples/` 6 個檔要零筆，
+以及上面三種寫法都不得觸發。
 
 ### `scripts/test_line.py` — 自我測試
 

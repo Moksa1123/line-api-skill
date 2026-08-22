@@ -303,6 +303,80 @@ def cb():
     return f"{len(rules)} 類問題全部抓到"
 
 
+@check("review: 寫得好的程式碼不該被罵（真實專案驗出來的誤報）")
+def t_review_precision():
+    """這五種寫法都出現在實際的正式專案裡，每一種都曾被誤報。
+
+    第一次拿 review.py 掃一個 249 檔的 LINE SaaS，23 筆發現全是假的：
+    註解、pino 遮蔽清單、coverage 產物、分層寫的驗簽與去重、樣板字串裡的
+    函式呼叫。真正該報的那一筆反而漏掉。以下逐條釘住。
+    """
+    import review
+    known, data_host = review.endpoint_index()
+
+    def rules_for(name, src, project=None):
+        return {f.rule for f in
+                review.review_text(Path(name), src, known, data_host, project)}
+
+    # 1. 解釋「不可以這樣做」的註解，不是在這樣做
+    doc = '''
+/**
+ * 轉發的是原始位元組，不是重新序列化的 JSON。
+ * 用 JSON.stringify 重算 x-line-signature 會因為空白差異對不上。
+ */
+export async function forward(raw: Buffer) { return raw }
+'''
+    assert not rules_for("forward.ts", doc), "註解被當成程式碼了"
+
+    # 2. 只是把標頭列進遮蔽清單，沒有在驗簽
+    redact = '''
+export const logger = pino({
+  redact: { paths: ['authorization', 'req.headers["x-line-signature"]'] },
+})
+'''
+    assert "signature-compare" not in rules_for("logger.ts", redact), \
+        "沒算 HMAC 的檔案不該被要求常數時間比較"
+
+    # 3. 產生簽章送出去的測試，裡面沒有任何比對
+    signer = '''
+import { createHmac } from 'node:crypto'
+const sig = createHmac('sha256', SECRET).update(raw).digest('base64')
+await app.inject({ headers: { 'x-line-signature': sig }, payload: raw })
+'''
+    assert "signature-compare" not in rules_for("fwd.test.ts", signer), \
+        "只簽章不比對的程式碼不該被要求常數時間比較"
+
+    # 4. 樣板字串裡有函式呼叫，路徑不可以在括號處被截斷
+    tpl = ('const res = await fetch(`https://api-data.line.me'
+           '/v2/bot/message/${encodeURIComponent(messageId)}/content`)\n')
+    assert not rules_for("client.ts", tpl), \
+        "巢狀 ${...(...)} 讓路徑解析斷掉了"
+
+    # 5. 驗簽在 signature.ts、去重在 webhook.ts，收 webhook 的路由兩者都沒寫
+    route = '''
+app.post('/webhook/:key', async (req, reply) => {
+  const ok = await verifySignature(req.rawBody, req.headers['x-line-signature'])
+  if (!ok) return reply.code(400).send()
+  for (const e of req.body.events) await handle(e.replyToken, e)
+})
+'''
+    layered = {"sig.ts": "createHmac('sha256', s); if (a === b) {} // x-line-signature",
+               "hook.ts": "const id = event.webhookEventId"}
+    assert not (rules_for("routes.ts", route, review.project_facts(layered))
+                & review.PROJECT_RULES), "分層寫的專案被逐檔重複指責"
+
+    # 6. coverage 報告會把整份 .ts 內嵌進 .ts.html，掃到等於重複審查
+    assert "coverage" in review.SKIP_DIRS and "htmlcov" in review.SKIP_DIRS
+
+    # 反面：真的在驗簽卻用 == 比，還是要抓
+    weak = '''
+const expected = createHmac('sha256', SECRET).update(raw).digest('base64')
+if (expected !== req.headers['x-line-signature']) return reply.code(400).send()
+'''
+    assert "signature-compare" in rules_for("weak.ts", weak), "真的用 == 比卻沒抓到"
+    return "6 類誤報都不再發生，真問題照樣抓得到"
+
+
 @check("dataset: 行動 SDK（iOS / Android）的型別清單有進資料集")
 def t_sdk_api():
     sdk = rows("sdk-api.csv")
