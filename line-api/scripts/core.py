@@ -131,6 +131,20 @@ CSV_CONFIG: Dict[str, dict] = {
                         "description", "doc_url"],
         "label": "API 回應欄位",
     },
+    "liff_availability": {
+        "file": "liff-availability.csv",
+        "search_cols": ["feature", "how_to_check", "min_line_version"],
+        "output_cols": ["feature", "needs_permission", "min_line_version",
+                        "min_os_version", "unsupported_from_version",
+                        "how_to_check", "doc_url"],
+        "label": "LIFF 功能需要的 LINE App 版本",
+    },
+    "checklist": {
+        "file": "checklists.csv",
+        "search_cols": ["rule", "section", "page_title", "product"],
+        "output_cols": ["product", "page_title", "section", "rule", "doc_url"],
+        "label": "規範與檢查清單",
+    },
     "guide_spec": {
         "file": "guide-specs.csv",
         "search_cols": ["item", "attribute", "section", "page_title", "value", "product"],
@@ -246,6 +260,12 @@ CSV_CONFIG: Dict[str, dict] = {
 DOMAIN_KEYWORDS: Dict[str, List[str]] = {
     # 指南頁的規格：LIFF 與 MINI App 的規則大半寫在指南的表格裡，
     # 不在 reference 的參數區塊，所以要獨立一個域才查得到
+    "liff_availability": ["isapiavailable", "is api available", "minver",
+                          "line 版本", "版本需求", "支援版本", "availability",
+                          "哪個版本", "沒反應", "不支援"],
+    "checklist": ["送審", "審核", "review", "submission", "guideline", "規範",
+                  "policy", "政策", "被退件", "requirement", "檢查清單",
+                  "注意事項", "禁止"],
     "guide_spec": ["mini app", "miniapp", "mini-app", "service message", "服務訊息",
                    "icon", "圖示", "custom path", "自訂路徑", "in-app purchase",
                    "站內購買", "quick fill", "share message", "分享訊息",

@@ -7,7 +7,7 @@ user-invocable: true
 # LINE Platform 開發技能
 
 > 資料全部由 [`line/line-openapi`](https://github.com/line/line-openapi) 官方 OpenAPI 規格
-> 與 https://developers.line.biz 官方文件自動萃取，共 **6877 筆**。
+> 與 https://developers.line.biz 官方文件自動萃取，共 **7096 筆**。
 > 每一筆都附官方文件連結，且連結經 `tools/check_links.py` 實際驗證過。
 
 ## 何時使用
@@ -62,7 +62,7 @@ python scripts/review.py ./src             # 整個目錄
 
 ---
 
-## 26 個搜尋域
+## 28 個搜尋域
 
 | 域 | 內容 | 筆數 |
 |---|---|---|
@@ -77,6 +77,8 @@ python scripts/review.py ./src             # 整個目錄
 | `response` | 每支端點回應主體的逐欄位型別 | 218 |
 | `guide` | 221 頁官方指南的標題與各節索引 | 221 |
 | `guide_spec` | 指南頁的表格與內文限制（LIFF 與 MINI App 的規則大半在這裡） | 2951 |
+| `checklist` | 送審／開發／效能規範的條列規則 | 207 |
+| `liff_availability` | 每個 LIFF 功能需要的 **LINE App** 版本（不是 SDK 版本） | 12 |
 | `faq` | 官方 FAQ 92 題（題目、標籤、錨點連結） | 92 |
 | `sdk_api` | iOS Swift / Android SDK 的型別清單 | 80 |
 | `url_scheme` | LINE URL scheme（加好友、相機、設定畫面…） | 44 |

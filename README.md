@@ -9,7 +9,7 @@ AI assistant answers from the spec instead of from memory.
 <p>
   <img src="https://img.shields.io/badge/endpoints-121-success?style=flat-square" alt="121 endpoints">
   <img src="https://img.shields.io/badge/fields-1584-blue?style=flat-square" alt="1584 fields">
-  <img src="https://img.shields.io/badge/dataset-6877%20rows-orange?style=flat-square" alt="6877 rows">
+  <img src="https://img.shields.io/badge/dataset-7096%20rows-orange?style=flat-square" alt="7096 rows">
   <img src="https://img.shields.io/badge/platforms-8-9cf?style=flat-square" alt="8 platforms">
   <img src="https://img.shields.io/badge/python-3.9%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.9+">
   <img src="https://img.shields.io/badge/dependencies-0-brightgreen?style=flat-square" alt="zero dependencies">
@@ -140,8 +140,8 @@ reports nothing — a test asserts zero findings across this repo's own examples
 | Rich menu | object shape, image spec, aliases, per-user linking |
 | Webhook | 20 events, 247 typed fields, signature verification |
 | LINE Login | OAuth 2.0 + OIDC, scopes, ID token verification |
-| LIFF | 35 APIs (each verified present in the shipped SDK), introduced-in version, tree-shakable modules, browser-by-browser feature table |
-| LINE MINI App | 1,188 extracted specs — verified vs unverified capability table, service message character limits, in-app purchase, custom paths, icons |
+| LIFF | 35 APIs (each verified present in the shipped SDK), the LIFF version each landed in **and the LINE app version each needs**, tree-shakable modules, browser-by-browser feature table |
+| LINE MINI App | 1,196 extracted specs plus 74 submission and development rules — verified vs unverified capability table, service message limits, in-app purchase, custom paths, icons |
 | URL schemes | 44 schemes, and the three platform limits people trip on |
 | Mobile SDKs | 80 iOS/Android types with links into the generated reference |
 
@@ -158,7 +158,7 @@ never recommends a dead API.
 | `signature.py` | Webhook signature; channel access tokens incl. a pure-Python RS256 JWT |
 | `lineapi.py` | Zero-dependency Messaging API client; routes `api-data.line.me` for you |
 | `review.py` | Audits code you already have: dead APIs, wrong host, signature handling, typo'd endpoints, bad message JSON |
-| `test_line.py` | 53 offline tests + 6 live tests |
+| `test_line.py` | 55 offline tests + 6 live tests |
 
 ## How the Data Is Built
 

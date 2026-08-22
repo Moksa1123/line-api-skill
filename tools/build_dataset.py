@@ -1525,6 +1525,18 @@ def main() -> int:
               ["question", "product", "tags", "doc_url"],
               build_faq())
 
+    import _liff_extra
+    write_csv("liff-availability.csv",
+              ["feature", "needs_permission", "min_line_version", "min_os_version",
+               "unsupported_from_version", "how_to_check", "doc_url"],
+              _liff_extra.build_availability(
+                  (REF / "liff.md").read_text(encoding="utf-8")))
+
+    import _checklists
+    write_csv("checklists.csv",
+              ["product", "page", "page_title", "section", "rule", "doc_url"],
+              _checklists.build(DOCS, HEAD_RE, fence_mask))
+
     import _guide_specs
     write_csv("guide-specs.csv",
               ["product", "page", "page_title", "section", "item",

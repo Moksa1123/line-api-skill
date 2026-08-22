@@ -675,6 +675,54 @@ def t_guide_specs():
     return f"{len(rows)} 筆（MINI App {len(mini)}、LIFF {len(liff)}），{len(cases)} 個查詢全命中"
 
 
+@check("dataset: LIFF 功能需要的 LINE App 版本（跟 SDK 版本是兩回事）")
+def t_liff_availability():
+    """liff-api.csv 的 introduced_in 是「這個 API 從哪一版 LIFF SDK 開始有」，
+    但線上最常見的問題是「我用最新 SDK，為什麼使用者按了沒反應」——
+    答案通常是使用者的 LINE App 太舊。兩個版本混在一起講會害人，
+    所以另開一份表，欄位名稱直接寫明是 LINE App 版本。
+    """
+    data = rows("liff-availability.csv")
+    assert len(data) >= 10, f"只有 {len(data)} 個功能"
+    by = {r["feature"]: r for r in data}
+    # 抽查幾個實際會踩到的
+    assert by["shareTargetPicker"]["min_line_version"] == "10.3.0"
+    assert by["scanCodeV2"]["min_line_version"] == "11.7.0"
+    assert by["scanCodeV2"]["min_os_version"] == "14.3.0", "scanCodeV2 還有 iOS 版本要求"
+    # scanCode 是被淘汰的那個：有「從哪一版起不再支援」
+    assert by["scanCode"]["unsupported_from_version"] == "9.19.0"
+    for r in data:
+        assert r["how_to_check"].startswith("liff.isApiAvailable("), r
+        assert re.fullmatch(r"\d+\.\d+\.\d+", r["min_line_version"]), r
+    hits = core.search("shareTargetPicker 需要哪個 LINE 版本", max_results=3)
+    assert any(h.get("feature") == "shareTargetPicker" for h in hits), \
+        "版本需求要查得到"
+    return f"{len(data)} 個功能，含 minVer / minOsVer / 停止支援版本"
+
+
+@check("dataset: 送審與開發規範查得到（條列式的規則，表格萃取抓不到）")
+def t_checklists():
+    """送審規範、開發規範、效能規範這些頁面寫的是「你必須做到什麼」，
+    一條一條的項目符號。表格萃取看不到，內文限制那條也抓不到
+    （多數規則裡沒有數字）。而「送審前要檢查什麼」正是做 MINI App
+    最常問的，答錯的代價是整個審核被退。
+    """
+    data = rows("checklists.csv")
+    assert len(data) >= 150, f"規範只有 {len(data)} 條"
+    mini = [r for r in data if r["product"] == "line-mini-app"]
+    assert len(mini) >= 50, f"MINI App 的規範只有 {len(mini)} 條"
+    assert all(r["rule"] and r["doc_url"].startswith("https://") for r in data)
+    # 收進來的必須是規範類的頁面，不能把整站的項目符號都掃進來
+    pages = {r["page"] for r in data}
+    assert any("submission" in p or "submit" in p for p in pages), "送審指南沒收到"
+    assert any("guidelines" in p for p in pages), "開發規範沒收到"
+    assert not any("/demo/" in p or "/technicalcase/" in p for p in pages), \
+        "案例介紹頁不該被當成規範"
+    for q in ("送審前要檢查什麼", "mini app 送審 規範", "效能規範"):
+        assert core.search(q, domain="checklist", max_results=3), f"{q!r} 查不到"
+    return f"{len(data)} 條（MINI App {len(mini)}），來自 {len(pages)} 個規範頁"
+
+
 @check("search: 自然說法要問得到對的東西")
 def t_search_intent():
     """人不會用欄位名稱發問。這些是逐一人工確認過答案正確的查詢——

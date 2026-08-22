@@ -1,0 +1,13 @@
+feature,needs_permission,min_line_version,min_os_version,unsupported_from_version,how_to_check,doc_url
+shareTargetPicker,true,10.3.0,,,liff.isApiAvailable('shareTargetPicker'),https://developers.line.biz/en/reference/liff/#is-api-available
+multipleLiffTransition,true,10.18.0,,,liff.isApiAvailable('multipleLiffTransition'),https://developers.line.biz/en/reference/liff/#is-api-available
+subwindowOpen,true,11.7.0,,,liff.isApiAvailable('subwindowOpen'),https://developers.line.biz/en/reference/liff/#is-api-available
+scanCode,false,9.4.0,,9.19.0,liff.isApiAvailable('scanCode'),https://developers.line.biz/en/reference/liff/#get-context
+scanCodeV2,true,11.7.0,14.3.0,,liff.isApiAvailable('scanCodeV2'),https://developers.line.biz/en/reference/liff/#is-api-available
+getAdvertisingId,false,7.14.0,,,liff.isApiAvailable('getAdvertisingId'),https://developers.line.biz/en/reference/liff/#is-api-available
+addToHomeScreen,false,9.16.0,,,liff.isApiAvailable('addToHomeScreen'),https://developers.line.biz/en/reference/liff/#is-api-available
+bluetoothLeFunction,false,9.14.0,,9.19.0,liff.isApiAvailable('bluetoothLeFunction'),https://developers.line.biz/en/reference/liff/#get-context
+skipChannelVerificationScreen,false,11.14.0,,,liff.isApiAvailable('skipChannelVerificationScreen'),https://developers.line.biz/en/reference/liff/#is-api-available
+addToHomeV2,false,13.20.0,,,liff.isApiAvailable('addToHomeV2'),https://developers.line.biz/en/reference/liff/#is-api-available
+addToHomeHideDomain,false,13.20.0,,,liff.isApiAvailable('addToHomeHideDomain'),https://developers.line.biz/en/reference/liff/#is-api-available
+addToHomeLineScheme,false,13.20.0,,,liff.isApiAvailable('addToHomeLineScheme'),https://developers.line.biz/en/reference/liff/#is-api-available

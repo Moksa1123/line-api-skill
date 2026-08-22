@@ -8,7 +8,7 @@
 <p>
   <img src="https://img.shields.io/badge/endpoints-121-success?style=flat-square" alt="121 endpoints">
   <img src="https://img.shields.io/badge/fields-1584-blue?style=flat-square" alt="1584 fields">
-  <img src="https://img.shields.io/badge/dataset-6877%20rows-orange?style=flat-square" alt="6877 rows">
+  <img src="https://img.shields.io/badge/dataset-7096%20rows-orange?style=flat-square" alt="7096 rows">
   <img src="https://img.shields.io/badge/platforms-8-9cf?style=flat-square" alt="8 platforms">
   <img src="https://img.shields.io/badge/python-3.9%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.9+">
   <img src="https://img.shields.io/badge/dependencies-0-brightgreen?style=flat-square" alt="zero dependencies">
@@ -133,8 +133,8 @@ python scripts/review.py ./src --format json           # 給 CI 接
 | 圖文選單 | 物件結構、圖片規格、alias、個別使用者綁定 |
 | Webhook | 20 種事件、247 個帶型別的欄位、簽章驗證 |
 | LINE Login | OAuth 2.0 + OIDC、scope、ID token 驗證 |
-| LIFF | 35 個 API（逐一確認存在於實際發佈的 SDK）、引進版本、可搖樹匯入模組、各瀏覽器功能對照 |
-| LINE MINI App | 1,188 條萃取出的規格 —— 已驗證與未驗證的功能對照表、服務訊息字數上限、站內購買、自訂路徑、圖示規格 |
+| LIFF | 35 個 API（逐一確認存在於實際發佈的 SDK）、引進的 LIFF 版本**與各功能需要的 LINE App 版本**、可搖樹匯入模組、各瀏覽器功能對照 |
+| LINE MINI App | 1,196 條規格加 74 條送審與開發規範 —— 已驗證與未驗證的功能對照表、服務訊息上限、站內購買、自訂路徑、圖示規格 |
 | URL scheme | 44 個 scheme，以及三個最常踩的平台限制 |
 | 行動 SDK | 80 個 iOS / Android 型別，附官方 reference 連結 |
 
@@ -150,7 +150,7 @@ python scripts/review.py ./src --format json           # 給 CI 接
 | `signature.py` | webhook 簽章；channel access token（含純 Python 實作的 RS256 JWT） |
 | `lineapi.py` | 零依賴 Messaging API client，自動判斷該打哪個主機 |
 | `review.py` | 審既有程式碼：已停服 API、主機打錯、簽章寫法、端點拼錯、訊息 JSON 錯字 |
-| `test_line.py` | 53 項離線測試 + 6 項線上測試 |
+| `test_line.py` | 55 項離線測試 + 6 項線上測試 |
 
 ## 資料怎麼來的
 
