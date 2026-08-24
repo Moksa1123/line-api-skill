@@ -53,6 +53,8 @@ use_utf8_stdout()
 load_dotenv()
 
 DATA = HERE.parent / "data"
+# benchmark.py 住在維護者的倉庫，技能複製出去之後不存在——沒有就跳過
+REPO_TOOLS = HERE.parent.parent / "tools"
 REFS = HERE.parent / "references"
 
 PASS, FAIL, SKIP = "PASS", "FAIL", "SKIP"
@@ -794,6 +796,36 @@ def t_checklists():
     return f"{len(data)} 條（MINI App {len(mini)}），來自 {len(pages)} 個規範頁"
 
 
+@check("search: 實戰問題基準不得低於 95%")
+def t_benchmark():
+    """55 個做 LINE SaaS 真的會問的問題，前五名內要答得出來。
+
+    這跟召回率測的不是同一件事：召回率每次都指定 domain，等於預先告訴
+    搜尋引擎答案在哪一份資料裡。實戰問題沒有那個提示——第一次量出來只有
+    65.5%，而答不出來的那些事實全都在資料集裡，只是自動判域猜錯就再也
+    看不到了。改成跨域合併、每域限額、數量意圖與列舉意圖之後是 96.4%。
+
+    門檻設 95%，掉下去代表路由或排序退步了。完整的題目與分類在
+    tools/benchmark.py。
+    """
+    import importlib.util
+    bench = REPO_TOOLS / "benchmark.py"
+    if not bench.exists():
+        raise _Skip("benchmark.py 只在開發用的倉庫裡，技能安裝後不會帶")
+    spec = importlib.util.spec_from_file_location("benchmark", bench)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    wrong = []
+    for query, expect, _cat in mod.CASES:
+        if expect.lower() not in mod.answer_blob(query).lower():
+            wrong.append(f"{query!r}→{expect!r}")
+    rate = (len(mod.CASES) - len(wrong)) / len(mod.CASES) * 100
+    assert rate >= 95.0, (f"實戰問題準確率掉到 {rate:.1f}%："
+                          + "; ".join(wrong[:6]))
+    return f"{len(mod.CASES)} 題答對 {len(mod.CASES) - len(wrong)}，{rate:.1f}%"
+
+
 @check("search: 自然說法要問得到對的東西")
 def t_search_intent():
     """人不會用欄位名稱發問。這些是逐一人工確認過答案正確的查詢——
@@ -1071,6 +1103,62 @@ def cb():
                  "message-json"):         # quickreply 拼錯
         assert want in rules, f"沒抓到 {want}（實際抓到 {sorted(rules)}）"
     return f"{len(rules)} 類問題全部抓到"
+
+
+@check("review: 寫死的限制值與官方對不上（不會壞、不會被退，只是默默做差）")
+def t_wrong_limit():
+    """這一類 bug 沒有任何現有工具抓得到。
+
+        export const MAX_ALT_TEXT = 400      // 官方是 1500
+
+    400 比 1500 小，LINE 照收、測試全綠、客人也不會抱怨——只是通知列的
+    文字被白白砍掉四分之三。這是真實案例：一個正式營運的 LINE SaaS 就是
+    這樣寫的，改對之後註解寫著「那是別的東西的限制」。
+
+    規則本身不存任何數字，全部從資料集查，所以官方改了限制、重跑
+    build_dataset.py 之後判準自動跟著更新。
+    """
+    import review
+    known, data_host = review.endpoint_index()
+
+    def rules(src, name="limits.ts"):
+        return [f for f in review.review_text(Path(name), src, known, data_host)
+                if f.rule == "wrong-limit"]
+
+    line_ctx = "import { Client } from '@line/bot-sdk'\n"
+
+    # 比官方小：不會壞，但多半是抄錯 → warning
+    low = rules(line_ctx + "export const MAX_ALT_TEXT = 400\n")
+    assert len(low) == 1 and low[0].severity == "warning", \
+        f"altText 寫成 400 應該給警告，實際 {[(f.severity, f.message) for f in low]}"
+    assert "1500" in low[0].message
+
+    # 比官方大：LINE 會退件 → error
+    high = rules(line_ctx + "export const MAX_CHAT_BAR_TEXT = 20\n")
+    assert len(high) == 1 and high[0].severity == "error", "chatBarText 寫成 20 應該報錯"
+
+    # 寫對的不能報
+    for ok in ("export const MAX_ALT_TEXT = 1500",
+               "export const MAX_CHAT_BAR_TEXT = 14",
+               "export const MAX_QUICK_REPLIES = 13",
+               "export const MAX_AREAS = 20"):
+        assert not rules(line_ctx + ok + "\n"), f"{ok} 是對的，不該報"
+
+    # 同名不同義：卡片可能是樣板的 10 欄，也可能是 Flex 的 12 個 bubble，
+    # 兩個都對。只有兩個都不是才報
+    assert not rules(line_ctx + "const MAX_CAROUSEL_CARDS = 12\n"), "Flex 的 12 是對的"
+    assert not rules(line_ctx + "const MAX_CAROUSEL_CARDS = 10\n"), "樣板的 10 也是對的"
+    assert rules(line_ctx + "const MAX_CAROUSEL_CARDS = 7\n"), "7 兩個都不是，要報"
+
+    # 跟 LINE 無關的常數一律不碰
+    assert not rules(line_ctx + "const MAX_BATCH_SIZE = 5000\nconst MAX_RETRIES = 3\n")
+
+    # 通用字要有夠強的 LINE 上下文才算。真實案例：一個 1165 檔的專案裡，
+    # CSS 的 columns=1 與 UI 卡片的 columns=4 都被當成樣板輪播的欄數
+    css = "export const gridCss = `grid`\nconst columns = 4\n// line-height: 1.5\n"
+    assert not rules(css, "label-print-css.ts"), "CSS 的 columns 不該被當成輪播欄數"
+    assert rules(line_ctx + "const columns = 4\n"), "LINE 檔案裡的 columns 要看"
+    return "9 種寫法判斷正確，值全部來自資料集"
 
 
 @check("review: 寫得好的程式碼不該被罵（真實專案驗出來的誤報）")

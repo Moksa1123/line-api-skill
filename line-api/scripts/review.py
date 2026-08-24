@@ -28,6 +28,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
+import _limits  # noqa: E402
 import validate as val  # noqa: E402
 from core import use_utf8_stdout  # noqa: E402
 
@@ -156,6 +157,11 @@ def rows(name: str) -> list[dict]:
         return []
     with open(path, encoding="utf-8", newline="") as f:
         return list(csv.DictReader(f))
+
+
+# 概念 → 官方值。來源是資料集，這裡不存任何數字——
+# 抄一份數字進來就等於多一份會過期的真相
+LIMIT_VALUES = _limits.official_values(rows)
 
 
 class Finding:
@@ -402,6 +408,25 @@ def review_text(path: Path, text: str, known, data_host, project=None) -> list[F
             "整個專案都沒看到用 webhookEventId 去重；LINE 沒收到 200 會重送同一筆事件",
             "把 webhookEventId 寫進 Redis/DB 的 unique index 做冪等",
             "https://developers.line.biz/en/docs/messaging-api/receiving-messages/")
+
+    # ---- 4.5 寫死的限制值與官方對不上 ----------------------------------
+    for ln, name, value, candidates in _limits.scan(text, LIMIT_VALUES):
+        official = candidates[0][0]
+        where = "、".join(f"{src} = {v}" for v, src, _ in candidates)
+        doc = candidates[0][2]
+        if value > official:
+            add("error", "wrong-limit", ln,
+                f"{name} = {value}，超過官方的上限（{where}）；"
+                f"超過的內容會被 LINE 退件",
+                "把常數改成官方值，或在送出前先截斷", doc)
+        else:
+            # 比官方小不會壞，但多半是抄錯——而且沒有人會發現。
+            # MAX_ALT_TEXT 寫成 400（官方 1500）就是這樣：通知列的文字
+            # 被砍掉四分之三，測試全綠、LINE 照收、客人也不會抱怨。
+            add("warning", "wrong-limit", ln,
+                f"{name} = {value}，比官方的上限小（{where}）；"
+                f"如果不是刻意保守，等於白白少用了額度",
+                "確認是刻意的，否則改成官方值", doc)
 
     # ---- 5. 憑證寫死 ---------------------------------------------------
     for pattern, label in SECRET_PATTERNS:

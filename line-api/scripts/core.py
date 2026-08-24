@@ -305,7 +305,7 @@ DOMAIN_KEYWORDS: Dict[str, List[str]] = {
                      "問題", "排解", "為什麼", "收不到", "驗證失敗", "沒反應", "沒收到", "無法"],
     "reasoning": ["recommend", "which", "should i", "best", "or", "vs",
                   "推薦", "建議", "適合", "比較", "還是", "哪個", "該用", "怎麼選", "選型"],
-    "deprecation": ["deprecated", "discontinued", "notify", "停用", "淘汰", "已終止", "取代"],
+    "deprecation": ["還能用", "還可以用", "停用", "停止服務", "終止", "淘汰", "廢除", "已停", "不能用了", "deprecated", "discontinued", "notify", "停用", "淘汰", "已終止", "取代"],
     "emoji": ["emoji", "表情"],
     "sticker": ["sticker", "貼圖", "package id"],
 }
@@ -481,10 +481,153 @@ def detect_domain(query: str) -> str:
     return max(scores, key=lambda d: scores[d])
 
 
+def domain_scores(query: str) -> Dict[str, int]:
+    """每個域的關鍵字命中分數。detect_domain 只取最高的那個，
+    跨域搜尋則需要整張分佈當先驗權重。"""
+    q = expand_query(query).lower()
+
+    def weight(kw: str) -> int:
+        return len(kw) * (3 if re.search(r"[一-鿿]", kw) else 1)
+
+    return {d: sum(weight(kw) for kw in kws if kw in q)
+            for d, kws in DOMAIN_KEYWORDS.items()}
+
+
+def search_one(query: str, domain: str, max_results: int = 5) -> List[dict]:
+    """只搜一個域。指定 --domain 時走這裡。"""
+    return _search_domain(query, domain, max_results)
+
+
 def search(query: str, domain: Optional[str] = None, max_results: int = 5) -> List[dict]:
+    """沒指定域就跨域搜尋，不要把全部賭在一次猜測上。
+
+    原本是 detect_domain 猜一個域、只搜那一個。實測 55 個實戰問題只有
+    65% 答得出來——而且答不出來的那些，事實明明都在資料集裡：
+    「altText 上限」被判到 limit 域，可是 altText 的 1500 存在
+    message-objects；「webhook 簽章怎麼算」被判到 webhook 事件欄位，
+    可是簽章的作法在 troubleshoot。猜錯一次，答案就再也看不到。
+
+    改成每個域都搜，再用「域的關鍵字分數」當先驗權重合併排序。
+    猜對的域仍然排前面，猜錯時其他域的答案也還在。
+    """
     if not query:
         return []
-    domain = domain or detect_domain(query)
+    if domain:
+        return _search_domain(query, domain, max_results)
+
+    # 列舉問題不該用五列來回答「有哪些」。webhook 有 20 種事件，
+    # 硬塞進五格等於挑五個給你看，而使用者要的是那張清單本身。
+    # 同一種只留一列（在域內已去重），所以多回幾列不會變成雜訊。
+    listing = bool(LIST_INTENT.search(query))
+    if listing:
+        max_results = max(max_results, 15)
+
+    priors = domain_scores(query)
+    top = max(priors.values()) or 1
+    pool: List[tuple] = []
+    for dom in CSV_CONFIG:
+        hits = _search_domain(query, dom, max_results)
+        if not hits:
+            continue
+        best = hits[0]["_score"] or 1.0
+        # 域內先正規化（各域的 BM25 尺度不同，直接比大小沒有意義），
+        # 再乘上這個域有多像是問題想問的
+        prior = 1.0 + 1.5 * (priors.get(dom, 0) / top)
+        for h in hits:
+            pool.append((h["_score"] / best * prior, -h["_score"], h))
+    pool.sort(key=lambda x: (-x[0], x[1]))
+
+    # 一個域最多佔一半的名額。跨域搜了卻讓猜錯的那個域把五個位置全佔滿，
+    # 等於白搜——實測「圖文選單圖片尺寸」前五名全是 RichMenuArea 的欄位，
+    # 而答案在別的域。先照名次挑、每域設上限，不夠再回頭補滿。
+    # 「這個物件有哪些欄位」本質上就是單一域的問題——問貼圖訊息的欄位，
+    # 答案就該是好幾列貼圖訊息的欄位，分給別的域反而是雜訊。
+    # 問「上限多少」才需要分散，因為答案常常不在猜中的那個域。
+    # 問欄位時放寬到「留兩格給別的域」而不是全給——全給的話
+    # 「群組事件的 source 有什麼」五格全被事件列佔滿，
+    # 而答案在 webhook 逐欄位那一份的 Source 物件裡
+    # 列舉與問欄位都是「答案集中在一個域」的問題，但列舉更極端：
+    # 那張清單本來就住在同一份資料裡
+    if listing:
+        cap = max_results
+    elif FIELD_INTENT.search(query):
+        cap = max(2, max_results - 2)
+    else:
+        cap = max(1, max_results // 2)
+    used: Dict[str, int] = {}
+    picked, spare = [], []
+    for _, _, hit in pool:
+        dom = hit["_domain"]
+        if used.get(dom, 0) < cap:
+            used[dom] = used.get(dom, 0) + 1
+            picked.append(hit)
+            if len(picked) >= max_results:
+                return picked
+        else:
+            spare.append(hit)
+    return (picked + spare)[:max_results]
+
+
+# 問「上限是多少」的時候，答案一定是個數字。沒有數字的那一列再怎麼
+# 字面相似都不是答案——「圖文選單最多幾個區域」原本前五名全是
+# RichMenuArea 的 bounds / action，而答案在 RichMenuRequest.areas = 20。
+WANTS_NUMBER = re.compile(
+    r"(?i)(上限|最多|幾個|幾則|幾筆|多少|多久|效期|限制|大小|長度|尺寸"
+    r"|limit|max|maximum|how many|how long|size|length)")
+NUMBER_FIELDS = ("max_length", "max", "value", "min_line_version")
+
+# 「有哪些型別／種類」是列舉問題，不是查值問題。回五列同一種型別
+# 等於沒有回答——問 webhook 有哪些事件，答案該是不同的事件各一列。
+LIST_INTENT = re.compile(
+    r"(?i)(有哪些|哪幾種|有幾種|列出|全部的|所有的|種類"
+    r"|list|what types|which types|all的)")
+# 每個域用哪一欄當「這是哪一種」
+DISCRIMINATOR = ("event", "type", "feature", "item", "scheme", "term", "name")
+
+
+def _kind_of(row: dict) -> str:
+    for col in DISCRIMINATOR:
+        v = str(row.get(col) or "").strip()
+        if v:
+            return v
+    return ""
+
+
+# 問「有哪些欄位／屬性」時不要分散名額
+FIELD_INTENT = re.compile(
+    r"(?i)(欄位|屬性|參數|有什麼|要什麼|長什麼樣|結構"
+    r"|fields?|properties|params?|schema)")
+
+
+def _has_number(row: dict) -> bool:
+    for f in NUMBER_FIELDS:
+        v = str(row.get(f) or "").strip()
+        if v and any(c.isdigit() for c in v):
+            return True
+    return False
+
+
+# 帶標點的識別字是很強的訊號：line://、liff.getIDToken、x-line-signature、
+# /v2/bot/message/push —— 這些字面出現在某一列裡，那一列幾乎一定就是答案。
+# BM25 會把它拆成子詞，於是「line:// 還能用嗎」變成跟一堆含 line 的列競爭，
+# 真正在講 line:// 的那列排到第三，剛好被跨域合併的名額切掉。
+LITERAL = re.compile(
+    r"(?:/[A-Za-z0-9{}][A-Za-z0-9{}/._-]{3,}"          # /v2/bot/message/push
+    r"|[A-Za-z][A-Za-z0-9]*(?:[.:/_-]+[A-Za-z0-9]*)+)"  # line:// liff.getIDToken x-line-signature
+)
+
+
+def _literals(query: str) -> List[str]:
+    out = []
+    for m in LITERAL.finditer(query):
+        tok = m.group(0)
+        # 要有標點才算識別字，而且長到不會誤傷（"a.b" 太短）
+        if len(tok) >= 5 and re.search(r"[.:/_-]", tok):
+            out.append(tok.lower())
+    return out
+
+
+def _search_domain(query: str, domain: str, max_results: int) -> List[dict]:
     rows, docs = load_csv(domain)
     expanded = expand_query(query)
     if not rows:
@@ -494,12 +637,32 @@ def search(query: str, domain: Optional[str] = None, max_results: int = 5) -> Li
     avg_dl = sum(len(d) for d in docs) / len(docs)
     qt = tokenize(expanded)
 
+    wants_number = bool(WANTS_NUMBER.search(expanded))
+    literals = _literals(query)
     scored = []
     for i, doc in enumerate(docs):
         s = bm25_score(qt, doc, idf, avg_dl)
         if s > 0:
-            scored.append((s + primary_boost(expanded, rows[i], cfg), i))
+            s += primary_boost(expanded, rows[i], cfg)
+            if wants_number and _has_number(rows[i]):
+                s += 3.0
+            if literals:
+                blob = " ".join(str(rows[i].get(c, "")) for c in cfg["search_cols"]).lower()
+                if any(lit in blob for lit in literals):
+                    s += 12.0
+            scored.append((s, i))
     scored.sort(key=lambda x: (-x[0], x[1]))
+
+    # 列舉問題：同一種只留一列，把名額讓給不同的種類
+    if LIST_INTENT.search(query):
+        seen_kind, deduped = set(), []
+        for sc, idx in scored:
+            kind = _kind_of(rows[idx])
+            if kind and kind in seen_kind:
+                continue
+            seen_kind.add(kind)
+            deduped.append((sc, idx))
+        scored = deduped
 
     out = []
     for score, idx in scored[:max_results]:

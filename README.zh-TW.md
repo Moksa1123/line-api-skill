@@ -150,7 +150,7 @@ python scripts/review.py ./src --format json           # 給 CI 接
 | `signature.py` | webhook 簽章；channel access token（純 Python RS256 JWT）；ID token 驗簽（HS256 與 ES256 兩種） |
 | `lineapi.py` | 零依賴 Messaging API client，自動判斷該打哪個主機 |
 | `review.py` | 審既有程式碼：已停服 API、主機打錯、簽章寫法、端點拼錯、訊息 JSON 錯字 |
-| `test_line.py` | 56 項離線測試 + 6 項線上測試 |
+| `test_line.py` | 58 項離線測試 + 6 項線上測試 |
 
 ## 資料怎麼來的
 

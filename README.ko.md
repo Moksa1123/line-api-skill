@@ -153,7 +153,7 @@ python scripts/review.py ./src --format json           # CI 연동용
 | `signature.py` | webhook 서명, 채널 액세스 토큰(순수 Python RS256 JWT), ID 토큰 검증(HS256·ES256 모두) |
 | `lineapi.py` | 의존성 없는 Messaging API 클라이언트. 호스트를 자동 분기 |
 | `review.py` | 기존 코드 점검: 종료된 API, 잘못된 호스트, 서명 처리, 엔드포인트 오타, 메시지 JSON |
-| `test_line.py` | 오프라인 56개 + 라이브 6개 테스트 |
+| `test_line.py` | 오프라인 58개 + 라이브 6개 테스트 |
 
 ## 데이터를 만드는 방법
 

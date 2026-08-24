@@ -155,3 +155,12 @@ webhook 事件,webhook event,
 幾則,how many up to maximum,
 範本,template,MINI App 的服務訊息範本
 通知權杖,service notification token,
+區域,area areas bounds,圖文選單的可點區域
+可點區域,areas,
+型別,type,
+種類,type types,
+哪些型別,type,
+群組事件,group source groupId,
+服務通知權杖,service notification token expires,
+通知權杖效期,notification token expires,
+一次能發,up to how many,

@@ -102,6 +102,7 @@ python tools/build_dataset.py
 python tools/check_links.py --md
 python tools/audit_coverage.py      # A/B/C/E 應為 0（Template 基底除外）
 python tools/check_docs.py          # 文件數字過期會 exit 1，--fix 可自動更正
+python tools/benchmark.py           # 55 個實戰問題的準確率，低於 95% exit 1
 
 # 對外部真值的驗證（需要憑證／網路）
 python tools/check_endpoints.py     # 121 條路徑是否存在。一律送 PATCH——
@@ -114,7 +115,7 @@ python tools/get_id_token.py        # 跑一次 LINE Login 取得 ID token 寫�
                                     # 解鎖 live 的 ID token 驗簽對照
 
 # 測試
-python line-api/scripts/test_line.py            # 離線 56 項
+python line-api/scripts/test_line.py            # 離線 58 項
 python line-api/scripts/test_line.py --live     # 加 6 項實打 LINE API
 
 # 技能本身的工具
@@ -150,6 +151,11 @@ python line-api/scripts/lineapi.py info
   方向性、色碼與尺寸格式、action 放置限制、圖文選單尺寸範圍）
 - 官方文件裡 13 種 webhook 事件的範例一個都不能被誤判
 - 搜尋抽樣召回率不得低於 97%，以及 12 個自然說法的查詢要命中
+- 55 個實戰問題（多租戶 webhook、圖文選單、Flex、LIFF 綁定、服務訊息…）
+  前五名內的準確率不得低於 95%。這跟召回率測的不是同一件事——
+  召回率每次都指定 domain，等於先告訴引擎答案在哪份資料裡
+- review.py 會比對程式碼裡寫死的 LINE 限制值與官方是否一致
+  （值從資料集查，不寫死在規則裡）
 
 新增功能請一併補測試。
 

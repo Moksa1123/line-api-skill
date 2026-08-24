@@ -158,7 +158,7 @@ never recommends a dead API.
 | `signature.py` | Webhook signature; channel access tokens (pure-Python RS256 JWT); ID token verification for both HS256 and ES256 |
 | `lineapi.py` | Zero-dependency Messaging API client; routes `api-data.line.me` for you |
 | `review.py` | Audits code you already have: dead APIs, wrong host, signature handling, typo'd endpoints, bad message JSON |
-| `test_line.py` | 56 offline tests + 6 live tests |
+| `test_line.py` | 58 offline tests + 6 live tests |
 
 ## How the Data Is Built
 

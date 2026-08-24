@@ -27,12 +27,16 @@ user-invocable: true
 **回答任何 LINE API 問題前，先查資料庫，不要憑記憶回答。**
 
 ```bash
-python scripts/search.py "<關鍵字>"                 # 自動判斷搜尋域
+python scripts/search.py "<關鍵字>"                 # 跨域搜尋，自動排序
 python scripts/search.py "<關鍵字>" --domain all    # 不確定時全域搜尋
 python scripts/search.py --stats                    # 看資料集有什麼
 ```
 
-中文查詢也可以（內建 130+ 條術語對照，會自動補上英文詞）：
+**不指定 `--domain` 時會搜遍所有域再合併排序**，不是猜一個域就只搜那個。
+猜一次的做法實測只答得出 65% 的實戰問題——而答不出來的那些，事實全都在
+資料集裡，只是判錯域就再也看不到了。指定 `--domain` 仍然只搜那一個。
+
+中文查詢也可以（內建 160+ 條術語對照，會自動補上英文詞）：
 
 ```bash
 python scripts/search.py "圖文選單"        # → richmenu
