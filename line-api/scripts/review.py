@@ -43,7 +43,11 @@ SKIP_DIRS = {"node_modules", ".git", "vendor", "dist", "build", "__pycache__",
              # 產生物。coverage 報告會把整份 .ts 內嵌進 .ts.html，
              # 掃到就等於把同一份程式碼審兩次，而且第二次沒有上下文
              "coverage", "htmlcov", ".turbo", ".nuxt", ".output", "out",
-             "storybook-static", ".svelte-kit", ".pytest_cache", ".mypy_cache"}
+             "storybook-static", ".svelte-kit", ".pytest_cache", ".mypy_cache",
+             # 測試報告跟 coverage 是同一類：打包後的 JS 什麼字都有，
+             # 掃到只會拿別人的產生物當成使用者寫的程式碼
+             "playwright-report", "test-results", "allure-report",
+             ".nyc_output", "reports", "__snapshots__"}
 
 TEST_FILE = re.compile(
     r"(?i)"
