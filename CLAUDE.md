@@ -1,4 +1,4 @@
-本專案總機：LINE 總機，守則在 C:\Users\yun19\OneDrive\桌面\linelogin\總機\總機規則.md；工作 session 交辦與健康由它管。
+本專案總機：moksa skill 總機（E:\moksa-skills\總機）
 
 # CLAUDE.md
 
