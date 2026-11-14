@@ -1,3 +1,5 @@
+本專案總機：LINE 總機，守則在 C:\Users\yun19\OneDrive\桌面\linelogin\總機\總機規則.md；工作 session 交辦與健康由它管。
+
 # CLAUDE.md
 
 給 Claude Code（claude.ai/code）在這個 repo 工作時的指引。
@@ -92,6 +94,17 @@ python line-api/scripts/test_line.py
    有 channel access token 時再跑一次 `--live`。
 8. **憑證不進 repo**：`.env`、`*.key`、`*.jwk` 都已在 `.gitignore`。
    範例一律用 `os.environ[...]` 讀。
+9. **要完整，不要快。** 以官方文件為主，逐步挖到完整。目標是使用者的 SaaS
+   （`D:\lineliff`）用這個 skill 的準確率 95% 以上。
+10. **改 skill 改這裡，不改安裝版。** 全域 `~/.claude/skills/line-api` 是從
+    `line-api/` 安裝過去的；改完跑測試，再 `python tools/install-skill.py claude-code --global`。
+
+## 工作習慣
+
+- 上下文到 20 萬先把進度寫進檔案再 /compact；到 30 萬、壓縮 ≥15 次或紀錄檔 ≥150MB 就寫交接換新 session。
+- 換不相干的工作先 /clear。截圖只看需要的；大檔先搜尋再讀片段；長輸出導到檔案。
+- 只結束自己記下 PID 的行程。刪除一律進資源回收筒，且要使用者同意。
+- 歷史脈絡：`docs/handoff/LINE-skill-收束-20261113.md`。
 
 ## 常用指令
 
