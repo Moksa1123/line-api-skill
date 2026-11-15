@@ -1,0 +1,393 @@
+{
+  "about": "line-api skill 真題。每題來自實際做 LINE SaaS 碰到的問題（tools/benchmark.py 的 55 題挑出容易憑記憶答錯的）。評分：must 裡每一組都要命中（組內任一正規式命中即可），全部命中才算對。沒 skill 也答對的題不算數（SOP 6-4），會在 RESULTS.md 標出並換題。",
+  "cases": [
+    {
+      "id": "liff-share-version",
+      "question": "LIFF 的 liff.shareTargetPicker() 需要使用者的 LINE App 至少是哪一版？",
+      "must": [
+        [
+          "10\\.3\\.0"
+        ]
+      ],
+      "source": "https://developers.line.biz/en/reference/liff/#is-api-available",
+      "trust": "官方文件",
+      "retired": "2026-11-15 沒 skill 也答對（無鑑別度）"
+    },
+    {
+      "id": "liff-scancodev2-version",
+      "question": "liff.scanCodeV2() 需要的最低 LINE App 版本是多少？",
+      "must": [
+        [
+          "11\\.7\\.0"
+        ]
+      ],
+      "source": "https://developers.line.biz/en/reference/liff/#scan-code-v2",
+      "trust": "官方文件",
+      "retired": "2026-11-15 沒 skill 也答對（無鑑別度）"
+    },
+    {
+      "id": "flex-deca-hecto-version",
+      "question": "Flex Message bubble 的 size 用 deca 或 hecto，iOS／Android 的 LINE 要哪一版以上才支援？",
+      "must": [
+        [
+          "13\\.6\\.0"
+        ]
+      ],
+      "source": "https://developers.line.biz/en/docs/messaging-api/using-flex-messages/",
+      "trust": "官方文件",
+      "retired": "2026-11-15 沒 skill 也答對（無鑑別度）"
+    },
+    {
+      "id": "miniapp-notifier-token-ttl",
+      "question": "LINE MINI App 的服務通知權杖（service notification token）發出後多久失效？",
+      "must": [
+        [
+          "1 ?年",
+          "one year",
+          "1 year",
+          "31,?536,?000",
+          "365 ?天",
+          "365 days"
+        ]
+      ],
+      "source": "https://developers.line.biz/en/docs/line-mini-app/develop/service-messages/",
+      "trust": "官方文件",
+      "retired": "2026-11-15 沒 skill 也答對（無鑑別度）"
+    },
+    {
+      "id": "miniapp-messages-per-token",
+      "question": "同一個服務通知權杖在效期內，最多可以發幾則服務訊息？",
+      "must": [
+        [
+          "(?<!\\d)5 ?(則|則服務訊息|messages?|次)",
+          "最多 ?5(?!\\d)",
+          "up to 5(?!\\d)",
+          "五則"
+        ]
+      ],
+      "source": "https://developers.line.biz/en/docs/line-mini-app/develop/service-messages/",
+      "trust": "官方文件",
+      "retired": "2026-11-15 沒 skill 也答對（無鑑別度）"
+    },
+    {
+      "id": "miniapp-template-count",
+      "question": "一個 LINE MINI App channel 最多可以加幾個服務訊息範本（service message template）？",
+      "must": [
+        [
+          "(?<!\\d)20(?!\\d)"
+        ]
+      ],
+      "source": "https://developers.line.biz/en/docs/line-mini-app/develop/service-messages/",
+      "trust": "官方文件",
+      "retired": "2026-11-15 沒 skill 也答對（無鑑別度）"
+    },
+    {
+      "id": "follow-unblocked",
+      "question": "收到 follow webhook 事件時，用哪個欄位分辨使用者是「新加好友」還是「解除封鎖」？",
+      "must": [
+        [
+          "isUnblocked"
+        ]
+      ],
+      "source": "https://developers.line.biz/en/reference/messaging-api/#follow-event",
+      "trust": "官方文件",
+      "retired": "2026-11-15 沒 skill 也答對（無鑑別度）"
+    },
+    {
+      "id": "idtoken-alg",
+      "question": "LINE Login 網頁登入拿到的 ID token 和 LIFF 拿到的 ID token，簽章演算法各是什麼？",
+      "must": [
+        [
+          "HS256"
+        ],
+        [
+          "ES256"
+        ]
+      ],
+      "source": "https://developers.line.biz/en/docs/line-login/verify-id-token/",
+      "trust": "官方文件",
+      "retired": "2026-11-15 沒 skill 也答對（無鑑別度）"
+    },
+    {
+      "id": "richmenu-image-rules",
+      "question": "圖文選單圖片的尺寸規則是什麼（寬、高、長寬比）？",
+      "must": [
+        [
+          "(?<!\\d)800(?!\\d)"
+        ],
+        [
+          "2,?500"
+        ],
+        [
+          "(?<!\\d)250(?!\\d)"
+        ],
+        [
+          "1\\.45"
+        ]
+      ],
+      "source": "https://developers.line.biz/en/reference/messaging-api/#upload-rich-menu-image",
+      "trust": "實測",
+      "note": "官方寫範圍；邊界值 799／2501／249／1.4493 退件、1.4514 收，由 /v2/bot/richmenu/validate 實測",
+      "retired": "2026-11-15 沒 skill 也答對（無鑑別度）"
+    },
+    {
+      "id": "text-utf16",
+      "question": "文字訊息 text 的 5000 字上限是用什麼單位算的？一個 emoji 算幾個？",
+      "must": [
+        [
+          "UTF-16"
+        ],
+        [
+          "(?<!\\d)2 ?(個|單位|units?)",
+          "兩個",
+          "two"
+        ]
+      ],
+      "source": "https://developers.line.biz/en/reference/messaging-api/#text-message",
+      "trust": "實測",
+      "note": "2501 個 emoji 會被 LINE 官方驗證端點退件，2500 個通過",
+      "retired": "2026-11-15 沒 skill 也答對（無鑑別度）"
+    },
+    {
+      "id": "flex-unknown-prop",
+      "question": "在 Flex Message 的元件裡多放一個不存在的屬性，和在一般訊息物件（例如 text message）裡多放一個不存在的屬性，LINE 的反應有什麼不同？",
+      "must": [
+        [
+          "400",
+          "退件",
+          "拒絕",
+          "reject",
+          "錯誤"
+        ],
+        [
+          "忽略",
+          "ignore",
+          "沒作用",
+          "沒有作用",
+          "收下",
+          "接受",
+          "accept",
+          "不會報錯",
+          "不報錯"
+        ]
+      ],
+      "source": "https://developers.line.biz/en/reference/messaging-api/#flex-message",
+      "trust": "實測",
+      "note": "以 LINE 官方 validate 端點逐筆對照 700 筆生成語料得出",
+      "retired": "2026-11-15 沒 skill 也答對（無鑑別度）"
+    },
+    {
+      "id": "token-v21-count",
+      "question": "可指定效期的 channel access token（v2.1，用 JWT assertion 換的）一個 channel 最多能同時有幾把有效？",
+      "must": [
+        [
+          "(?<!\\d)30 ?(把|個|tokens?)",
+          "最多 ?30(?!\\d)",
+          "up to 30(?!\\d)"
+        ]
+      ],
+      "source": "https://developers.line.biz/en/docs/basics/channel-access-token/",
+      "trust": "官方文件",
+      "retired": "2026-11-15 沒 skill 也答對（無鑑別度）"
+    },
+    {
+      "id": "label-by-placement",
+      "question": "action 的 label 上限：放在 quick reply 按鈕裡和放在 Flex button 裡，各是幾個字？",
+      "must": [
+        [
+          "(?<!\\d)20(?!\\d)"
+        ],
+        [
+          "(?<!\\d)40(?!\\d)"
+        ]
+      ],
+      "source": "https://developers.line.biz/en/reference/messaging-api/#items-object",
+      "trust": "實測",
+      "note": "規格由 action 放的位置決定，不是由 action 型別決定",
+      "retired": "2026-11-15 沒 skill 也答對（無鑑別度）"
+    },
+    {
+      "id": "template-camera-action",
+      "question": "把 camera action 放進 buttons template 送出，LINE 會退件嗎？使用者按了會怎樣？",
+      "must": [
+        [
+          "不會退件",
+          "不會被退",
+          "收單",
+          "會收下",
+          "LINE 會收",
+          "(?<!不)接受",
+          "accepted?"
+        ],
+        [
+          "(沒|不會有|無|沒有)[^。，,]{0,4}(反應|作用)",
+          "nothing happens",
+          "no effect"
+        ]
+      ],
+      "source": "https://developers.line.biz/en/reference/messaging-api/#camera-action",
+      "trust": "實測",
+      "note": "camera／location 只在 quick reply 有效；放進樣板 LINE 收單但按了沒反應",
+      "grading_note": "2026-11-15 r2 後修正：原規則漏判「不會有任何反應」，且「送得出去」會讓『會 400 退件，若送得出去…』這種錯答過關"
+    },
+    {
+      "id": "liff-requestfriendship-version",
+      "question": "liff.requestFriendship() 是哪一版 LIFF SDK 開始提供的？",
+      "must": [
+        [
+          "2\\.28\\.0"
+        ]
+      ],
+      "source": "https://developers.line.biz/en/reference/liff/#liffrequestfriendship",
+      "trust": "官方文件"
+    },
+    {
+      "id": "liff-2300-date",
+      "question": "LIFF SDK 2.30.0 是哪一天發佈的？",
+      "must": [
+        [
+          "2026-0?8-17",
+          "2026 ?年 ?8 ?月 ?17",
+          "8/17"
+        ]
+      ],
+      "source": "https://developers.line.biz/en/docs/liff/release-notes/#liff-v2-30-0",
+      "trust": "官方文件"
+    },
+    {
+      "id": "liff-2290-date",
+      "question": "LIFF SDK 2.29.0 是哪一天發佈的？",
+      "must": [
+        [
+          "2026-0?5-13",
+          "2026 ?年 ?5 ?月 ?13",
+          "5/13"
+        ]
+      ],
+      "source": "https://developers.line.biz/en/docs/liff/release-notes/#liff-v2-29-0",
+      "trust": "官方文件"
+    },
+    {
+      "id": "liff-addtohomev2-version",
+      "question": "liff.isApiAvailable('addToHomeV2') 要成立，使用者的 LINE App 最低要哪一版？",
+      "must": [
+        [
+          "13\\.20\\.0"
+        ]
+      ],
+      "source": "https://developers.line.biz/en/reference/liff/#is-api-available",
+      "trust": "官方文件"
+    },
+    {
+      "id": "liff-scancode-unsupported",
+      "question": "舊的 liff.scanCode()（v1）從 LINE App 哪一版開始不再支援？",
+      "must": [
+        [
+          "9\\.19\\.0"
+        ]
+      ],
+      "source": "https://developers.line.biz/en/reference/liff/#is-api-available",
+      "trust": "官方文件",
+      "retired": "2026-11-15 r2 沒 skill 也答對（無鑑別度）"
+    },
+    {
+      "id": "flex-deca-hecto-pc",
+      "question": "Flex bubble 的 size 用 deca 或 hecto，LINE 電腦版（macOS／Windows）要哪一版以上才支援？",
+      "must": [
+        [
+          "7\\.17\\.0"
+        ]
+      ],
+      "source": "https://developers.line.biz/en/docs/messaging-api/using-flex-messages/",
+      "trust": "官方文件"
+    },
+    {
+      "id": "richmenu-insight-daily-path",
+      "question": "Messaging API 取得「圖文選單每日成效」（rich menu insight by day）的端點路徑是什麼？",
+      "must": [
+        [
+          "/v2/bot/insight/richmenu/\\{?richMenuId\\}?/daily"
+        ]
+      ],
+      "source": "https://developers.line.biz/en/reference/messaging-api/",
+      "trust": "官方文件"
+    },
+    {
+      "id": "richmenu-insight-metricsfrom",
+      "question": "圖文選單每日成效 API 的回應裡，標示「實際涵蓋期間起始日」的欄位叫什麼？",
+      "must": [
+        [
+          "metricsFrom"
+        ]
+      ],
+      "source": "https://github.com/line/line-openapi/blob/de8bd9e2872ed9d9800e23b86136695fcd370a0c/insight.yml",
+      "trust": "官方文件"
+    },
+    {
+      "id": "coupon-close-endpoint",
+      "question": "Messaging API 要停用（discontinue）一張優惠券，要打哪個 method 和路徑？",
+      "must": [
+        [
+          "PUT"
+        ],
+        [
+          "/v2/bot/coupon/\\{?couponId\\}?/close"
+        ]
+      ],
+      "source": "https://developers.line.biz/en/reference/messaging-api/#discontinue-a-coupon",
+      "trust": "官方文件",
+      "retired": "2026-11-15 r2 沒 skill 也答對（無鑑別度）"
+    },
+    {
+      "id": "coupon-lottery-field",
+      "question": "建立抽獎型優惠券時，中獎機率要放在哪個欄位？可填的範圍是多少？",
+      "must": [
+        [
+          "lotteryProbability"
+        ],
+        [
+          "1\\s*(~|～|-|–|到|至)\\s*99"
+        ]
+      ],
+      "source": "https://developers.line.biz/en/reference/messaging-api/#create-a-coupon",
+      "trust": "官方文件"
+    },
+    {
+      "id": "membership-users-path",
+      "question": "取得「已加入某個會員方案的使用者 ID 清單」的端點路徑是什麼？",
+      "must": [
+        [
+          "/v2/bot/membership/\\{?membershipId\\}?/users/ids"
+        ]
+      ],
+      "source": "https://developers.line.biz/en/reference/messaging-api/#get-a-list-of-users-who-have-joined-the-membership",
+      "trust": "官方文件"
+    },
+    {
+      "id": "insight-demographic-rate",
+      "question": "取得好友屬性統計（Get friend demographics）的 rate limit 是多少？",
+      "must": [
+        [
+          "60 ?(requests? ?per ?hour|次 ?/ ?(小時|hour)|req/h)",
+          "每小時 ?60"
+        ]
+      ],
+      "source": "https://developers.line.biz/en/reference/messaging-api/#get-demographic",
+      "trust": "官方文件"
+    },
+    {
+      "id": "miniapp-logo-size",
+      "question": "LINE MINI App 圖示規範裡，logo（LOGO SIZE）的最小與最大尺寸各是多少？",
+      "must": [
+        [
+          "54 ?[x×*] ?54"
+        ],
+        [
+          "90 ?[x×*] ?90"
+        ]
+      ],
+      "source": "https://developers.line.biz/en/docs/line-mini-app/design/line-mini-app-icon/",
+      "trust": "官方文件"
+    }
+  ]
+}

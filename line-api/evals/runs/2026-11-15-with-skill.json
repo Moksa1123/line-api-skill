@@ -1,0 +1,16 @@
+{"meta": {"date": "2026-11-15", "model": "claude-opus-5-5", "how": "subagent 讀 SKILL.md、用 search.py 查"}, "answers": {
+"liff-share-version": "LINE 10.3.0 以上（可用 liff.isApiAvailable('shareTargetPicker') 檢查）。",
+"liff-scancodev2-version": "LINE 11.7.0 以上；iOS 另需 iOS 14.3 以上。",
+"flex-deca-hecto-version": "LINE for iOS／Android 13.6.0 以上（macOS／Windows 是 7.17.0 以上）；版本不夠時會顯示成 kilo。",
+"miniapp-notifier-token-ttl": "發出後 1 年（31,536,000 秒）失效。",
+"miniapp-messages-per-token": "效期內最多 5 則（例如使用者一次預約動作最多可發 5 則服務訊息；剩餘次數看 remainingCount）。",
+"miniapp-template-count": "每個 LINE MINI App channel 最多 20 個服務訊息範本。",
+"follow-unblocked": "follow.isUnblocked：true＝解除封鎖，false＝新加好友（官方說此欄位不保證完全準確）。",
+"idtoken-alg": "網頁登入（web login）是 HS256（HMAC SHA-256）；LIFF（以及原生 App／LINE SDK）是 ES256（ECDSA P-256 + SHA-256）。",
+"richmenu-image-rules": "寬 800～2500 px、高 250 px 以上、長寬比（寬/高）1.45 以上；另需 JPEG/PNG、1 MB 以內。",
+"text-utf16": "以 UTF-16 code unit 計算，不是字元數；一個 emoji 算 2 個（所以 2501 個 emoji 會被退件）。",
+"flex-unknown-prop": "Flex 元件裡多放不存在的屬性會被退件（400）；一般訊息物件（如 text）、樣板、action 多放屬性則 LINE 照收，只是沒作用。",
+"token-v21-count": "一個 channel 最多同時 30 把有效。",
+"label-by-placement": "quick reply 按鈕：label 必填、上限 20 字；Flex button：label 必填、上限 40 字。",
+"template-camera-action": "不會退件，LINE 收單；但使用者按了沒有反應（camera 只該放在 quick reply）。"
+}}
