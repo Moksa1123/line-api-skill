@@ -254,6 +254,13 @@ CSV_CONFIG: Dict[str, dict] = {
     },
 }
 
+# 每筆結果都帶出處與可信度（實測／官方文件／推論）。trust 是「推論」的列
+# 不可以當成官方規格轉述給使用者。
+for _cfg in CSV_CONFIG.values():
+    for _col in ("doc_url", "trust"):
+        if _col not in _cfg["output_cols"]:
+            _cfg["output_cols"].append(_col)
+
 # --------------------------------------------------------------------------
 # domain auto-detection
 # --------------------------------------------------------------------------
