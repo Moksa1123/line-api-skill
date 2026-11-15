@@ -2001,6 +2001,14 @@ def t_references():
     return f"{len(files)} 份參考文件"
 
 
+@check("docs: SKILL.md 每一個數字都有登記且與資料一致（SOP 6-1）")
+def t_skill_numbers():
+    import check_numbers
+    problems, n = check_numbers.check()
+    assert not problems, "；".join(problems[:5]) + "（python scripts/check_numbers.py --fix）"
+    return f"{n} 個數字"
+
+
 # ==========================================================================
 # 6. live tests
 # ==========================================================================

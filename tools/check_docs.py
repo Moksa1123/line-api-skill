@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-check_docs.py — 確認文件寫的數字與實際資料一致。
+check_docs.py — 確認文件寫的數字與實際資料一致（SKILL.md 每個數字＋README／CLAUDE.md）。
 
 資料集這半年會一直長，SKILL.md 與 README 裡的「3675 筆」「25 個搜尋域」
 「43 項測試」很容易默默過期。這支工具把文件宣稱的數字跟實際算出來的比對，
@@ -53,10 +53,9 @@ READMES = ("README.md", "README.zh-TW.md", "README.ja.md", "README.ko.md")
 
 def rules(f: dict) -> list[tuple[Path, str, str, str]]:
     """(檔案, 說明, 正規式, 應有的值)。正規式第 1 組是要比對的數字。"""
-    skill, claude = (SKILL / "SKILL.md"), (REPO / "CLAUDE.md")
+    claude = REPO / "CLAUDE.md"
+    # SKILL.md 的數字由 line-api/scripts/check_numbers.py 逐一核對（見 main）
     out = [
-        (skill, "資料集總筆數", r"共 \*\*(\d+) 筆\*\*", str(f["rows"])),
-        (skill, "搜尋域數量", r"## (\d+) 個搜尋域", str(f["domains"])),
         (claude, "離線測試數", r"test_line\.py +# 離線 (\d+) 項", str(f["offline_tests"])),
     ]
     # 四份 README 的 badge 與統計數字必須一致——翻譯版最容易被漏掉
@@ -106,6 +105,11 @@ def main() -> int:
 
     for path, text in edits.items():
         path.write_text(text, encoding="utf-8")
+
+    # SKILL.md：每一個數字都要登記且對得上資料
+    import check_numbers
+    num_problems, _ = check_numbers.check(fix=args.fix)
+    problems += [f"SKILL.md｜{p}" for p in num_problems]
 
     # 搜尋域是否都在 SKILL.md 的表格裡（emoji / sticker 允許合併成一列）
     skill_text = (SKILL / "SKILL.md").read_text(encoding="utf-8")
