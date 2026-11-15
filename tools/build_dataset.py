@@ -56,7 +56,17 @@ def fix_url(url: str) -> str:
     return url
 
 
-def write_csv(name: str, fieldnames: list[str], rows: list[dict]) -> None:
+# 可信度三級（skill-SOP 二-2）：實測 > 官方文件 > 推論。
+# 這支產生的資料全部機械式萃取自官方文件或 OpenAPI，所以預設「官方文件」；
+# 個別列要標別的等級就在 row 裡放 "trust"。
+TRUST_LEVELS = ("實測", "官方文件", "推論")
+
+
+def write_csv(name: str, fieldnames: list[str], rows: list[dict],
+              trust: str = "官方文件") -> None:
+    assert trust in TRUST_LEVELS, trust
+    fieldnames = list(fieldnames) + (["trust"] if "trust" not in fieldnames else [])
+    rows = [r if r.get("trust") else {**r, "trust": trust} for r in rows]
     OUT.mkdir(parents=True, exist_ok=True)
     path = OUT / name
     with open(path, "w", encoding="utf-8", newline="") as f:
@@ -975,7 +985,8 @@ def build_responses(specs) -> list[dict]:
                     if not name:
                         continue
                     info = resolve(schemas, schema_ref)
-                    ext = (info["externalDocs"] or {}).get("url", "")
+                    # 只寫在規格裡、官方網頁沒有對應段落的 schema，出處就是規格檔本身
+                    ext = (info["externalDocs"] or {}).get("url", "") or openapi_url(fname)
                     if not info["properties"]:
                         rows.append({
                             "operation_id": op.get("operationId", ""),
@@ -1339,6 +1350,16 @@ def build_errors() -> list[dict]:
 CONSTRAINTS = ("maxLength", "minLength", "maxItems", "minItems", "maximum", "minimum")
 
 
+def openapi_url(fname: str) -> str:
+    """line-openapi 規格檔的永久連結，釘在抓下來的那個 commit。"""
+    head = SPECS / ".git" / "HEAD"
+    ref = head.read_text(encoding="utf-8").strip() if head.exists() else "main"
+    if ref.startswith("ref: "):
+        ref_file = SPECS / ".git" / ref[5:]
+        ref = ref_file.read_text(encoding="utf-8").strip() if ref_file.exists() else "main"
+    return f"https://github.com/line/line-openapi/blob/{ref}/{fname}"
+
+
 def build_limits(specs) -> list[dict]:
     rows = []
     for fname, doc in specs.items():
@@ -1355,6 +1376,7 @@ def build_limits(specs) -> list[dict]:
                         "field": (schema_name + path),
                         "constraint": k, "value": v,
                         "description": one_line(node.get("description", "")),
+                        "doc_url": openapi_url(fname),
                     })
             for pname, sub in (node.get("properties") or {}).items():
                 walk(schema_name, sub, path + "." + pname)
@@ -1461,6 +1483,7 @@ def build_emoji() -> list[dict]:
             "emoji_id_to": ids[-1] if ids else "",
             "count": len(ids),
             "emoji_ids": ",".join(ids),
+            "doc_url": "https://developers.line.biz/en/docs/messaging-api/emoji-list/",
         })
     return rows
 
@@ -1487,6 +1510,7 @@ def build_stickers() -> list[dict]:
             "sticker_id_to": ids[-1] if ids else "",
             "count": len(ids),
             "sticker_ids": ",".join(ids),
+            "doc_url": "https://developers.line.biz/en/docs/messaging-api/sticker-list/",
         })
     return rows
 
@@ -1565,7 +1589,8 @@ def main() -> int:
     write_csv("message-objects.csv", SCHEMA_FIELDS,
               merge_from_docs(
               flatten_variants(msg, "Message", "message")
-              + flatten_variants(msg, "Template", "template")
+              + flatten_variants(msg, "Template", "template",
+                                 "https://developers.line.biz/en/reference/messaging-api/#template-messages")
               + flatten_variants(msg, "ImagemapAction", "imagemap-action")
               + flatten_named(msg, ["Emoji", "Sender", "QuickReply", "QuickReplyItem",
                                     "ImagemapArea", "ImagemapVideo", "ImagemapExternalLink",
@@ -1610,7 +1635,7 @@ def main() -> int:
               build_errors())
 
     write_csv("limits.csv",
-              ["spec", "schema", "field", "constraint", "value", "description"],
+              ["spec", "schema", "field", "constraint", "value", "description", "doc_url"],
               build_limits(specs))
 
     write_csv("liff-api.csv",
@@ -1620,11 +1645,12 @@ def main() -> int:
                   annotate_liff_introduced(build_liff_api(), liff_versions)))
 
     write_csv("emoji.csv",
-              ["product_id", "emoji_id_from", "emoji_id_to", "count", "emoji_ids"],
+              ["product_id", "emoji_id_from", "emoji_id_to", "count", "emoji_ids", "doc_url"],
               build_emoji())
 
     write_csv("stickers.csv",
-              ["package_id", "title_en", "sticker_id_from", "sticker_id_to", "count", "sticker_ids"],
+              ["package_id", "title_en", "sticker_id_from", "sticker_id_to", "count", "sticker_ids",
+               "doc_url"],
               build_stickers())
 
     print("Done.")

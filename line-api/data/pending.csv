@@ -1,0 +1,5 @@
+date,question,why_not_found,asked_by,status
+2026-11-15,glossary.csv 的中文說法（圖文選單、彈性訊息…）有沒有 LINE 官方繁中用語可對照,developers.line.biz 只有英日文；台灣 LINE 官方帳號後台的說法還沒逐條對過，所以整份標「推論」,skill 總機（SOP 第 5 項自評）,open
+2026-11-15,LIFF／原生 App 發出的 ES256 ID token 端到端驗簽是否與 LINE /oauth2/v2.1/verify 一致,手上沒有 LIFF 發出的 ID token；目前只驗過 RFC 6979 向量與 LINE JWKS 金鑰解析,line-api（signature.py 開發時）,open
+2026-11-15,「服務訊息一次能發幾則」問句搜不到前 5 名,資料在 guide-specs.csv（service-messages 頁），但不指定 --domain 時排序被端點列擠掉,tools/benchmark.py,open
+2026-11-15,「服務通知權杖效期」問句搜不到 31536000 秒,資料在 guide-specs.csv（service-messages 頁內文），中文問句擴充後排不進前 5 名,tools/benchmark.py,open

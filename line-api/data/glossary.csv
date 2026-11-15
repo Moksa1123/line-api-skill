@@ -1,166 +1,166 @@
-zh,en,note
-圖文選單,rich menu richmenu,聊天室下方的常駐選單
-選單,rich menu richmenu,
-快速回覆,quick reply quickReply,
-推播,push,主動發送訊息
-主動發送,push,
-回覆,reply,使用 replyToken
-群發,multicast,最多 500 人
-廣播,broadcast,發給所有好友
-分眾,narrowcast,依屬性/受眾篩選
-受眾,audience audienceGroup,
-訊息,message,
-文字訊息,text message,
-圖片訊息,image message,
-影片訊息,video message,
-語音訊息,audio message,
-位置訊息,location message,
-貼圖,sticker,
-表情,emoji,
-樣板訊息,template message,
-按鈕樣板,buttons template,
-確認樣板,confirm template,
-輪播,carousel,
-彈性訊息,flex message,
-卡片,bubble flex,
-容器,container,
-元件,component,
-版面,layout,
-邊框,border,
-圓角,cornerRadius,
-內距,padding,
-外距,margin,
-偏移,offset,
-背景,background,
-漸層,linearGradient,
-動作,action,
-按鈕,button,
-連結,uri link,
-回傳資料,postback,
-日期選擇,datetimepicker,
-相機,camera,
-相簿,cameraRoll,
-複製,clipboard,
-切換選單,richmenuswitch,
-事件,event webhook,
-webhook 事件,webhook event,
-加好友,follow,
-封鎖,unfollow,
-加入群組,join,
-離開群組,leave,
-成員加入,memberJoined,
-成員離開,memberLeft,
-收回訊息,unsend,
-編輯訊息,messageEdited,
-帳號連結,accountLink,
-會員,membership,
-簽章,signature x-line-signature,
-驗證,verify validate,
-簽章驗證,verify signature,
-存取權杖,access token,
-權杖,token,
-頻道,channel,
-頻道密鑰,channel secret,
-使用者編號,userId user id,
-群組編號,groupId,
-個人資料,profile,
-大頭貼,pictureUrl,
-顯示名稱,displayName,
-狀態訊息,statusMessage,
-語系,language,
-好友,follower friend,
-好友數,followers,
-統計,insight statistics,
-成效,insight,
-額度,quota,
-用量,consumption,
-價格,pricing,
-費用,pricing,
-速率限制,rate limit,
-限制,limit,
-上限,max maximum,
-錯誤,error,
-錯誤碼,status code error,
-逾時,timeout expired,
-過期,expired,
-重試,retry,
-冪等,retry key idempotent,
-內容下載,get content,
-上傳,upload,
-下載,download,
-圖片,image,
-影片,video,
-音訊,audio,
-檔案,file,
-載入動畫,loading indicator,
-輸入中,loading indicator,
-已讀,mark as read,
-問候語,greeting message,
-自動回覆,auto reply,
-群組,group,
-多人聊天,room multi-person chat,
-聊天室,chat,
-機器人,bot,
-官方帳號,LINE Official Account,
-登入,login,
-授權,authorize authorization,
-授權碼,authorization code,
-更新權杖,refresh token,
-撤銷,revoke,
-註銷,deauthorize,
-身分權杖,id token idToken,
-好友狀態,friendship status,
-前端框架,liff,
-初始化,init,
-分享,share shareTargetPicker,
-掃碼,scanCodeV2 scan code,
-開新視窗,openWindow,
-關閉視窗,closeWindow,
-永久連結,permanentLink,
-權限,permission scope,
-通知訊息,notification message pnp,
-服務訊息,service message notifier,
-優惠券,coupon,
-抽獎,lottery,
-折扣,discount,
-回饋,cashback,
-站內購買,in-app purchase IAP,MINI App 的站內購買
-內購,in-app purchase IAP,
-自訂路徑,custom path,MINI App 的自訂網址路徑
-桌面捷徑,add to home screen shortcut,
-加到主畫面,add to home screen,
-已驗證,verified,已通過審核的 MINI App
-未驗證,unverified,
-審核,review submission,
-送審,submit review,
-分享訊息,share messages share target picker,
-分享目標選擇器,share target picker,
-圖示,icon,
-字數上限,maximum number of characters limit,
-字元數,number of characters,
-橫向,landscape,MINI App 的橫向顯示
-直向,portrait,
-快速填入,quick fill,MINI App 的個資快速填入
-通道同意,channel consent simplification,
-外部瀏覽器,external browser,
-內建瀏覽器,in-app browser LINE browser,
-小程式,mini app LINE MINI App,台灣也常直接說 MINI App
-迷你應用,mini app LINE MINI App,
-模組,module,LIFF 可搖樹匯入的模組
-外掛,plugin,LIFF plugin
-暫時關閉,minimize minimizing LIFF browser,
-效能規範,performance guidelines,
-有效期,expires valid for validity period,
-效期,expires valid for,
-幾則,how many up to maximum,
-範本,template,MINI App 的服務訊息範本
-通知權杖,service notification token,
-區域,area areas bounds,圖文選單的可點區域
-可點區域,areas,
-型別,type,
-種類,type types,
-哪些型別,type,
-群組事件,group source groupId,
-服務通知權杖,service notification token expires,
-通知權杖效期,notification token expires,
-一次能發,up to how many,
+zh,en,note,doc_url,trust
+圖文選單,rich menu richmenu,聊天室下方的常駐選單,,推論
+選單,rich menu richmenu,,,推論
+快速回覆,quick reply quickReply,,,推論
+推播,push,主動發送訊息,,推論
+主動發送,push,,,推論
+回覆,reply,使用 replyToken,,推論
+群發,multicast,最多 500 人,,推論
+廣播,broadcast,發給所有好友,,推論
+分眾,narrowcast,依屬性/受眾篩選,,推論
+受眾,audience audienceGroup,,,推論
+訊息,message,,,推論
+文字訊息,text message,,,推論
+圖片訊息,image message,,,推論
+影片訊息,video message,,,推論
+語音訊息,audio message,,,推論
+位置訊息,location message,,,推論
+貼圖,sticker,,,推論
+表情,emoji,,,推論
+樣板訊息,template message,,,推論
+按鈕樣板,buttons template,,,推論
+確認樣板,confirm template,,,推論
+輪播,carousel,,,推論
+彈性訊息,flex message,,,推論
+卡片,bubble flex,,,推論
+容器,container,,,推論
+元件,component,,,推論
+版面,layout,,,推論
+邊框,border,,,推論
+圓角,cornerRadius,,,推論
+內距,padding,,,推論
+外距,margin,,,推論
+偏移,offset,,,推論
+背景,background,,,推論
+漸層,linearGradient,,,推論
+動作,action,,,推論
+按鈕,button,,,推論
+連結,uri link,,,推論
+回傳資料,postback,,,推論
+日期選擇,datetimepicker,,,推論
+相機,camera,,,推論
+相簿,cameraRoll,,,推論
+複製,clipboard,,,推論
+切換選單,richmenuswitch,,,推論
+事件,event webhook,,,推論
+webhook 事件,webhook event,,,推論
+加好友,follow,,,推論
+封鎖,unfollow,,,推論
+加入群組,join,,,推論
+離開群組,leave,,,推論
+成員加入,memberJoined,,,推論
+成員離開,memberLeft,,,推論
+收回訊息,unsend,,,推論
+編輯訊息,messageEdited,,,推論
+帳號連結,accountLink,,,推論
+會員,membership,,,推論
+簽章,signature x-line-signature,,,推論
+驗證,verify validate,,,推論
+簽章驗證,verify signature,,,推論
+存取權杖,access token,,,推論
+權杖,token,,,推論
+頻道,channel,,,推論
+頻道密鑰,channel secret,,,推論
+使用者編號,userId user id,,,推論
+群組編號,groupId,,,推論
+個人資料,profile,,,推論
+大頭貼,pictureUrl,,,推論
+顯示名稱,displayName,,,推論
+狀態訊息,statusMessage,,,推論
+語系,language,,,推論
+好友,follower friend,,,推論
+好友數,followers,,,推論
+統計,insight statistics,,,推論
+成效,insight,,,推論
+額度,quota,,,推論
+用量,consumption,,,推論
+價格,pricing,,,推論
+費用,pricing,,,推論
+速率限制,rate limit,,,推論
+限制,limit,,,推論
+上限,max maximum,,,推論
+錯誤,error,,,推論
+錯誤碼,status code error,,,推論
+逾時,timeout expired,,,推論
+過期,expired,,,推論
+重試,retry,,,推論
+冪等,retry key idempotent,,,推論
+內容下載,get content,,,推論
+上傳,upload,,,推論
+下載,download,,,推論
+圖片,image,,,推論
+影片,video,,,推論
+音訊,audio,,,推論
+檔案,file,,,推論
+載入動畫,loading indicator,,,推論
+輸入中,loading indicator,,,推論
+已讀,mark as read,,,推論
+問候語,greeting message,,,推論
+自動回覆,auto reply,,,推論
+群組,group,,,推論
+多人聊天,room multi-person chat,,,推論
+聊天室,chat,,,推論
+機器人,bot,,,推論
+官方帳號,LINE Official Account,,,推論
+登入,login,,,推論
+授權,authorize authorization,,,推論
+授權碼,authorization code,,,推論
+更新權杖,refresh token,,,推論
+撤銷,revoke,,,推論
+註銷,deauthorize,,,推論
+身分權杖,id token idToken,,,推論
+好友狀態,friendship status,,,推論
+前端框架,liff,,,推論
+初始化,init,,,推論
+分享,share shareTargetPicker,,,推論
+掃碼,scanCodeV2 scan code,,,推論
+開新視窗,openWindow,,,推論
+關閉視窗,closeWindow,,,推論
+永久連結,permanentLink,,,推論
+權限,permission scope,,,推論
+通知訊息,notification message pnp,,,推論
+服務訊息,service message notifier,,,推論
+優惠券,coupon,,,推論
+抽獎,lottery,,,推論
+折扣,discount,,,推論
+回饋,cashback,,,推論
+站內購買,in-app purchase IAP,MINI App 的站內購買,,推論
+內購,in-app purchase IAP,,,推論
+自訂路徑,custom path,MINI App 的自訂網址路徑,,推論
+桌面捷徑,add to home screen shortcut,,,推論
+加到主畫面,add to home screen,,,推論
+已驗證,verified,已通過審核的 MINI App,,推論
+未驗證,unverified,,,推論
+審核,review submission,,,推論
+送審,submit review,,,推論
+分享訊息,share messages share target picker,,,推論
+分享目標選擇器,share target picker,,,推論
+圖示,icon,,,推論
+字數上限,maximum number of characters limit,,,推論
+字元數,number of characters,,,推論
+橫向,landscape,MINI App 的橫向顯示,,推論
+直向,portrait,,,推論
+快速填入,quick fill,MINI App 的個資快速填入,,推論
+通道同意,channel consent simplification,,,推論
+外部瀏覽器,external browser,,,推論
+內建瀏覽器,in-app browser LINE browser,,,推論
+小程式,mini app LINE MINI App,台灣也常直接說 MINI App,,推論
+迷你應用,mini app LINE MINI App,,,推論
+模組,module,LIFF 可搖樹匯入的模組,,推論
+外掛,plugin,LIFF plugin,,推論
+暫時關閉,minimize minimizing LIFF browser,,,推論
+效能規範,performance guidelines,,,推論
+有效期,expires valid for validity period,,,推論
+效期,expires valid for,,,推論
+幾則,how many up to maximum,,,推論
+範本,template,MINI App 的服務訊息範本,,推論
+通知權杖,service notification token,,,推論
+區域,area areas bounds,圖文選單的可點區域,,推論
+可點區域,areas,,,推論
+型別,type,,,推論
+種類,type types,,,推論
+哪些型別,type,,,推論
+群組事件,group source groupId,,,推論
+服務通知權杖,service notification token expires,,,推論
+通知權杖效期,notification token expires,,,推論
+一次能發,up to how many,,,推論

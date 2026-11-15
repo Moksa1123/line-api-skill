@@ -1,35 +1,35 @@
-group,type,schema,property,value_type,required,enum,max_length,default,description,doc_url
-action,camera,CameraAction,type,string,true,,,,Type of action,https://developers.line.biz/en/reference/messaging-api/#camera-action
-action,camera,CameraAction,label,string,true,,20,,Label for the action.,https://developers.line.biz/en/reference/messaging-api/#camera-action
-action,cameraRoll,CameraRollAction,type,string,true,,,,Type of action,https://developers.line.biz/en/reference/messaging-api/#camera-roll-action
-action,cameraRoll,CameraRollAction,label,string,true,,20,,Label for the action.,https://developers.line.biz/en/reference/messaging-api/#camera-roll-action
-action,clipboard,ClipboardAction,clipboardText,string,true,,1000,,Text that is copied to the clipboard. Max character limit: 1000,https://developers.line.biz/en/reference/messaging-api/#clipboard-action
-action,clipboard,ClipboardAction,type,string,true,,,,Type of action,https://developers.line.biz/en/reference/messaging-api/#clipboard-action
-action,clipboard,ClipboardAction,label,string,false,,,,Label for the action.,https://developers.line.biz/en/reference/messaging-api/#clipboard-action
-action,datetimepicker,DatetimePickerAction,data,string,true,,300,,,https://developers.line.biz/en/reference/messaging-api/#datetime-picker-action
-action,datetimepicker,DatetimePickerAction,mode,string,true,date|time|datetime,,,,https://developers.line.biz/en/reference/messaging-api/#datetime-picker-action
-action,datetimepicker,DatetimePickerAction,initial,string,false,,,,,https://developers.line.biz/en/reference/messaging-api/#datetime-picker-action
-action,datetimepicker,DatetimePickerAction,max,string,false,,,,,https://developers.line.biz/en/reference/messaging-api/#datetime-picker-action
-action,datetimepicker,DatetimePickerAction,min,string,false,,,,,https://developers.line.biz/en/reference/messaging-api/#datetime-picker-action
-action,datetimepicker,DatetimePickerAction,type,string,true,,,,Type of action,https://developers.line.biz/en/reference/messaging-api/#datetime-picker-action
-action,datetimepicker,DatetimePickerAction,label,string,false,,,,Label for the action.,https://developers.line.biz/en/reference/messaging-api/#datetime-picker-action
-action,location,LocationAction,type,string,true,,,,Type of action,https://developers.line.biz/en/reference/messaging-api/#location-action
-action,location,LocationAction,label,string,true,,20,,Label for the action.,https://developers.line.biz/en/reference/messaging-api/#location-action
-action,message,MessageAction,text,string,true,,300,,,https://developers.line.biz/en/reference/messaging-api/#message-action
-action,message,MessageAction,type,string,true,,,,Type of action,https://developers.line.biz/en/reference/messaging-api/#message-action
-action,message,MessageAction,label,string,false,,,,Label for the action.,https://developers.line.biz/en/reference/messaging-api/#message-action
-action,postback,PostbackAction,data,string,true,,300,,,https://developers.line.biz/en/reference/messaging-api/#postback-action
-action,postback,PostbackAction,displayText,string,false,,300,,,https://developers.line.biz/en/reference/messaging-api/#postback-action
-action,postback,PostbackAction,text,string,false,,300,,,https://developers.line.biz/en/reference/messaging-api/#postback-action
-action,postback,PostbackAction,inputOption,string,false,closeRichMenu|openRichMenu|openKeyboard|openVoice,,,,https://developers.line.biz/en/reference/messaging-api/#postback-action
-action,postback,PostbackAction,fillInText,string,false,,300,,,https://developers.line.biz/en/reference/messaging-api/#postback-action
-action,postback,PostbackAction,type,string,true,,,,Type of action,https://developers.line.biz/en/reference/messaging-api/#postback-action
-action,postback,PostbackAction,label,string,false,,,,Label for the action.,https://developers.line.biz/en/reference/messaging-api/#postback-action
-action,richmenuswitch,RichMenuSwitchAction,data,string,true,,300,,,https://developers.line.biz/en/reference/messaging-api/#richmenu-switch-action
-action,richmenuswitch,RichMenuSwitchAction,richMenuAliasId,string,true,,32,,,https://developers.line.biz/en/reference/messaging-api/#richmenu-switch-action
-action,richmenuswitch,RichMenuSwitchAction,type,string,true,,,,Type of action,https://developers.line.biz/en/reference/messaging-api/#richmenu-switch-action
-action,richmenuswitch,RichMenuSwitchAction,label,string,false,,20,,Label for the action.,https://developers.line.biz/en/reference/messaging-api/#richmenu-switch-action
-action,uri,URIAction,uri,string,true,,1000,,,https://developers.line.biz/en/reference/messaging-api/#uri-action
-action,uri,URIAction,altUri,AltUri,false,,,,,https://developers.line.biz/en/reference/messaging-api/#uri-action
-action,uri,URIAction,type,string,true,,,,Type of action,https://developers.line.biz/en/reference/messaging-api/#uri-action
-action,uri,URIAction,label,string,false,,,,Label for the action.,https://developers.line.biz/en/reference/messaging-api/#uri-action
+group,type,schema,property,value_type,required,enum,max_length,default,description,doc_url,trust
+action,camera,CameraAction,type,string,true,,,,Type of action,https://developers.line.biz/en/reference/messaging-api/#camera-action,官方文件
+action,camera,CameraAction,label,string,true,,20,,Label for the action.,https://developers.line.biz/en/reference/messaging-api/#camera-action,官方文件
+action,cameraRoll,CameraRollAction,type,string,true,,,,Type of action,https://developers.line.biz/en/reference/messaging-api/#camera-roll-action,官方文件
+action,cameraRoll,CameraRollAction,label,string,true,,20,,Label for the action.,https://developers.line.biz/en/reference/messaging-api/#camera-roll-action,官方文件
+action,clipboard,ClipboardAction,clipboardText,string,true,,1000,,Text that is copied to the clipboard. Max character limit: 1000,https://developers.line.biz/en/reference/messaging-api/#clipboard-action,官方文件
+action,clipboard,ClipboardAction,type,string,true,,,,Type of action,https://developers.line.biz/en/reference/messaging-api/#clipboard-action,官方文件
+action,clipboard,ClipboardAction,label,string,false,,,,Label for the action.,https://developers.line.biz/en/reference/messaging-api/#clipboard-action,官方文件
+action,datetimepicker,DatetimePickerAction,data,string,true,,300,,,https://developers.line.biz/en/reference/messaging-api/#datetime-picker-action,官方文件
+action,datetimepicker,DatetimePickerAction,mode,string,true,date|time|datetime,,,,https://developers.line.biz/en/reference/messaging-api/#datetime-picker-action,官方文件
+action,datetimepicker,DatetimePickerAction,initial,string,false,,,,,https://developers.line.biz/en/reference/messaging-api/#datetime-picker-action,官方文件
+action,datetimepicker,DatetimePickerAction,max,string,false,,,,,https://developers.line.biz/en/reference/messaging-api/#datetime-picker-action,官方文件
+action,datetimepicker,DatetimePickerAction,min,string,false,,,,,https://developers.line.biz/en/reference/messaging-api/#datetime-picker-action,官方文件
+action,datetimepicker,DatetimePickerAction,type,string,true,,,,Type of action,https://developers.line.biz/en/reference/messaging-api/#datetime-picker-action,官方文件
+action,datetimepicker,DatetimePickerAction,label,string,false,,,,Label for the action.,https://developers.line.biz/en/reference/messaging-api/#datetime-picker-action,官方文件
+action,location,LocationAction,type,string,true,,,,Type of action,https://developers.line.biz/en/reference/messaging-api/#location-action,官方文件
+action,location,LocationAction,label,string,true,,20,,Label for the action.,https://developers.line.biz/en/reference/messaging-api/#location-action,官方文件
+action,message,MessageAction,text,string,true,,300,,,https://developers.line.biz/en/reference/messaging-api/#message-action,官方文件
+action,message,MessageAction,type,string,true,,,,Type of action,https://developers.line.biz/en/reference/messaging-api/#message-action,官方文件
+action,message,MessageAction,label,string,false,,,,Label for the action.,https://developers.line.biz/en/reference/messaging-api/#message-action,官方文件
+action,postback,PostbackAction,data,string,true,,300,,,https://developers.line.biz/en/reference/messaging-api/#postback-action,官方文件
+action,postback,PostbackAction,displayText,string,false,,300,,,https://developers.line.biz/en/reference/messaging-api/#postback-action,官方文件
+action,postback,PostbackAction,text,string,false,,300,,,https://developers.line.biz/en/reference/messaging-api/#postback-action,官方文件
+action,postback,PostbackAction,inputOption,string,false,closeRichMenu|openRichMenu|openKeyboard|openVoice,,,,https://developers.line.biz/en/reference/messaging-api/#postback-action,官方文件
+action,postback,PostbackAction,fillInText,string,false,,300,,,https://developers.line.biz/en/reference/messaging-api/#postback-action,官方文件
+action,postback,PostbackAction,type,string,true,,,,Type of action,https://developers.line.biz/en/reference/messaging-api/#postback-action,官方文件
+action,postback,PostbackAction,label,string,false,,,,Label for the action.,https://developers.line.biz/en/reference/messaging-api/#postback-action,官方文件
+action,richmenuswitch,RichMenuSwitchAction,data,string,true,,300,,,https://developers.line.biz/en/reference/messaging-api/#richmenu-switch-action,官方文件
+action,richmenuswitch,RichMenuSwitchAction,richMenuAliasId,string,true,,32,,,https://developers.line.biz/en/reference/messaging-api/#richmenu-switch-action,官方文件
+action,richmenuswitch,RichMenuSwitchAction,type,string,true,,,,Type of action,https://developers.line.biz/en/reference/messaging-api/#richmenu-switch-action,官方文件
+action,richmenuswitch,RichMenuSwitchAction,label,string,false,,20,,Label for the action.,https://developers.line.biz/en/reference/messaging-api/#richmenu-switch-action,官方文件
+action,uri,URIAction,uri,string,true,,1000,,,https://developers.line.biz/en/reference/messaging-api/#uri-action,官方文件
+action,uri,URIAction,altUri,AltUri,false,,,,,https://developers.line.biz/en/reference/messaging-api/#uri-action,官方文件
+action,uri,URIAction,type,string,true,,,,Type of action,https://developers.line.biz/en/reference/messaging-api/#uri-action,官方文件
+action,uri,URIAction,label,string,false,,,,Label for the action.,https://developers.line.biz/en/reference/messaging-api/#uri-action,官方文件
