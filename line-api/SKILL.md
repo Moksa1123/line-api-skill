@@ -1,375 +1,188 @@
 ---
 name: line-api
-description: LINE Platform 開發專家 — Messaging API（bot、webhook、Flex Message、圖文選單、推播/分眾）、LINE Login v2.1（OAuth 2.0 + OIDC）、LIFF v2、LINE MINI App、LINE Social Plugins、LINE 通知訊息。當使用者要做 LINE 聊天機器人、LINE 登入、LIFF 網頁、圖文選單、Flex Message、webhook 簽章驗證、channel access token（含 JWT v2.1）、或從已停止服務的 LINE Notify 遷移時使用。內建 121 個官方端點、1492 個欄位、226 筆錯誤碼的可搜尋資料庫，以及離線訊息驗證器、簽章/JWT 工具與零依賴 API client。
+description: LINE Platform 開發專家 — Messaging API（bot、webhook、Flex Message、圖文選單、推播/分眾）、LINE Login v2.1（OAuth 2.0 + OIDC）、LIFF v2、LINE MINI App、LINE Social Plugins、LINE 通知訊息。當使用者要做 LINE 聊天機器人、LINE 登入、LIFF 網頁、圖文選單、Flex Message、webhook 簽章驗證、channel access token（含 JWT v2.1）、或從已停止服務的 LINE Notify 遷移時使用。內建 121 個官方端點、1584 個欄位、261 筆錯誤碼的可搜尋資料庫，以及離線訊息驗證器、簽章/JWT 工具與零依賴 API client。Use for LINE bot, LINE Messaging API, LINE Login, LIFF, rich menu, Flex Message, webhook signature.
 user-invocable: true
 ---
 
 # LINE Platform 開發技能
 
-> 資料全部由 [`line/line-openapi`](https://github.com/line/line-openapi) 官方 OpenAPI 規格
-> 與 https://developers.line.biz 官方文件自動萃取，共 **7096 筆**。
-> 每一筆都附官方文件連結，且連結經 `tools/check_links.py` 實際驗證過。
+## 資料出處
 
-## 何時使用
+| 項目 | 內容 |
+|---|---|
+| 來源 | [`line/line-openapi`](https://github.com/line/line-openapi) 官方 OpenAPI 規格（commit `de8bd9e`，2026-07-28）＋ https://developers.line.biz 官方文件（2026-08-21 抓取） |
+| 筆數 | 共 **7096 筆**，分 28 個搜尋域；各域筆數用 `python scripts/search.py --stats` 看，不在這裡手寫 |
+| 出處欄 | 每筆都有 `doc_url`（官方頁面或釘 commit 的規格檔）與 `trust`（實測／官方文件／推論） |
+| 對應版本 | Messaging API、LINE Login v2.1、LIFF v2（資料內最新 LIFF 版本 2.30.0） |
+| 驗證 | 2026-11-15：自我測試全過、`tools/check_links.py` 實際打過全部連結；已知落差記在 `data/pending.csv` |
+
+`trust` 是「推論」的資料（選型建議、疑難排解的診斷、中文術語對照）是依官方文件歸納的，
+轉述給使用者時要說「建議」，不可以說成官方規定。
+
+## 用法
+
+**何時用**
 
 - 做 LINE 官方帳號聊天機器人（收 webhook、回訊息、推播）
-- 設計 Flex Message / 圖文選單 / Quick Reply
+- 設計 Flex Message／圖文選單／Quick Reply
 - 實作 LINE Login 第三方登入、綁定會員
 - 開發 LIFF 網頁或 LINE MINI App
 - 處理 channel access token、webhook 簽章、JWT
-- 除錯：400 / 401 / 429、簽章驗不過、webhook 收不到、圖片破圖
-- 從 **LINE Notify（已於 2025-03-31 終止服務）** 遷移
+- 除錯：400／401／429、簽章驗不過、webhook 收不到、圖片破圖
+- 從 **LINE Notify（已終止服務）** 遷移
 
----
+**何時不用**
 
-## 使用流程（重要）
-
-**回答任何 LINE API 問題前，先查資料庫，不要憑記憶回答。**
-
-```bash
-python scripts/search.py "<關鍵字>"                 # 跨域搜尋，自動排序
-python scripts/search.py "<關鍵字>" --domain all    # 不確定時全域搜尋
-python scripts/search.py --stats                    # 看資料集有什麼
-```
-
-**不指定 `--domain` 時會搜遍所有域再合併排序**，不是猜一個域就只搜那個。
-猜一次的做法實測只答得出 65% 的實戰問題——而答不出來的那些，事實全都在
-資料集裡，只是判錯域就再也看不到了。指定 `--domain` 仍然只搜那一個。
-
-中文查詢也可以（內建 160+ 條術語對照，會自動補上英文詞）：
-
-```bash
-python scripts/search.py "圖文選單"        # → richmenu
-python scripts/search.py "簽章驗證失敗"    # → troubleshoot
-python scripts/search.py "彈性訊息"        # → flex
-```
-
-**產生任何訊息 JSON 後，一律先驗證再送出：**
-
-```bash
-python scripts/validate.py message.json              # 離線、零成本、零 API 呼叫
-python scripts/validate.py body.json --as push
-python scripts/lineapi.py validate-push --json m.json  # LINE 官方驗證端點
-```
-
-**要改既有的 LINE 程式碼、或使用者問「我這樣寫對不對」時，先審一次：**
-
-```bash
-python scripts/review.py app.py            # 單一檔案
-python scripts/review.py ./src             # 整個目錄
-```
-
-它會照資料集比對這份程式碼：端點是否存在、內容類端點有沒有打錯主機、
-簽章是不是用原始 body 且常數時間比對、內嵌的訊息 JSON 有沒有錯字、
-有沒有用到已停止服務的 API。**動手改之前先看它報什麼**，
-不要憑印象斷定使用者的程式碼哪裡有問題。
-
----
-
-## 28 個搜尋域
-
-| 域 | 內容 | 筆數 |
-|---|---|---|
-| `endpoint` | 全部 API 端點（method / host / path / rate limit / auth） | 121 |
-| `parameter` | 每支端點與 LIFF SDK 的請求/回應欄位（含字數上限） | 1584 |
-| `message` | 11 種訊息物件 + template + imagemap action | 142 |
-| `flex` | Flex Message 容器、元件、樣式 | 136 |
-| `action` | 9 種 action 物件 | 34 |
-| `richmenu` | 圖文選單物件 | 23 |
-| `webhook` | 20 種 webhook 事件 + 7 種訊息子型別 | 27 |
-| `webhook_field` | 每個 webhook 事件的逐欄位型別與說明 | 247 |
-| `response` | 每支端點回應主體的逐欄位型別 | 218 |
-| `guide` | 221 頁官方指南的標題與各節索引 | 221 |
-| `guide_spec` | 指南頁的表格與內文限制（LIFF 與 MINI App 的規則大半在這裡） | 2951 |
-| `checklist` | 送審／開發／效能規範的條列規則 | 207 |
-| `liff_availability` | 每個 LIFF 功能需要的 **LINE App** 版本（不是 SDK 版本） | 12 |
-| `faq` | 官方 FAQ 92 題（題目、標籤、錨點連結） | 92 |
-| `sdk_api` | iOS Swift / Android SDK 的型別清單 | 80 |
-| `url_scheme` | LINE URL scheme（加好友、相機、設定畫面…） | 44 |
-| `liff_version` | LIFF 版本沿革（哪一版引進哪個 API） | 58 |
-| `liff` | LIFF SDK v2 全部 API（含引進版本、模組化匯入、可否在 init 前呼叫） | 35 |
-| `error` | 狀態碼、錯誤訊息、每支端點的錯誤表 | 226 |
-| `limit` | OpenAPI 明訂的數值限制 | 114 |
-| `term` | 官方術語表（57 條，附中文定義） | 57 |
-| `product` | LINE 各產品比較與選型 | 8 |
-| `token` | 四種 channel access token + user access token | 5 |
-| `troubleshoot` | 常見問題的症狀 / 原因 / 解法 | 21 |
-| `reasoning` | 情境 → 建議做法 | 23 |
-| `deprecation` | 已停用 / 已淘汰功能與替代方案 | 12 |
-| `emoji` / `sticker` | 可用的 LINE emoji 與貼圖 ID | 60 |
-
----
-
-## 工具
-
-### `scripts/search.py` — 資料庫搜尋
-
-```bash
-python scripts/search.py "push message"                  # 找端點
-python scripts/search.py "429" --domain error            # 找錯誤
-python scripts/search.py "aspectMode" --domain flex      # 找 Flex 屬性
-python scripts/search.py "shareTargetPicker" --domain liff
-python scripts/search.py "webhook 收不到" --domain troubleshoot
-python scripts/search.py "rich menu" --domain all --format json
-```
-
-### `scripts/validate.py` — 離線訊息驗證器
-
-檢查型別、必填、未知屬性（typo）、enum、字數/陣列上限、已淘汰元件，
-以及兩類只寫在文件散文、OpenAPI 沒有的規則：
-
-- **網址**：標明「Protocol: HTTPS」的欄位必須是 `https://`；`uri` 與 `linkUri`
-  只收 http / https / line / tel 四種 scheme。
-- **label**：規格由「action 放在哪」決定，不是由 action 型別決定 ——
-  quick reply 必填上限 20、Flex button 必填上限 40、image carousel 選填上限 12。
-
-**`--as webhook` 是唯一方向相反的模式**：驗的是收到的東西，用途是確認
-handler 對欄位的假設站不站得住。收訊端的「必填」意思不一樣——規格說 LINE 會送，
-不代表你一定收得到（官方自己的 follow 與 message 範例就沒有 `follow` 與 `quoteToken`），
-所以那裡只提醒「讀取前先判斷」，不報錯。
-
-```bash
-python scripts/validate.py event.json --as webhook
-```
-
-也驗圖文選單（`--as richmenu`，走 `/v2/bot/richmenu/validate` 的規則）：
-寬 800–2500、高 ≥250、長寬比 ≥1.45 —— 官方寫的是範圍，不是 Console 上那六種預設尺寸。
-
-**兩個等級的意思是明確的：**
-
-| 等級 | 意思 |
+| 情況 | 改用 |
 |---|---|
-| `error` | LINE 會退件（400） |
-| `warning` | LINE 會收，但不會照你想的運作 |
+| LINE Pay 金流串接 | `taiwan-payment` skill |
+| LINE 官方帳號後台的操作、行銷文案 | 不是 API 問題，這個資料集沒有 |
+| LINE WORKS、LINE 廣告 API | 不在資料集內；直接說查不到，不要拿 Messaging API 硬套 |
 
-這不是憑感覺分的。從資料集生出 659 則訊息與 41 個圖文選單，逐筆送進 LINE 官方的
-兩支驗證端點對照，700 筆判斷全部一致。幾個反直覺的地方就是這樣挖出來的：
+**唯一入口：`scripts/search.py`。** 任何問題先用它查，其他工具都是查完之後的下一步。
 
-- `text` 的 5000 上限數的是 **UTF-16 單位不是字元** —— 一個 emoji 佔兩個，
-  所以 2501 個 emoji 會被退，用 `len()` 數則會放行。
-- 多出來的屬性在 **Flex 裡是致命的**（400），在訊息物件、樣板、action 上則是收下但沒作用。
-- 字串欄位給數字，訊息層級 LINE 自動轉型，Flex 與圖文選單直接退。
-- `camera` / `location` 放進樣板，LINE 收單但按了不會有反應 —— 所以是 warning 不是 error。
+| 使用者會跑的 | 用途 |
+|---|---|
+| `scripts/search.py` | 入口：查資料庫 |
+| `scripts/validate.py` | 產出訊息 JSON 後驗證 |
+| `scripts/review.py` | 審既有程式碼 |
+| `scripts/signature.py` | webhook 簽章、channel access token、ID token |
+| `scripts/lineapi.py` | 零依賴 API client（需 access token） |
+| `scripts/test_line.py` | 自我測試 |
 
-`test_line.py --live` 會重跑這個對照。
+維護者用的工具在 repo 的 `tools/`，見最後一段「維護」。每支工具的完整說明在
+[references/tools.md](references/tools.md)。
 
-```bash
-python scripts/validate.py flex.json --as flex
-echo '{"type":"text","text":"hi"}' | python scripts/validate.py -
-python scripts/validate.py body.json --as multicast --format json
-```
+## 路由
 
-錯誤會直接指到路徑：
-
-```
-❌ [error] $.contents.body.layout            缺少必填屬性 layout
-❌ [error] $.contents.body.contents[0].weight 值 'extra-bold' 不合法，可用值：regular, bold
-```
-
-### `scripts/signature.py` — 簽章與權杖
+**鐵則：先查再答，不憑記憶。查不到就說查不到，標「待補」並記進 `data/pending.csv`，不猜。**
 
 ```bash
-# webhook 簽章
-python scripts/signature.py verify --secret <channel secret> --body-file body.json --signature <sig>
-python scripts/signature.py sign   --secret <channel secret> --body '{"events":[]}'
-
-# channel access token
-python scripts/signature.py stateless --channel-id 1234 --channel-secret <secret>   # 15 分鐘
-python scripts/signature.py token --jwk private.key --channel-id 1234 --kid <kid>   # v2.1，最長 30 天
+python scripts/search.py "<關鍵字>"                 # 不指定 --domain：搜遍所有域再合併排序
+python scripts/search.py "<關鍵字>" --domain <域>   # 只搜那一個域
+python scripts/search.py --stats                    # 每個域有幾筆
 ```
 
-驗 LINE Login / LIFF 的 ID token（純標準函式庫，兩種簽法都做）：
+中文、口語說法可以直接查：`data/glossary.csv` 會自動補上英文術語
+（「圖文選單」→ rich menu、「彈性訊息」→ Flex）。不確定是哪個域時**不要指定** `--domain`——
+只猜一個域的做法實測只答得出 65% 的實戰問題（2026-08-25），答不出來的事實其實都在別的域裡。
 
-```python
-from signature import verify_id_token
-claims = verify_id_token(id_token, channel_id, channel_secret=secret)
-```
-
-LINE 的 ID token 有兩種簽法：web 登入流程是 **HS256**（用 channel secret），
-LIFF 與原生 App 是 **ES256**（用 JWKS 公鑰、ECDSA P-256）。最常見的錯誤是
-「只 base64 解開就相信裡面的 `sub`」—— 那等於沒有驗證，任何人都能自己編一個。
-這裡把驗簽與 `iss` / `aud` / `exp` / `nonce` 全部做完，不過就丟例外。
-
-`HS256` 那條已經拿真的 ID token 跟 LINE 的 `/oauth2/v2.1/verify` 對照過，
-兩邊判斷一致。`ES256` 的簽章數學過 RFC 6979 的官方向量、金鑰解析拿 LINE
-真實 JWKS 的 20 把公鑰驗算過，但**端到端沒有實測**（需要 LIFF 發出來的
-token）—— 用在正式環境前請自己測一次。
-```
-
-RS256 JWT 以純標準函式庫實作（不需要 PyJWT / cryptography），
-並會擋掉超過 30 分鐘的 assertion 與超過 30 天的 token_exp。
-
-### `scripts/lineapi.py` — 零依賴 API client / CLI
-
-會自動判斷該打 `api.line.me` 還是 `api-data.line.me`。
-
-```bash
-export LINE_CHANNEL_ACCESS_TOKEN=...
-python scripts/lineapi.py info
-python scripts/lineapi.py quota
-python scripts/lineapi.py profile U1234...
-python scripts/lineapi.py push U1234... --text "Hello"
-python scripts/lineapi.py push U1234... --json message.json
-python scripts/lineapi.py richmenu-list
-python scripts/lineapi.py content 325708 --out photo.jpg
-python scripts/lineapi.py raw GET /v2/bot/followers/ids
-```
-
-### `scripts/review.py` — 既有程式碼健檢
-
-拿資料集去審別人（或自己）寫好的 LINE 程式碼，判斷是不是官方做法。
-支援 `.py` / `.js` / `.ts` / `.php` / `.rb` / `.go` / `.java` / `.kt` / `.cs` / `.swift`。
-
-```bash
-python scripts/review.py app.py
-python scripts/review.py ./src --format json     # 給程式接的輸出
-python scripts/review.py ./src --min-severity error   # 只看必須修的
-```
-
-檢查項目：
-
-| rule | 等級 | 抓什麼 |
+| 使用者會怎麼說 | 查哪個域 | 指令 |
 |---|---|---|
-| `deprecated` | error / warning | 用到已停止服務的 API（LINE Notify…）。分不出是在用它還是在擋它的寫法（`/^line:\/\//` 這種樣式）只給 warning |
-| `wrong-host` | error | 內容類端點打到 `api.line.me` 而不是 `api-data.line.me` |
-| `hardcoded-secret` | error | channel secret / access token 寫死在原始碼 |
-| `signature-body` | error | 拿反序列化後再 dump 的 JSON 算簽章（空白一差就驗不過） |
-| `signature-compare` | warning | 真的在驗簽，卻用 `==` 比而不是常數時間比較 |
-| `signature-missing` | error | 有 webhook 端點，但整個專案都沒驗簽章 |
-| `unknown-endpoint` | warning | 路徑不在官方端點清單裡（多半是拼錯） |
-| `message-json` | warning | 內嵌的訊息 / Flex JSON 直接丟給 validate.py 驗 |
-| `idempotency` | info | 沒用 `webhookEventId` 去重，LINE 重送會重複處理 |
+| 「推播要打哪支 API」「怎麼取得使用者資料」 | `endpoint` | `search.py "push message"` |
+| 「這個欄位必填嗎」「字數上限多少」 | `parameter`、`limit` | `search.py "altText 上限"` |
+| 「API 會回什麼欄位」 | `response` | `search.py "get profile response" --domain response` |
+| 「文字／圖片／貼圖訊息怎麼寫」 | `message` | `search.py "貼圖訊息"` |
+| 「卡片版面」「Flex 的 bubble 有哪些大小」 | `flex` | `search.py "bubble size" --domain flex` |
+| 「按鈕按了要做什麼」 | `action` | `search.py "postback action"` |
+| 「下方選單」「圖文選單尺寸」 | `richmenu` | `search.py "圖文選單圖片尺寸"` |
+| 「收到什麼事件」「webhook 欄位」 | `webhook`、`webhook_field` | `search.py "postback 事件欄位"` |
+| 「回 400／401／429 是什麼意思」 | `error` | `search.py "429" --domain error` |
+| 「webhook 收不到」「簽章一直失敗」 | `troubleshoot` | `search.py "簽章驗證失敗"` |
+| 「該用 reply 還是 push」「要選哪個產品」 | `reasoning`、`product` | `search.py "<情境>" --domain reasoning` |
+| 「token 要用哪一種」「效期多久」 | `token` | `search.py "stateless token 效期"` |
+| 「LIFF 怎麼取得 ID token」「LIFF 要哪個 LINE 版本」 | `liff`、`liff_availability`、`liff_version` | `search.py "shareTargetPicker 版本"` |
+| 「MINI App 送審要檢查什麼」「服務訊息規格」 | `checklist`、`guide_spec` | `search.py "mini app 送審"` |
+| 「LINE Notify／舊 API 還能用嗎」 | `deprecation` | `search.py "notify" --domain deprecation` |
+| 「官方文件哪一頁在講」「FAQ」 | `guide`、`faq` | `search.py "<主題>" --domain guide` |
+| 「加好友連結」「開相機的網址」 | `url_scheme` | `search.py "加好友" --domain url_scheme` |
+| 「這個名詞是什麼意思」 | `term` | `search.py "channel 是什麼"` |
+| 「iOS／Android SDK 有哪些類別」 | `sdk_api` | `search.py "LoginManager" --domain sdk_api` |
+| 「可以送哪些貼圖／emoji」 | `sticker`、`emoji` | `search.py "sticker" --domain sticker` |
 
-每一筆都附建議與官方文件連結。找不到問題就什麼都不報。
+搜尋結果每筆都附 `doc_url` 與 `trust`。回答時附上 `doc_url`；結果裡沒有的事實不要補。
 
-判斷時的三個分寸，都是拿真實專案掃出來才調對的：
+## 使用
 
-- **註解不算程式碼。** 解釋「為什麼不能用 JSON.stringify 算簽章」的那段 docblock，
-  本身就含有 `JSON.stringify` 與 `x-line-signature`。用原文比對等於在罰寫註解的人。
-- **`signature-missing` 與 `idempotency` 是專案層級的。** 分層寫的專案會把驗簽放進
-  `signature.ts`、去重放進 `webhook.ts`；逐檔判斷會對著每一個沒寫的檔案各報一次，
-  包含正在做這件事的那一支。這兩條只報一次，而且全專案都沒做才報。
-- **測試檔不套 `deprecated` / `message-json` / `hardcoded-secret`。** 測試會刻意寫進
-  已淘汰的值、少一個必填欄位的 JSON、假的 channel secret，來斷言它們會被擋下來，
-  那不是在用它們。認得四種命名慣例：`foo.test.ts`、`tests/`、`test_foo.py`、`foo_test.go`。
-  其餘規則照常 —— 測試裡把端點拼錯，那還是拼錯。
+| 任務 | 步驟 | 查的資料 | 產出與完成的證據 |
+|---|---|---|---|
+| 選送訊方式 | 1. 查 `reasoning` 2. 對照下表 | `reasoning`、`endpoint` | 選定的端點＋`doc_url` |
+| 寫 webhook handler | 1. 查事件與欄位 2. 用原始 body 驗簽 3. 先回 200 再處理 4. 用 `webhookEventId` 去重 | `webhook`、`webhook_field`、`troubleshoot` | 程式碼；`review.py` 0 error |
+| 組訊息／Flex JSON | 1. 查元件屬性與上限 2. 寫 JSON 3. 驗證 | `message`、`flex`、`action`、`limit` | JSON；`validate.py` 0 error |
+| 圖文選單 | 1. 查尺寸與區域規則 2. 建立 3. 上傳圖片（`api-data.line.me`）4. 綁定／alias | `richmenu`、`endpoint` | JSON；`validate.py --as richmenu` 0 error |
+| LINE Login／綁定會員 | 1. 確認 channel 在同一個 provider 2. 走 OAuth 2.0 授權碼流程 3. 驗 ID token | `endpoint`、`token`、`guide` | 程式碼；`signature.py` 的 `verify_id_token` 通過 |
+| LIFF 網頁 | 1. 查 API 與引進版本 2. 查 LINE App 版本需求 3. 寫程式 | `liff`、`liff_availability`、`liff_version` | 程式碼；用到的 API 都查得到版本需求 |
+| channel access token | 1. 選 token 型別 2. 需要時產生 JWT | `token` | `signature.py stateless`／`token` 成功取得 |
+| 除錯錯誤碼 | 1. 查錯誤碼 2. 查疑難排解 3. 對照使用者程式碼 | `error`、`troubleshoot` | 原因＋`doc_url`；改完 `review.py` 0 error |
+| 審既有程式碼 | 1. `review.py` 2. 依報告改 3. 再跑一次 | 由 `review.py` 自動查 | `review.py --min-severity error` exit 0 |
+| LINE Notify 遷移 | 1. 查 `deprecation` 2. 改用 push／LINE 通知訊息 | `deprecation`、`product` | 程式碼不再呼叫 notify-api；`review.py` 0 error |
 
-零誤報這件事有兩個測試守著：自家 `examples/` 6 個檔要零筆，
-以及上面三種寫法都不得觸發。
+**選送訊方式**
 
-### `scripts/test_line.py` — 自我測試
+| 情境 | 做法 |
+|---|---|
+| 使用者傳訊息後回覆 | `reply`（不計費） |
+| 通知單一使用者 | `push` |
+| 通知多位已知 userId | `multicast`（上限 500） |
+| 通知全部好友 | `broadcast` |
+| 依性別／年齡／地區分眾 | `narrowcast` + audience |
+| 對方沒加好友但要通知 | LINE 通知訊息（需向 LINE 業務申請） |
+| 官網放「加好友」按鈕 | LINE Social Plugins（純前端，不需 channel） |
+| 網站用 LINE 帳號登入 | LINE Login v2.1 |
+| 聊天室內開表單／預約 | LIFF |
+| 要出現在 LINE 服務列表 | LINE MINI App（需審查） |
 
-```bash
-python scripts/test_line.py           # 離線：資料完整性、搜尋、驗證器、簽章、JWT
-python scripts/test_line.py --live    # 加上實際呼叫 LINE API（需 access token）
-```
+**寫程式時務必遵守**
 
----
+1. **Webhook 簽章一定用原始 body**：`Base64(HMAC-SHA256(channel secret, raw_body)) == x-line-signature`。
+   parse 再 serialize 會改變空白與鍵順序，永遠驗不過。LINE 不公開來源 IP，簽章是唯一的驗證手段。
+2. **先回 200 再處理**，用 `webhookEventId` 去重；否則 LINE 重送會重複處理。
+3. **replyToken 只能用一次、要在 1 分鐘內用**；第二批或逾時改用 push（會計費）。
+4. **內容類端點在 `api-data.line.me`**：下載使用者傳的內容、圖文選單圖片、audience by file。打錯網域會 404。
+5. **userId 是每個 provider 一組**：綁定會員前先確認 Messaging API 與 LINE Login channel 在同一個 provider。
+6. **憑證不進 repo／前端／log**。正式環境優先用 stateless token（15 分鐘）或 v2.1 JWT token（效期可自訂、可撤銷）。
+7. **已停用的東西不要再用**：LINE Notify、LIFF v1、`liff.scanCode()`、`liff.getLanguage()`、`line://` scheme、Flex `filler`。
+   替代方案與停用日期查 `search.py "<名稱>" --domain deprecation`。
+
+## 驗證
+
+產出後一定要跑。全部驗證器有錯都回非 0 的 exit code，可以直接當關卡。
+
+| 產出 | 驗證器 | 通過標準 |
+|---|---|---|
+| 訊息／Flex／request body JSON | `python scripts/validate.py <file> [--as flex\|push\|reply\|…]` | 0 error（exit 0）；要連 warning 一起擋就加 `--strict` |
+| 圖文選單 JSON | `python scripts/validate.py <file> --as richmenu` | 0 error |
+| 要確認 LINE 端判斷（需 token） | `python scripts/lineapi.py validate-push --json <file>` | 印出 `{"result": "valid"}`（exit 0） |
+| 寫好或改過的 LINE 程式碼 | `python scripts/review.py <file-or-dir> --min-severity error` | exit 0（沒有 error） |
+| webhook 簽章 | `python scripts/signature.py verify --secret <s> --body-file b.json --signature <sig>` | 印出 VALID（exit 0） |
+| skill 本身 | `python scripts/test_line.py` | 0 failed；加 `--live` 會實打 LINE API |
+
+`validate.py` 的 `error` 代表 LINE 會退件（400），`warning` 代表 LINE 會收但不會照你想的運作。
+這個分級是拿生成語料逐筆送進 LINE 官方驗證端點對照校準的，細節見 [references/tools.md](references/tools.md)。
 
 ## 參考文件
 
 | 檔案 | 內容 |
 |---|---|
+| [references/tools.md](references/tools.md) | 每支工具的完整用法、驗證器的判斷依據、review 規則表 |
 | [references/messaging-api.md](references/messaging-api.md) | 架構、網域、五種送訊方式、rate limit、冪等、錯誤處理 |
-| [references/webhook.md](references/webhook.md) | 開通順序、簽章驗證、20 種事件、重送與冪等 |
-| [references/message-objects.md](references/message-objects.md) | 11 種訊息型別、quick reply、template、9 種 action |
+| [references/webhook.md](references/webhook.md) | 開通順序、簽章驗證、事件、重送與冪等 |
+| [references/message-objects.md](references/message-objects.md) | 訊息型別、quick reply、template、action |
 | [references/flex-message.md](references/flex-message.md) | Flex 完整結構、元件屬性、常見版型、除錯 |
 | [references/rich-menu.md](references/rich-menu.md) | 建立、上傳、綁定、alias 分頁切換、圖片規格 |
-| [references/channel-access-token.md](references/channel-access-token.md) | 四種 token、JWT v2.1、安全守則 |
+| [references/channel-access-token.md](references/channel-access-token.md) | token 型別、JWT v2.1、安全守則 |
 | [references/line-login.md](references/line-login.md) | OAuth 2.0 + OIDC 流程、scope、ID token 驗證 |
 | [references/liff.md](references/liff.md) | LIFF v2 設定、SDK API、環境差異 |
-| [references/line-mini-app.md](references/line-mini-app.md) | 驗證/未驗證差異、服務訊息、IAP |
-| [references/url-schemes.md](references/url-schemes.md) | LINE URL scheme：加好友、相機、設定畫面、外部瀏覽器與三大限制 |
+| [references/line-mini-app.md](references/line-mini-app.md) | 驗證／未驗證差異、服務訊息、IAP |
+| [references/url-schemes.md](references/url-schemes.md) | LINE URL scheme 與限制 |
 | [references/errors-and-limits.md](references/errors-and-limits.md) | 狀態碼、錯誤訊息、限制速查、計費 |
 | [references/sdk-and-tools.md](references/sdk-and-tools.md) | 官方 SDK、LIFF 工具、線上工具 |
 | [EXAMPLES.md](EXAMPLES.md) | 可直接執行的程式碼範例 |
+| [evals/RESULTS.md](evals/RESULTS.md) | 最近一次 evals 答對率（有 skill／沒有 skill） |
 
----
+## 維護
 
-## 開發時務必遵守
-
-### 1. Webhook 簽章一定要用「原始 body」
-
-```
-Base64( HMAC-SHA256( channel secret, raw_request_body ) ) == x-line-signature
-```
-
-用框架 parse 過的 JSON 再 serialize 會改變空白與鍵順序，永遠驗不過。
-LINE 不公開來源 IP，簽章是唯一的驗證手段。
-
-### 2. 先回 200，再處理
-
-沒有及時回 200 → LINE 重送 → 同一筆訂單被處理兩次。
-用 `webhookEventId` 做冪等去重。
-
-### 3. replyToken 只能用一次、1 分鐘內
-
-超過或要送第二批 → 改用 push（會計費）。
-
-### 4. 內容類端點在 `api-data.line.me`
-
-`GET /v2/bot/message/{id}/content`、rich menu 圖片上傳/下載、
-audience by file — 打錯網域會 404。
-
-### 5. userId 是「每個 provider 一組」
-
-同 provider 下的 Messaging API channel 與 LINE Login channel 拿到的 userId 相同；
-跨 provider 就不同。綁定會員前先確認 channel 在同一個 provider 底下。
-
-### 6. 憑證絕不進 repo / 前端 / log
-
-```
-LINE_CHANNEL_ID=
-LINE_CHANNEL_SECRET=
-LINE_CHANNEL_ACCESS_TOKEN=
-```
-
-正式環境優先用 **stateless token**（15 分鐘、不限發行數）或
-**v2.1 JWT token**（可自訂效期、可撤銷）；long-lived token 只用於本機測試。
-
-### 7. 已停用的東西不要再用
+維護者在 repo 根目錄跑（`tools/` 不隨 skill 安裝，可用第三方套件，例如 `build_dataset.py` 需要 PyYAML）。
 
 ```bash
-python scripts/search.py "notify" --domain deprecation
-```
-
-| 已停用 | 替代 |
-|---|---|
-| LINE Notify（2025-03-31 終止） | Messaging API push；對方未加好友則用 LINE 通知訊息 |
-| LIFF v1（2021-10-01 終止） | LIFF v2 SDK |
-| `liff.scanCode()` | `liff.scanCodeV2()` |
-| `liff.getLanguage()` | `liff.getAppLanguage()` |
-| `line://` scheme | `https://line.me/R/...` / `https://liff.line.me/...` |
-| Flex `filler` | box 的 `margin` / `offset*` / `padding*` |
-
----
-
-## 常見任務的正確做法
-
-| 任務 | 做法 |
-|---|---|
-| 使用者傳訊息後回覆 | `reply`（不計費） |
-| 通知單一使用者 | `push` |
-| 通知 2–500 位已知 userId | `multicast`（一次最多 500） |
-| 通知全部好友 | `broadcast` |
-| 依性別/年齡/地區分眾 | `narrowcast` + audience |
-| 對方沒加好友但要通知 | LINE 通知訊息（需向 LINE 業務申請） |
-| 官網放「加好友」按鈕 | LINE Social Plugins（純前端，不需 channel） |
-| 網站用 LINE 帳號登入 | LINE Login v2.1 |
-| 聊天室內開表單/預約 | LIFF |
-| 要出現在 LINE 服務列表 | LINE MINI App（需審查） |
-
-```bash
-python scripts/search.py "<你的情境>" --domain reasoning
-```
-
----
-
-## 重建資料集（維護者用）
-
-```bash
-python tools/fetch_sources.py     # 抓官方文件與 OpenAPI 到 .docs-cache/（不進 git）
-python tools/build_dataset.py     # 重新產生 line-api/data/*.csv
-python tools/check_links.py --md  # 實際打過每一條連結
+python tools/fetch_sources.py          # 重抓官方文件與 OpenAPI 到 .docs-cache/（不進 git）
+python tools/build_dataset.py          # 重新產生 line-api/data/*.csv
+python tools/check_links.py --md       # 實際打過每一條連結
+python tools/check_docs.py             # SKILL.md 與 README 的每個數字都要對得上資料；--fix 自動改
+python tools/benchmark.py              # 實戰問題的搜尋準確率
 python line-api/scripts/test_line.py --live
+python tools/install-skill.py claude-code --global   # 同步到安裝版
 ```
+
+LINE 改版（OpenAPI 新 commit 或文件更新）後：重抓 → 重建 → 跑測試 → `check_docs.py` →
+重跑 evals 並更新 `evals/RESULTS.md` → 同步安裝版。`data/pending.csv` 裡 `open` 的項目每次改版都要再查一次。
