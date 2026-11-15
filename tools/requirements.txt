@@ -1,0 +1,2 @@
+# 只有維護者工具需要（tools/build_dataset.py）。skill 本體 line-api/scripts 只用標準函式庫。
+PyYAML>=6.0

@@ -172,7 +172,7 @@ python scripts/search.py --stats                    # 每個域有幾筆
 
 ## 維護
 
-維護者在 repo 根目錄跑（`tools/` 不隨 skill 安裝，可用第三方套件，例如 `build_dataset.py` 需要 PyYAML）。
+維護者在 repo 根目錄跑。`tools/` 不隨 skill 安裝，可以用第三方套件（目前只有 `build_dataset.py` 需要 PyYAML，見 `tools/requirements.txt`）；使用者路徑（`scripts/`）只用標準函式庫。
 
 ```bash
 python tools/fetch_sources.py          # 重抓官方文件與 OpenAPI 到 .docs-cache/（不進 git）

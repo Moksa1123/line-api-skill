@@ -145,7 +145,7 @@ def main() -> int:
             print(f"\n  ✗ {q!r}  找不到 {e!r}")
             if args.verbose:
                 print(f"     實得：{blob}")
-    return 0 if hit == total else 1
+    return 0 if hit / total >= 0.95 else 1   # 與 CLAUDE.md 一致：低於 95% 才算失敗
 
 
 if __name__ == "__main__":
