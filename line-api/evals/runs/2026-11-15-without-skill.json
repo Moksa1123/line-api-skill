@@ -1,0 +1,16 @@
+{"meta": {"date": "2026-11-15", "model": "claude-opus-5-5", "how": "subagent 不用任何工具，憑記憶作答"}, "answers": {
+"liff-share-version": "LINE 10.3.0 以上（iOS／Android）。另外要在 LINE Developers Console 開啟 shareTargetPicker。",
+"liff-scancodev2-version": "LINE 11.7.0 以上（iOS／Android），且 LIFF SDK 要 2.15.0 以上。",
+"flex-deca-hecto-version": "iOS 和 Android 的 LINE 都要 13.6.0 以上（不太確定）；版本較舊的 App 可能顯示錯誤或退回其他尺寸。",
+"miniapp-notifier-token-ttl": "發出後 1 年失效。",
+"miniapp-messages-per-token": "在效期內最多 5 則。",
+"miniapp-template-count": "每個 channel 最多 20 個範本（不太確定）。",
+"follow-unblocked": "看 event.follow.isUnblocked：true 是解除封鎖，false 是新加好友。",
+"idtoken-alg": "LINE Login 網頁登入（web login）拿到的 ID token 用 HS256（以 channel secret 簽章）；LIFF／原生 App 拿到的用 ES256（公鑰從 JWKS 端點取得）。",
+"richmenu-image-rules": "寬 800–2500 px，高至少 250 px，長寬比（寬/高）至少 1.45；JPEG 或 PNG，檔案最大 1 MB。",
+"text-utf16": "以 UTF-16 code unit 計算。一般的 emoji（Unicode emoji，屬於 surrogate pair）算 2 個；組合式 emoji 會更多。",
+"flex-unknown-prop": "Flex Message 元件裡放了不存在的屬性，會被當成無效訊息，回傳 400（不太確定）；一般訊息物件（例如 text）裡多出的未知屬性通常會被忽略，照樣送出。",
+"token-v21-count": "每個 channel 最多同時有 30 把有效。",
+"label-by-placement": "quick reply 按鈕的 label 最多 20 字；Flex button 的 label 最多 40 字（不太確定）。",
+"template-camera-action": "camera action 只能用在 quick reply，放進 buttons template 會被 API 用 400 退件（不太確定）；不會送出，所以使用者也按不到。"
+}}

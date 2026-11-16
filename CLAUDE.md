@@ -20,7 +20,8 @@ line-api/            ← 要發佈的技能本體（複製到 ~/.claude/skills/l
   EXAMPLES.md          範例索引
   data/*.csv           產生物，不要手改「自動產生」的那幾份（見下表）
   references/*.md      人工撰寫，內容必須有官方文件佐證
-  scripts/*.py         技能工具，只用標準函式庫
+  scripts/*.py         技能工具，只用標準函式庫（check_numbers.py：SKILL.md 每個數字都要登記且對得上資料）
+  evals/               真題、評分與 RESULTS.md（有 skill／沒有 skill 的答對率）
   examples/            可執行範例
 
 tools/               ← 只在這個 repo 用，不隨技能安裝
@@ -29,7 +30,7 @@ tools/               ← 只在這個 repo 用，不隨技能安裝
   discover_pages.py    走站上 HTML 導覽，找出 llms.txt 漏列的頁面
   check_links.py       驗證所有 doc_url
   audit_coverage.py    逐條比對官方文件與資料集的覆蓋缺口
-  check_docs.py        確認文件寫的數字與實際資料一致
+  check_docs.py        確認文件寫的數字與實際資料一致（SKILL.md 部分呼叫 scripts/check_numbers.py）
 
 .docs-cache/         ← 抓下來的官方文件與 line-openapi。git 忽略，絕不 commit
 ```
@@ -65,6 +66,11 @@ tools/               ← 只在這個 repo 用，不隨技能安裝
 | `deprecations.csv` | 人工撰寫 | ✅ |
 | `glossary.csv` | 人工撰寫（中英術語對照） | ✅ |
 | `terms.csv` | 人工撰寫（官方術語的中文定義；錨點須與官方一致） | ✅ |
+| `pending.csv` | 待補清單：查不到、還沒證實的事（日期、問題、為何查不到、誰問的、狀態） | ✅ |
+
+每個 CSV 都有 `trust` 欄（`實測`／`官方文件`／`推論`）。產生器預設「官方文件」；
+人工撰寫的 reasoning、troubleshooting、glossary 是歸納出來的，標「推論」。
+`trust` 不是「推論」的列一定要有 `doc_url`（或 `measured_on`），`test_line.py` 會擋。
 
 改自動產生的資料要改產生器，然後重跑：
 
@@ -128,7 +134,7 @@ python tools/get_id_token.py        # 跑一次 LINE Login 取得 ID token 寫�
                                     # 解鎖 live 的 ID token 驗簽對照
 
 # 測試
-python line-api/scripts/test_line.py            # 離線 58 項
+python line-api/scripts/test_line.py            # 離線 61 項
 python line-api/scripts/test_line.py --live     # 加 6 項實打 LINE API
 
 # 技能本身的工具
@@ -169,6 +175,9 @@ python line-api/scripts/lineapi.py info
   召回率每次都指定 domain，等於先告訴引擎答案在哪份資料裡
 - review.py 會比對程式碼裡寫死的 LINE 限制值與官方是否一致
   （值從資料集查，不寫死在規則裡）
+
+- SKILL.md 每一個數字都登記在 `scripts/check_numbers.py` 且與資料一致（SOP 6-1）
+- 每列資料都有 `trust`，非「推論」的列都有出處；`pending.csv` 欄位固定
 
 新增功能請一併補測試。
 

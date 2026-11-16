@@ -1,0 +1,16 @@
+{"meta": {"date": "2026-11-15", "model": "claude-opus-5-5", "how": "subagent 不用任何工具，憑記憶作答"}, "answers": {
+"template-camera-action": "camera action 只能用在 quick reply 按鈕；放進 buttons template 會被 API 以 400 退件（invalid action type）。若真的送得出去，使用者按了也不會有作用。（憑記憶，不確定）",
+"liff-requestfriendship-version": "不確定；LIFF SDK 並沒有我能確認的 liff.requestFriendship()，加好友狀態是用 liff.getFriendship()（v2.1.0 起）。",
+"liff-2300-date": "不知道確切日期，推測約 2025 年中。",
+"liff-2290-date": "不知道確切日期，推測約 2025 年初。",
+"liff-addtohomev2-version": "推測 LINE 14.3.0 以上（不確定）。",
+"liff-scancode-unsupported": "舊的 liff.scanCode() 從 LINE 9.19.0 起在 iOS 等環境不再支援（不確定），建議改用 liff.scanCodeV2()。",
+"flex-deca-hecto-pc": "推測 LINE 電腦版 7.x（約 7.7.0）以上才支援（不確定）。",
+"richmenu-insight-daily-path": "不確定；推測為 GET https://api.line.me/v2/bot/insight/richmenu/{richMenuId}?date=yyyyMMdd 之類路徑。",
+"richmenu-insight-metricsfrom": "不知道；推測欄位名類似 \"from\" 或 \"startDate\"。",
+"coupon-close-endpoint": "不確定；推測為 PUT https://api.line.me/v2/bot/coupon/{couponId}/close。",
+"coupon-lottery-field": "不確定；推測在 acquisitionCondition 內的 lotteryProbability 欄位，範圍 1–100（百分比）。",
+"membership-users-path": "推測為 GET https://api.line.me/membership/v1/members/{membershipId}/users/ids（不確定）。",
+"insight-demographic-rate": "不確定；推測與一般 insight 端點相同，約 60 requests/hour（或 2,000 requests/second 一般限制）。",
+"miniapp-logo-size": "不確定；推測 logo 最小 64×64 px、最大 512×512 px（建議 640×640 正方形圖檔）。"
+}}

@@ -1485,17 +1485,47 @@ def t_text_limit():
 @check("dataset: every doc_url points at developers.line.biz (or a stated exception)")
 def t_doc_urls():
     allowed_other = {"https://notify-bot.line.me/en/"}
+    # limits.csv 直接出自 LINE 官方 OpenAPI repo，連結釘在抓取時的 commit
+    allowed_prefix = ("https://developers.line.biz/", "https://github.com/line/line-openapi/blob/")
     bad = []
     for path in sorted(DATA.glob("*.csv")):
         for r in rows(path.name):
             for k, v in r.items():
                 if not isinstance(k, str) or not isinstance(v, str):
                     continue
-                if k.endswith("url") and v and not v.startswith("https://developers.line.biz/"):
+                if k.endswith("url") and v and not v.startswith(allowed_prefix):
                     if v not in allowed_other:
                         bad.append((path.name, v))
     assert not bad, f"非官方網域的連結：{bad[:5]}"
     return "全部連結指向官方文件"
+
+
+@check("dataset: every row has a trust level, and a source unless it is 推論")
+def t_trust():
+    levels = {"實測", "官方文件", "推論"}
+    bad, counts = [], {}
+    for path in sorted(p for p in DATA.glob("*.csv") if p.name != "pending.csv"):
+        for i, r in enumerate(rows(path.name), 2):
+            trust = r.get("trust", "")
+            counts[trust] = counts.get(trust, 0) + 1
+            if trust not in levels:
+                bad.append(f"{path.name}:{i} trust={trust!r}")
+            elif trust != "推論" and not (r.get("doc_url") or r.get("measured_on")):
+                bad.append(f"{path.name}:{i} 標 {trust} 卻沒有 doc_url／measured_on")
+    assert not bad, f"{len(bad)} 列不合格：{bad[:5]}"
+    return "、".join(f"{k} {v}" for k, v in sorted(counts.items()))
+
+
+@check("dataset: pending.csv has the agreed columns")
+def t_pending():
+    want = ["date", "question", "why_not_found", "asked_by", "status"]
+    with open(DATA / "pending.csv", encoding="utf-8", newline="") as f:
+        reader = csv.DictReader(f)
+        assert reader.fieldnames == want, reader.fieldnames
+        items = list(reader)
+    assert all(re.fullmatch(r"20\d\d-\d\d-\d\d", r["date"]) for r in items), "日期格式要 YYYY-MM-DD"
+    assert all(r["status"] in ("open", "resolved") for r in items), "status 只能 open／resolved"
+    return f"{sum(r['status'] == 'open' for r in items)} 筆待補"
 
 
 # ==========================================================================
@@ -1969,6 +1999,14 @@ def t_references():
         assert "developers.line.biz" in text, f"{f.name} 沒有官方文件連結"
         assert len(text) > 500, f"{f.name} 內容過短"
     return f"{len(files)} 份參考文件"
+
+
+@check("docs: SKILL.md 每一個數字都有登記且與資料一致（SOP 6-1）")
+def t_skill_numbers():
+    import check_numbers
+    problems, n = check_numbers.check()
+    assert not problems, "；".join(problems[:5]) + "（python scripts/check_numbers.py --fix）"
+    return f"{n} 個數字"
 
 
 # ==========================================================================

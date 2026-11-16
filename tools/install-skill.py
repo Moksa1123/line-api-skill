@@ -110,7 +110,7 @@ def embed(names: list[str]) -> str:
 
 
 # --------------------------------------------------------------------------
-COPY_DIRS = ("data", "references", "scripts", "examples")
+COPY_DIRS = ("data", "references", "scripts", "examples", "evals")
 COPY_FILES = ("SKILL.md", "EXAMPLES.md")
 
 
